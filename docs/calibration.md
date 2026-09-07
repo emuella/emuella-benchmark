@@ -53,3 +53,22 @@ RGB applies MCT, while the selected OpenJPEG profile does not. Effective profile
 are recorded with each response; native output equivalence is the comparison
 contract. Application-journey OpenJPH timing is distinct from native operation
 timing. RSS is a native worker process high-water mark including verification.
+
+## Retained initial observation
+
+[Initial qualification](evidence/initial-qualification.json) records source
+`b72e560680d5ddb9834629e20d04fd2bef38a3b7`, codec
+`aa7090c23cce62437cefe5b441e971b1bd4320b5`, catalogue
+`b4b8c8f51cd36ace3764487d53b5423dc6baab50`, exact executable/input identities,
+protocol, host and measured outcomes. Synthetic unchanged work was equivalent,
+the controlled slowdown regressed, and corrupted output was invalid. Real
+unchanged Emuella was inconclusive on the shared host. Retain the conservative
+protocol; do not turn the latter uncertainty into a timing acceptance gate.
+
+All selected lossless encode/shared-decode, native partial, two-thread, diagnostic
+and HT lossless batches passed. Both lossy implementations produced successful
+points, with Emuella's unattainable-rate points explicitly retained. HT lossy
+points also exercised native Emuella and application-journey OpenJPH. Detailed
+counts and any unsupported rate/profile dispositions are in the factual record.
+The reports are descriptive observations of these settings and this host, not a
+universal codec ranking.

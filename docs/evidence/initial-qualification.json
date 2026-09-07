@@ -1,0 +1,450 @@
+{
+  "source_revision": "b72e560680d5ddb9834629e20d04fd2bef38a3b7",
+  "decision": "retain protocol and candidate",
+  "host": {
+    "os": "linux",
+    "architecture": "x86_64",
+    "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor",
+    "kernel": "7.1.3-arch1-1",
+    "logical_cpus": 32,
+    "affinity": "Cpus_allowed_list:\t0-31"
+  },
+  "protocol": {
+    "rounds": 7,
+    "samples_per_batch": 3,
+    "warmup": 1,
+    "timeout_ms": 60000,
+    "boundary": "codec_operation",
+    "context_policy": "fresh_process_per_batch",
+    "cache_policy": "warm_input",
+    "practical_relative_threshold": 0.05
+  },
+  "inputs": [
+    {
+      "case_id": "gray-u8-prime-gradient-17x19",
+      "sha256": "6680f3615d280e40c4e496f4ff24d5c4c005dc4427b984c16e2c00a00fb9010b",
+      "provenance": {
+        "asset": "gray-u8-prime-gradient-17x19.pgm",
+        "catalogue_commit": "b4b8c8f51cd36ace3764487d53b5423dc6baab50",
+        "licence": "Apache-2.0",
+        "manifest_sha256": "f14b59c12144c23e607b04c19add5e427db478f4a3b973454704fa831dcd8ea3",
+        "pack_id": "common/generated-core",
+        "pack_version": "1",
+        "recipe": "generated-pnm-to-interleaved-raw-v1",
+        "recipe_sha256": "2384cff1cbcea472bcd949ea5a5c2ce894311d87195fb39e5795412adf7d2ef0",
+        "source_sha256": "894e8a3547f1927b9a853f8d3f860171f901c0780a6552714cf458b102c613af"
+      }
+    },
+    {
+      "case_id": "gray-u8-checkerboard-127x131",
+      "sha256": "c2f917c9e2652dc62de5952b41b47d06b2400d992e3e65350df421a52c0d07ab",
+      "provenance": {
+        "asset": "gray-u8-checkerboard-127x131.pgm",
+        "catalogue_commit": "b4b8c8f51cd36ace3764487d53b5423dc6baab50",
+        "licence": "Apache-2.0",
+        "manifest_sha256": "f14b59c12144c23e607b04c19add5e427db478f4a3b973454704fa831dcd8ea3",
+        "pack_id": "common/generated-core",
+        "pack_version": "1",
+        "recipe": "generated-pnm-to-interleaved-raw-v1",
+        "recipe_sha256": "2384cff1cbcea472bcd949ea5a5c2ce894311d87195fb39e5795412adf7d2ef0",
+        "source_sha256": "00846a45ab63c00205189c59c77867370fcfe19bc060921e064d55ceddda6e34"
+      }
+    },
+    {
+      "case_id": "gray-u8-noise-257x263",
+      "sha256": "ed800906535b920478603d637fa39cec97abb23f0e0f6af06ca3de1f23a8b4f2",
+      "provenance": {
+        "asset": "gray-u8-noise-257x263.pgm",
+        "catalogue_commit": "b4b8c8f51cd36ace3764487d53b5423dc6baab50",
+        "licence": "Apache-2.0",
+        "manifest_sha256": "f14b59c12144c23e607b04c19add5e427db478f4a3b973454704fa831dcd8ea3",
+        "pack_id": "common/generated-core",
+        "pack_version": "1",
+        "recipe": "generated-pnm-to-interleaved-raw-v1",
+        "recipe_sha256": "2384cff1cbcea472bcd949ea5a5c2ce894311d87195fb39e5795412adf7d2ef0",
+        "source_sha256": "aee8a1e8c0fbc9030013c00dfd4c9d4486866d21a5811b60c7e7009f336f632f"
+      }
+    },
+    {
+      "case_id": "gray-u16-ramp-257x193",
+      "sha256": "f7d561c5b7c64004b93e34449833d238dec3d45fae273ae217666c8475620563",
+      "provenance": {
+        "asset": "gray-u16-ramp-257x193.pgm",
+        "catalogue_commit": "b4b8c8f51cd36ace3764487d53b5423dc6baab50",
+        "licence": "Apache-2.0",
+        "manifest_sha256": "f14b59c12144c23e607b04c19add5e427db478f4a3b973454704fa831dcd8ea3",
+        "pack_id": "common/generated-core",
+        "pack_version": "1",
+        "recipe": "generated-pnm-to-interleaved-raw-v1",
+        "recipe_sha256": "2384cff1cbcea472bcd949ea5a5c2ce894311d87195fb39e5795412adf7d2ef0",
+        "source_sha256": "f7b6760010d2f389ce071a242c6aa20059237e2ef8212898d90398e5db132b34"
+      }
+    },
+    {
+      "case_id": "rgb-u8-edges-31x29",
+      "sha256": "50d51dac0cfe2c6bdcbd703b1c5fafdf0a17f21ed40f4e50d91d9bbde822bfd8",
+      "provenance": {
+        "asset": "rgb-u8-edges-31x29.ppm",
+        "catalogue_commit": "b4b8c8f51cd36ace3764487d53b5423dc6baab50",
+        "licence": "Apache-2.0",
+        "manifest_sha256": "f14b59c12144c23e607b04c19add5e427db478f4a3b973454704fa831dcd8ea3",
+        "pack_id": "common/generated-core",
+        "pack_version": "1",
+        "recipe": "generated-pnm-to-interleaved-raw-v1",
+        "recipe_sha256": "2384cff1cbcea472bcd949ea5a5c2ce894311d87195fb39e5795412adf7d2ef0",
+        "source_sha256": "d94274d1e1d26ea49cb4ad59ce876ab58b918bfb72333a886d8ea6d1c97d943e"
+      }
+    },
+    {
+      "case_id": "rgb-u16-extrema-65x63",
+      "sha256": "03019239f02049d33a1e0d55f88a4371e8dc65fb7b793d63f35f7389fe1cf6c3",
+      "provenance": {
+        "asset": "rgb-u16-extrema-65x63.ppm",
+        "catalogue_commit": "b4b8c8f51cd36ace3764487d53b5423dc6baab50",
+        "licence": "Apache-2.0",
+        "manifest_sha256": "f14b59c12144c23e607b04c19add5e427db478f4a3b973454704fa831dcd8ea3",
+        "pack_id": "common/generated-core",
+        "pack_version": "1",
+        "recipe": "generated-pnm-to-interleaved-raw-v1",
+        "recipe_sha256": "2384cff1cbcea472bcd949ea5a5c2ce894311d87195fb39e5795412adf7d2ef0",
+        "source_sha256": "ca36eb658bd85de78315b3fbcefcc4caa5638a2981fdf9bd8de8121beb8f336c"
+      }
+    }
+  ],
+  "build": {
+    "emuella_revision": "aa7090c23cce62437cefe5b441e971b1bd4320b5",
+    "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.97.1\nLLVM version: 22.1.6",
+    "cargo": "cargo 1.97.1 (c980f4866 2026-06-30)",
+    "openjpeg_pkg_config": "2.5.4",
+    "profile": "release",
+    "features": [
+      "emuella",
+      "openjpeg",
+      "emuella-j2k/parallel"
+    ]
+  },
+  "qualification": {
+    "schema_version": 1,
+    "provisional_dirty_source": false,
+    "harness_sha256": "a8719b86962e7776d723b2f075b688951f693bf019f0dce34630a0112f6dc836",
+    "source_revision": "b72e560680d5ddb9834629e20d04fd2bef38a3b7",
+    "catalogue_commit": "b4b8c8f51cd36ace3764487d53b5423dc6baab50",
+    "journeys": {
+      "lossless-encode-baseline": {
+        "statuses": {
+          "ok": 42
+        },
+        "run_sha256": "65defae7988abfa204d78b5482d893f105214004a331930c3d62a8b7e117968a",
+        "worker_sha256": "bc170629191eaea2113bec3dafdfb05aa4859c825fabbb788df99f8409f63632"
+      },
+      "lossless-encode-candidate": {
+        "statuses": {
+          "ok": 42
+        },
+        "run_sha256": "2066b1c6a75d8578835ce0be6cf8177a3740b4f728d92898b98f842f4cb633eb",
+        "worker_sha256": "289e6c9823d3164bd2b92d4d5c7c05542ca00e1e81ed4dca0960f0a5b74d5be8"
+      },
+      "lossless-encode": {
+        "verdict": "regressed",
+        "cases": {
+          "gray-u16-ramp-257x193": "regressed",
+          "rgb-u16-extrema-65x63": "regressed",
+          "gray-u8-checkerboard-127x131": "regressed",
+          "rgb-u8-edges-31x29": "regressed",
+          "gray-u8-noise-257x263": "regressed",
+          "gray-u8-prime-gradient-17x19": "improved"
+        }
+      },
+      "unchanged-emuella-baseline": {
+        "statuses": {
+          "ok": 14
+        },
+        "run_sha256": "8f6f25e16e00b165f18dfb6e848f71a290c19ff6e19aa149c60e6517c7b800e2",
+        "worker_sha256": "289e6c9823d3164bd2b92d4d5c7c05542ca00e1e81ed4dca0960f0a5b74d5be8"
+      },
+      "unchanged-emuella-candidate": {
+        "statuses": {
+          "ok": 14
+        },
+        "run_sha256": "f8e86c615596f3bec6f0a1a6b1f4a899b454091aacc9e8b2a2e356d8d6d0a5bb",
+        "worker_sha256": "289e6c9823d3164bd2b92d4d5c7c05542ca00e1e81ed4dca0960f0a5b74d5be8"
+      },
+      "unchanged-emuella": {
+        "verdict": "inconclusive",
+        "cases": {
+          "gray-u8-prime-gradient-17x19": "inconclusive",
+          "gray-u8-checkerboard-127x131": "inconclusive"
+        }
+      },
+      "common-decode-baseline": {
+        "statuses": {
+          "ok": 42
+        },
+        "run_sha256": "46fb14642ec5922cf522cd783a603706ffd944ccd5c059aea64bb43d17fe6077",
+        "worker_sha256": "bc170629191eaea2113bec3dafdfb05aa4859c825fabbb788df99f8409f63632"
+      },
+      "common-decode-candidate": {
+        "statuses": {
+          "ok": 42
+        },
+        "run_sha256": "3c2e70a74d9c00c6d91de9f373a91d1a623d273059f81811bf4e13d6fcc06738",
+        "worker_sha256": "289e6c9823d3164bd2b92d4d5c7c05542ca00e1e81ed4dca0960f0a5b74d5be8"
+      },
+      "common-decode": {
+        "verdict": "regressed",
+        "cases": {
+          "gray-u16-ramp-257x193": "regressed",
+          "gray-u8-checkerboard-127x131": "regressed",
+          "rgb-u16-extrema-65x63": "regressed",
+          "gray-u8-noise-257x263": "regressed",
+          "rgb-u8-edges-31x29": "inconclusive",
+          "gray-u8-prime-gradient-17x19": "improved"
+        }
+      },
+      "openjpeg-partial": {
+        "statuses": {
+          "ok": 14
+        },
+        "run_sha256": "a04fee12d64af906260ade400f6c6085a4df1318dff8e36182a3524eaab13d3c",
+        "worker_sha256": "bc170629191eaea2113bec3dafdfb05aa4859c825fabbb788df99f8409f63632"
+      },
+      "emuella-partial": {
+        "statuses": {
+          "ok": 14
+        },
+        "run_sha256": "43f6792f15dea26779bbe183856a4c7683432cc950b924ed300ae7160b880c09",
+        "worker_sha256": "289e6c9823d3164bd2b92d4d5c7c05542ca00e1e81ed4dca0960f0a5b74d5be8"
+      },
+      "diagnostic": {
+        "statuses": {
+          "ok": 7
+        },
+        "run_sha256": "0cdf06f72fdd34646c5b6fb885f8cc797570811ea949b640bf4f078bbb791e5c",
+        "worker_sha256": "289e6c9823d3164bd2b92d4d5c7c05542ca00e1e81ed4dca0960f0a5b74d5be8"
+      },
+      "two-threads-decode-baseline": {
+        "statuses": {
+          "ok": 7
+        },
+        "run_sha256": "664760f37e0c783039e853201ac5bbfb99654ad4d13581a5ace5fce71c1bb0ba",
+        "worker_sha256": "bc170629191eaea2113bec3dafdfb05aa4859c825fabbb788df99f8409f63632"
+      },
+      "two-threads-decode-candidate": {
+        "statuses": {
+          "ok": 7
+        },
+        "run_sha256": "3c4d11018b0b942caca4dd2cde753f0aeeb36937aa33add53735d771fa68e766",
+        "worker_sha256": "289e6c9823d3164bd2b92d4d5c7c05542ca00e1e81ed4dca0960f0a5b74d5be8"
+      },
+      "two-threads-decode": {
+        "verdict": "regressed",
+        "cases": {
+          "gray-u8-checkerboard-127x131": "regressed"
+        }
+      },
+      "emuella-lossy": {
+        "statuses": {
+          "unattainable_rate": 21,
+          "ok": 63
+        },
+        "run_sha256": "735b601fb7f374b2b5797d1179a46db4fb79f08db64b3fc03c1e22e30e799c9b",
+        "worker_sha256": "289e6c9823d3164bd2b92d4d5c7c05542ca00e1e81ed4dca0960f0a5b74d5be8"
+      },
+      "openjpeg-lossy": {
+        "statuses": {
+          "ok": 84
+        },
+        "run_sha256": "abf85faab0e5a9da827118dfb99c424f25e2b651b01603a24365eefc7464faf7",
+        "worker_sha256": "bc170629191eaea2113bec3dafdfb05aa4859c825fabbb788df99f8409f63632"
+      },
+      "emuella-ht": {
+        "statuses": {
+          "ok": 42
+        },
+        "run_sha256": "f9c4c8aebe3b666e6612fe3bd4207d78845a3320fbbcccf32673a995cf71027a",
+        "worker_sha256": "289e6c9823d3164bd2b92d4d5c7c05542ca00e1e81ed4dca0960f0a5b74d5be8"
+      },
+      "openjph-ht": {
+        "statuses": {
+          "ok": 42
+        },
+        "run_sha256": "8500140f86d8f05dac1d3f71149e74a222312e42c15841a9a247ee1a51756c5a",
+        "worker_sha256": "3e894cb24266ddb890b38d8e586e7b877a36ea3f71021b884e879a917066933d"
+      },
+      "emuella-ht-lossy": {
+        "statuses": {
+          "ok": 35,
+          "unattainable_rate": 7
+        },
+        "run_sha256": "26fff52cf82ada6d209d0fcf53b4305de1e553d1742dc726439f088fda73bf99",
+        "worker_sha256": "289e6c9823d3164bd2b92d4d5c7c05542ca00e1e81ed4dca0960f0a5b74d5be8"
+      },
+      "openjph-ht-lossy": {
+        "statuses": {
+          "ok": 42
+        },
+        "run_sha256": "516f4a53484a78713edec899cd3bc34a358f35c9de5cc5f13a676f62f0ed94e7",
+        "worker_sha256": "3e894cb24266ddb890b38d8e586e7b877a36ea3f71021b884e879a917066933d"
+      }
+    }
+  },
+  "synthetic_calibration": {
+    "schema_version": 1,
+    "decision": "retain",
+    "observations": {
+      "unchanged": {
+        "schema_version": 1,
+        "baseline_run_id": "1788757191738-86802-1",
+        "candidate_run_id": "1788757191741-86802-2",
+        "baseline_implementation": "synthetic-copy-and-sleep",
+        "candidate_implementation": "synthetic-copy-and-sleep",
+        "baseline_source_identity": "project-authored-calibration-fixture-v1",
+        "candidate_source_identity": "project-authored-calibration-fixture-v1",
+        "verdict": "equivalent",
+        "reason": "Whole coverage timing verdict: invalid/incomparable coverage blocks inference; any regression wins; uncertainty blocks improvement; remaining cases must be equivalent or improved.",
+        "method": "99.5% marginal Student t intervals on independent batch means; Bonferroni conservative 99% ratio bounds per case; no outlier removal; paired AB/BA acquisition",
+        "cases": [
+          {
+            "case_id": "gray-u8-prime-gradient-17x19",
+            "verdict": "equivalent",
+            "reason": "relative interval [-0.0026, 0.0030], practical threshold \u00b10.0500",
+            "baseline_mean_ns": 5058126.485714286,
+            "candidate_mean_ns": 5059050.485714286,
+            "relative_change": 0.00018267633334390077,
+            "relative_interval_99": [
+              -0.0026159478508643863,
+              0.002989025220907049
+            ],
+            "baseline_measurements": {
+              "mean_output_bytes": 323.0,
+              "output_bytes_range": [
+                323,
+                323
+              ],
+              "actual_bits_per_pixel": 8.0,
+              "peak_rss_bytes": null,
+              "rss_observed_batches": 0,
+              "correctness": {
+                "sample_count": 11305,
+                "exact": true,
+                "maximum_absolute_error": 0.0,
+                "mse": 0.0,
+                "peak": 255.0,
+                "psnr_db": null
+              }
+            },
+            "candidate_measurements": {
+              "mean_output_bytes": 323.0,
+              "output_bytes_range": [
+                323,
+                323
+              ],
+              "actual_bits_per_pixel": 8.0,
+              "peak_rss_bytes": null,
+              "rss_observed_batches": 0,
+              "correctness": {
+                "sample_count": 11305,
+                "exact": true,
+                "maximum_absolute_error": 0.0,
+                "mse": 0.0,
+                "peak": 255.0,
+                "psnr_db": null
+              }
+            }
+          }
+        ]
+      },
+      "slowdown": {
+        "schema_version": 1,
+        "baseline_run_id": "1788757192343-86830-1",
+        "candidate_run_id": "1788757192347-86830-2",
+        "baseline_implementation": "synthetic-copy-and-sleep",
+        "candidate_implementation": "synthetic-copy-and-sleep",
+        "baseline_source_identity": "project-authored-calibration-fixture-v1",
+        "candidate_source_identity": "project-authored-calibration-fixture-v1",
+        "verdict": "regressed",
+        "reason": "Whole coverage timing verdict: invalid/incomparable coverage blocks inference; any regression wins; uncertainty blocks improvement; remaining cases must be equivalent or improved.",
+        "method": "99.5% marginal Student t intervals on independent batch means; Bonferroni conservative 99% ratio bounds per case; no outlier removal; paired AB/BA acquisition",
+        "cases": [
+          {
+            "case_id": "gray-u8-prime-gradient-17x19",
+            "verdict": "regressed",
+            "reason": "relative interval [3.9471, 3.9605], practical threshold \u00b10.0500",
+            "baseline_mean_ns": 5059150.600000001,
+            "candidate_mean_ns": 25062021.685714286,
+            "relative_change": 3.953800285311586,
+            "relative_interval_99": [
+              3.9470923844296237,
+              3.9605245994746063
+            ],
+            "baseline_measurements": {
+              "mean_output_bytes": 323.0,
+              "output_bytes_range": [
+                323,
+                323
+              ],
+              "actual_bits_per_pixel": 8.0,
+              "peak_rss_bytes": null,
+              "rss_observed_batches": 0,
+              "correctness": {
+                "sample_count": 11305,
+                "exact": true,
+                "maximum_absolute_error": 0.0,
+                "mse": 0.0,
+                "peak": 255.0,
+                "psnr_db": null
+              }
+            },
+            "candidate_measurements": {
+              "mean_output_bytes": 323.0,
+              "output_bytes_range": [
+                323,
+                323
+              ],
+              "actual_bits_per_pixel": 8.0,
+              "peak_rss_bytes": null,
+              "rss_observed_batches": 0,
+              "correctness": {
+                "sample_count": 11305,
+                "exact": true,
+                "maximum_absolute_error": 0.0,
+                "mse": 0.0,
+                "peak": 255.0,
+                "psnr_db": null
+              }
+            }
+          }
+        ]
+      },
+      "incorrect": {
+        "schema_version": 1,
+        "baseline_run_id": "1788757193947-86866-1",
+        "candidate_run_id": "1788757193951-86866-2",
+        "baseline_implementation": "synthetic-copy-and-sleep",
+        "candidate_implementation": "synthetic-copy-and-sleep",
+        "baseline_source_identity": "project-authored-calibration-fixture-v1",
+        "candidate_source_identity": "project-authored-calibration-fixture-v1",
+        "verdict": "invalid",
+        "reason": "Whole coverage timing verdict: invalid/incomparable coverage blocks inference; any regression wins; uncertainty blocks improvement; remaining cases must be equivalent or improved.",
+        "method": "99.5% marginal Student t intervals on independent batch means; Bonferroni conservative 99% ratio bounds per case; no outlier removal; paired AB/BA acquisition",
+        "cases": [
+          {
+            "case_id": "gray-u8-prime-gradient-17x19",
+            "verdict": "invalid",
+            "reason": "coverage includes unsupported, unattainable-rate, failed, timed-out, crashed or invalid batches; no measurements discarded",
+            "baseline_mean_ns": null,
+            "candidate_mean_ns": null,
+            "relative_change": null,
+            "relative_interval_99": null,
+            "baseline_measurements": null,
+            "candidate_measurements": null
+          }
+        ]
+      }
+    },
+    "benchmark_sha256": "a8719b86962e7776d723b2f075b688951f693bf019f0dce34630a0112f6dc836",
+    "test_worker_sha256": "c650bec507c003bf357bc41e3300200c5f07b7b4eae769705abbc691802bed88",
+    "experiment_sha256": "cb449aae03fc9cd80465ca8316291c16eb3315b1394d1841211733d9492edea7",
+    "limitation": "Synthetic sleep validates acquisition/verdict paths; real codec repeatability is a separate observation."
+  }
+}
