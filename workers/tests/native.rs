@@ -75,7 +75,9 @@ fn invoke(binary: &str, dir: &std::path::Path, case: Case, diagnostic: bool) -> 
             .unwrap()
             .success()
     );
-    serde_json::from_slice(&fs::read(output).unwrap()).unwrap()
+    let response = serde_json::from_slice(&fs::read(output).unwrap()).unwrap();
+    emuella_benchmark::runner::validate_response(&request, &response).unwrap();
+    response
 }
 #[test]
 fn lossless_native_matrix_verifies_every_measured_output() {
@@ -149,13 +151,13 @@ fn diagnostics_execute_and_verify_actual_work_separately() {
     let response = invoke(env!("CARGO_BIN_EXE_emuella-worker"), temp.path(), c, true);
     assert_eq!(response.status, WorkerStatus::Ok, "{:?}", response.message);
     assert_eq!(
-        response.diagnostics.get("execution_output_verified"),
+        response.diagnostics["observations"].get("execution_output_verified"),
         Some(&serde_json::json!(true)),
         "{:?}",
         response.diagnostics
     );
     assert!(
-        response.diagnostics["execution_work"]["code_blocks_decoded"]
+        response.diagnostics["observations"]["execution_work"]["code_blocks_decoded"]
             .as_u64()
             .unwrap()
             > 0
@@ -213,4 +215,61 @@ fn a_later_corrupt_output_invalidates_the_whole_batch() {
     );
     assert!(result.unwrap_err().contains("lossless output differs"));
     assert_eq!(calls, 3);
+}
+
+#[test]
+fn openjpeg_reports_unsupported_diagnostics_for_encode_and_decode() {
+    let temp = tempfile::tempdir().unwrap();
+    let mut c = case(temp.path(), 1, 8);
+    let response = invoke(
+        env!("CARGO_BIN_EXE_openjpeg-worker"),
+        temp.path(),
+        c.clone(),
+        true,
+    );
+    assert_eq!(response.status, WorkerStatus::Ok);
+    assert!(
+        response.diagnostics["unsupported_reason"]
+            .as_str()
+            .unwrap()
+            .contains("OpenJPEG")
+    );
+    let bytes = fs::read(&c.input.path).unwrap();
+    let info = emuella_j2k::ImageInfo::new(
+        c.image.width,
+        c.image.height,
+        1,
+        emuella_j2k::SampleFormat::U8,
+        emuella_j2k::ColorModel::Grayscale,
+        emuella_j2k::ComponentLayout::Interleaved,
+    )
+    .unwrap();
+    let stream = emuella_j2k::encode(
+        emuella_j2k::ImageView::Interleaved {
+            info: &info,
+            samples: &bytes,
+            stride_bytes: c.image.width as usize,
+        },
+        &emuella_j2k::EncodeOptions {
+            format: emuella_j2k::OutputFormat::J2kCodestream,
+            decomposition_levels: 2,
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    c.reference = Some(c.input.clone());
+    c.input.path = temp.path().join("authored.j2k");
+    c.input.sha256 = format!("{:x}", Sha256::digest(&stream));
+    fs::write(&c.input.path, stream).unwrap();
+    c.operation = Operation::Decode;
+    c.settings.remove("decomposition_levels");
+    let response = invoke(env!("CARGO_BIN_EXE_openjpeg-worker"), temp.path(), c, true);
+    assert_eq!(response.status, WorkerStatus::Ok);
+    assert!(
+        response.diagnostics["unsupported_reason"]
+            .as_str()
+            .unwrap()
+            .contains("OpenJPEG")
+    );
+    assert_eq!(response.samples_ns.len(), 2);
 }

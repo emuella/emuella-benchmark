@@ -36,6 +36,10 @@ jobs:
           repository: emuella/emuella-testdata
           ref: b4b8c8f51cd36ace3764487d53b5423dc6baab50
           path: catalogue
+      - name: Trust the two checked-out repositories in the job container
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE/catalogue"
       - name: Worker checks
         run: |
           cargo fmt --manifest-path workers/Cargo.toml -- --check

@@ -409,6 +409,23 @@ pub fn validate_response(request: &WorkerRequest, response: &WorkerResponse) -> 
         }
         return Ok(());
     }
+    if request.diagnostic {
+        let observed = response
+            .diagnostics
+            .get("observations")
+            .and_then(serde_json::Value::as_object)
+            .is_some_and(|values| !values.is_empty());
+        let unsupported = response
+            .diagnostics
+            .get("unsupported_reason")
+            .and_then(serde_json::Value::as_str)
+            .is_some_and(|reason| !reason.trim().is_empty());
+        if !observed && !unsupported {
+            return Err(
+                "diagnostic success needs observations or an explicit unsupported_reason".into(),
+            );
+        }
+    }
     if response.samples_ns.len() != usize::from(request.protocol.samples_per_batch)
         || response.samples_ns.contains(&0)
         || response.output_bytes.is_none_or(|n| n == 0)

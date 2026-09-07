@@ -89,9 +89,10 @@ fn execute() -> Result<()> {
         response.correctness = Some(metrics::combine(&measured)?);
         response.output_bytes = Some(request.case.output.image.byte_count().unwrap() as u64);
         if request.diagnostic {
-            response
-                .diagnostics
-                .insert("synthetic_worker".into(), true.into());
+            response.diagnostics.insert(
+                "unsupported_reason".into(),
+                "synthetic worker has no instrumentation".into(),
+            );
         }
     }
     if args.iter().any(|x| x == "--bad-schema") {

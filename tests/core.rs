@@ -150,6 +150,12 @@ fn missing_coverage_and_semantic_mismatches_never_improve() {
     );
     let mut candidate = baseline.clone();
     candidate.diagnostic = true;
+    for batch in &mut candidate.batches {
+        batch.response.as_mut().unwrap().diagnostics.insert(
+            "unsupported_reason".into(),
+            "synthetic worker has no instrumentation".into(),
+        );
+    }
     assert_eq!(
         compare(&baseline, &candidate).verdict,
         Verdict::NotComparable
@@ -329,6 +335,41 @@ fn timeout_stops_codec_descendants_without_an_external_kill_program() {
         if let Ok(stat) = stat {
             // A killed descendant may briefly await its system reaper as a zombie.
             assert_eq!(stat.split_whitespace().nth(2), Some("Z"));
+        }
+    }
+}
+
+#[test]
+fn diagnostic_success_requires_observations_or_explicit_unsupported_reason() {
+    let (_root, run) = fixture_run();
+    for operation in [Operation::Encode, Operation::Decode] {
+        let mut response = run.batches[0].response.as_ref().unwrap().clone();
+        response.applied_case.operation = operation;
+        if response.applied_case.operation == Operation::Decode {
+            response.applied_case.reference = Some(response.applied_case.input.clone());
+        }
+        let request = WorkerRequest {
+            schema_version: 1,
+            request_id: response.request_id.clone(),
+            case: response.applied_case.clone(),
+            protocol: run.experiment.protocol.clone(),
+            diagnostic: true,
+        };
+        for diagnostics in [
+            serde_json::json!({}),
+            serde_json::json!({"encode_profile": {"coding": "classic"}}),
+            serde_json::json!({"observations": {}, "unsupported_reason": "  "}),
+            serde_json::json!({"observations": null, "unsupported_reason": 42}),
+        ] {
+            response.diagnostics = serde_json::from_value(diagnostics).unwrap();
+            assert!(runner::validate_response(&request, &response).is_err());
+        }
+        for diagnostics in [
+            serde_json::json!({"observations": {"execution_ns": 10}}),
+            serde_json::json!({"unsupported_reason": "codec instrumentation is unavailable"}),
+        ] {
+            response.diagnostics = serde_json::from_value(diagnostics).unwrap();
+            assert!(runner::validate_response(&request, &response).is_ok());
         }
     }
 }

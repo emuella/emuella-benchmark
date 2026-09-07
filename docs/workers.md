@@ -99,7 +99,9 @@ OpenJPH supports exactly one requested thread because this CLI exposes no thread
 budget control. Its worker requires an existing explicitly authorised derivative
 store through `EMUELLA_BENCHMARK_DERIVATIVE_STORE`. Set this only when the input's
 existing rights permit these PNM/codestream derivatives in that store. The worker
-creates a private batch directory there and removes that directory afterwards.
+exclusively creates a randomly named private batch directory there and removes
+only that owned directory afterwards. An existing path is never adopted for
+cleanup; a name collision cannot delete its contents.
 Project-authored inputs need no external corpus; protected inputs require the
 applicable existing authority. No payload or external program output enters the
 JSON response or public evidence.
@@ -116,9 +118,14 @@ all measured outputs contribute to aggregate correctness. A single invalid
 output invalidates the batch rather than disappearing from its samples.
 
 OpenJPH timing includes process launch, the codec application's IO and output
-reading. Encode also includes raw-to-PNM packing/writing; verification expansion
-is outside the encoder timer. Decode stages the warm codestream before sampling
-and reads/validates each generated PNM during the timed journey. This boundary is
+reading. Every compression or expansion removes its previous output before
+launch and requires a newly created regular output file, including verification
+expansion. This prevents an exit-zero command that omits output from reusing a
+warmup result. Output cleanup and freshness checks are included in the relevant
+application operation timer. Encode also includes raw-to-PNM packing/writing;
+verification expansion and its cleanup are outside the encoder timer. Decode
+stages the warm codestream before sampling and reads/validates each generated
+PNM during the timed journey. This boundary is
 not comparable with native codec-operation samples.
 
 Native workers report observed Linux `/proc/self/status` `VmHWM` in bytes. This
@@ -128,12 +135,18 @@ because the wrapper's peak would not measure its codec child.
 
 Diagnostic Emuella requests perform a separate prepared Part 1 decode after the
 headline samples, using detailed profiling with actual Tier-1 work counters and
-the same thread budget. Results include plan memory, planned parallelism,
-preparation measurements, executed code blocks, coefficients/codeword bytes,
+the same thread budget. `diagnostics.observations` contains plan memory, planned
+parallelism, preparation measurements, executed code blocks, coefficients/codeword bytes,
 Tier-1 work counters and executed phase workers. Diagnostic output is verified
-against the headline native decode. Unsupported diagnostic routes have explicit
-diagnostic reasons while retaining the independently valid headline measurements.
-Diagnostic data never replaces or subdivides the headline sample vector.
+against the headline native decode. Unsupported diagnostic routes include
+`diagnostics.unsupported_reason` while retaining the independently valid headline
+measurements. If preparation succeeds but diagnostic execution is unsupported,
+that reason remains alongside the preparation observations. OpenJPEG and OpenJPH
+have no diagnostic instrumentation; both encode and decode diagnostic requests
+return an explicit `diagnostics.unsupported_reason` with their separately
+verified headline results. Fixed encoder profile facts never count as diagnostic
+observations. Diagnostic data never replaces or subdivides the headline sample
+vector.
 
 ## Verification
 
@@ -151,3 +164,9 @@ signal MCT at zero, one and two decomposition levels.
 The repository's qualification journey additionally exercises common codestream
 decode, independently generated partial references, lossy points and OpenJPH
 application journeys. Unsupported profiles remain visible in those results.
+
+OpenJPH fault-injection tests preserve an existing scratch sentinel and simulate
+successful commands that stop producing output after warmup, separately for
+compression, measured expansion and verification expansion. Diagnostic encode
+and decode responses from both external adapters pass the common response
+validator with their explicit unsupported capability disposition.

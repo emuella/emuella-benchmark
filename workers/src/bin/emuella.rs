@@ -313,11 +313,17 @@ fn run(r: &WorkerRequest) -> Result<WorkerResponse> {
             }
             Err(e) => {
                 result.diagnostics.insert(
-                    "prepared_diagnostics_unsupported".into(),
+                    "unsupported_reason".into(),
                     serde_json::json!(format!("{e:?}")),
                 );
             }
         }
+    }
+    if r.diagnostic && !result.diagnostics.contains_key("unsupported_reason") {
+        let observations = std::mem::take(&mut result.diagnostics);
+        result
+            .diagnostics
+            .insert("observations".into(), serde_json::json!(observations));
     }
     let mct = if coding == "classic" && c.image.components == 3 {
         if c.output.lossless {

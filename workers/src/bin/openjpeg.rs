@@ -183,6 +183,7 @@ fn run(r: &WorkerRequest) -> Result<WorkerResponse> {
         )
     }?;
     record_encode_profile(&mut result, "classic", levels, "none");
+    record_unsupported_diagnostics(&mut result, r, "OpenJPEG");
     Ok(result)
 }
 fn main() {

@@ -69,7 +69,12 @@ call timings. Worker-process startup itself is always outside sample timing.
 Only fresh processes per batch and warm input are admitted in v1. Reused codec
 contexts and cold-cache protocols require a new explicitly admitted contract.
 Diagnostic requests must return diagnostic observations or explicitly report an
-unsupported capability. Diagnostic runs never participate in timing inference.
+unsupported capability. On a successful diagnostic response, `diagnostics`
+must contain either a nonempty `observations` object or a nonempty
+`unsupported_reason` string. Fixed facts such as `encode_profile` do not satisfy
+this requirement. Adapters may retain partial observations and explain missing
+instrumentation within that object. Diagnostic runs never participate in timing
+inference.
 
 Every measured output is checked outside timing. Correctness aggregates all
 measured outputs: sample_count is output width × height × components × measured

@@ -206,3 +206,19 @@ pub fn record_encode_profile(response: &mut WorkerResponse, coding: &str, levels
         );
     }
 }
+
+/// An unsupported instrumented request must not silently become an ordinary run.
+pub fn record_unsupported_diagnostics(
+    response: &mut WorkerResponse,
+    request: &WorkerRequest,
+    implementation: &str,
+) {
+    if request.diagnostic {
+        response.diagnostics.insert(
+            "unsupported_reason".into(),
+            serde_json::json!(format!(
+                "{implementation} worker does not expose codec diagnostic instrumentation"
+            )),
+        );
+    }
+}
