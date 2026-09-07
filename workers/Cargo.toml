@@ -1,0 +1,41 @@
+[package]
+name = "emuella-benchmark-workers"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[features]
+default = ["emuella", "openjpeg"]
+emuella = ["dep:emuella-j2k", "dep:emuella-j2k-codestream", "dep:rayon"]
+openjpeg = []
+
+[dependencies]
+emuella-benchmark = { path = ".." }
+emuella-j2k = { git = "https://github.com/emuella/emuella-j2k", rev = "aa7090c23cce62437cefe5b441e971b1bd4320b5", features = ["parallel"], optional = true }
+emuella-j2k-codestream = { git = "https://github.com/emuella/emuella-j2k", rev = "aa7090c23cce62437cefe5b441e971b1bd4320b5", features = ["parallel"], optional = true }
+rayon = { version = "1", optional = true }
+serde_json = "1"
+sha2 = "0.10"
+
+[build-dependencies]
+cc = "1"
+pkg-config = "0.3"
+
+[dev-dependencies]
+tempfile = "3"
+
+[[bin]]
+name = "emuella-worker"
+path = "src/bin/emuella.rs"
+required-features = ["emuella"]
+
+[[bin]]
+name = "openjpeg-worker"
+path = "src/bin/openjpeg.rs"
+required-features = ["openjpeg"]
+
+[[bin]]
+name = "openjph-worker"
+path = "src/bin/openjph.rs"
