@@ -1,6 +1,7 @@
 //! Versioned experiments, isolated workers and conservative codec comparisons.
 pub mod compare;
 pub mod contract;
+pub mod journey;
 pub mod metrics;
 pub mod report;
 pub mod runner;
