@@ -159,6 +159,11 @@ fn static_html_escapes_worker_identity() {
     let report = series::extract(&[run]).unwrap();
     let html = series::html(&report);
     assert!(html.contains("<svg"));
+    assert!(html.contains("Actual bpp versus MSE"));
+    assert!(!html.contains("Actual bpp versus mean batch time"));
+    assert!(html.contains("case <code>fixture</code>"));
+    assert!(html.contains("<details>"));
+    assert!(html.contains(r#"width="760""#));
     assert!(!html.contains("<script>"));
     assert!(!html.contains("<img src"));
     assert!(html.contains("&lt;script&gt;"));

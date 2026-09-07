@@ -304,3 +304,31 @@ fn response_validation_rejects_invalid_request_before_arithmetic() {
     request.schema_version = 2;
     assert!(runner::validate_response(&request, &response).is_err());
 }
+
+#[cfg(target_os = "linux")]
+#[test]
+fn timeout_stops_codec_descendants_without_an_external_kill_program() {
+    let root = tempfile::tempdir().unwrap();
+    let script = root.path().join("descendant.py");
+    fs::write(&script, "import pathlib, subprocess, time\nchild = subprocess.Popen(['sleep', '60'])\nwith pathlib.Path(__file__).with_suffix('.pids').open('a') as output:\n output.write(str(child.pid) + '\\n')\ntime.sleep(60)\n").unwrap();
+    let definition = WorkerDefinition {
+        executable: "/usr/bin/python3".into(),
+        args: vec![script.to_string_lossy().into_owned()],
+        implementation: "synthetic-descendant".into(),
+        source_identity: "project-authored-process-cleanup-probe".into(),
+        artefacts: vec![script.clone()],
+    };
+    let mut exp = experiment(root.path());
+    exp.protocol.timeout_ms = 500;
+    let run = runner::run(&exp, &definition, &root.path().join("run"), false).unwrap();
+    assert!(run.batches.iter().all(|b| b.status == BatchStatus::Timeout));
+    let ids = fs::read_to_string(script.with_extension("pids")).unwrap();
+    assert!(!ids.trim().is_empty());
+    for pid in ids.lines() {
+        let stat = fs::read_to_string(format!("/proc/{pid}/stat"));
+        if let Ok(stat) = stat {
+            // A killed descendant may briefly await its system reaper as a zombie.
+            assert_eq!(stat.split_whitespace().nth(2), Some("Z"));
+        }
+    }
+}

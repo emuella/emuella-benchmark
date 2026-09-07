@@ -33,6 +33,9 @@ group.
 
 Progress groups additionally keep the complete setting map and implementation.
 They list source identity against measured time only for that exact grouped
-workload. Neither JSON nor HTML interpolates rate/distortion curves, matches
-quality points, ranks implementations across a population, or makes unlike
-machines or settings comparable.
+workload. The rate/distortion SVG plots actual bpp against MSE; timing remains
+in the factual table and the separate progress SVG. Exact outputs retain MSE
+zero, and their null PSNR remains visible in the table. Neither JSON nor HTML
+interpolates rate/distortion curves, matches quality points, ranks
+implementations across a population, or makes unlike machines or settings
+comparable.

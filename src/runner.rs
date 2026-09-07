@@ -314,11 +314,12 @@ fn execute_batch(run: &Run, case: &Case, round: u16, index: u64, output: &Path) 
                 if started.elapsed() >= Duration::from_millis(request.protocol.timeout_ms) {
                     #[cfg(unix)]
                     {
-                        let _ = Command::new("kill")
-                            .args(["-KILL", "--", &format!("-{}", child.id())])
-                            .stdout(Stdio::null())
-                            .stderr(Stdio::null())
-                            .status();
+                        // SAFETY: kill takes integer process identifiers only. The
+                        // child owns the process group created above; a negative
+                        // identifier signals that group, including codec children.
+                        unsafe {
+                            libc::kill(-(child.id() as i32), libc::SIGKILL);
+                        }
                     }
                     let _ = child.kill();
                     let _ = child.wait();

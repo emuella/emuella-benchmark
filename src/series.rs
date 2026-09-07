@@ -338,6 +338,14 @@ pub fn extract(runs: &[Run]) -> Result<Series> {
     })
 }
 
+fn tick(value: f64) -> String {
+    if value != 0.0 && (value.abs() >= 10_000.0 || value.abs() < 0.01) {
+        format!("{value:.3e}")
+    } else {
+        format!("{value:.4}")
+    }
+}
+
 fn svg_scatter(title: &str, x_label: &str, y_label: &str, points: &[(f64, f64, String)]) -> String {
     if points.is_empty() {
         return "<p>No completed points with these coordinates; inspect retained coverage below.</p>".into();
@@ -360,23 +368,50 @@ fn svg_scatter(title: &str, x_label: &str, y_label: &str, points: &[(f64, f64, S
         }
     };
     let mut out = format!(
-        r##"<figure><figcaption>{}</figcaption><svg viewBox="0 0 760 360" role="img" aria-label="{}"><rect width="760" height="360" fill="white"/><path d="M70 20V300H740" fill="none" stroke="#47616d"/><text x="400" y="345" text-anchor="middle">{}</text><text x="18" y="160" transform="rotate(-90 18 160)" text-anchor="middle">{}</text><text x="70" y="320">{:.4}</text><text x="680" y="320">{:.4}</text><text x="22" y="292">{:.2}</text><text x="22" y="30">{:.2}</text>"##,
+        r##"<figure><figcaption>{}</figcaption><svg width="760" height="360" viewBox="0 0 760 360" role="img" aria-label="{}"><rect width="760" height="360" fill="white"/><path d="M120 20V280H740" fill="none" stroke="#47616d"/><g font-size="10" fill="#314751"><text x="430" y="332" text-anchor="middle">{}</text><text x="18" y="150" transform="rotate(-90 18 150)" text-anchor="middle">{}</text><text x="120" y="302">{}</text><text x="740" y="302" text-anchor="end">{}</text><text x="108" y="278" text-anchor="end">{}</text><text x="108" y="28" text-anchor="end">{}</text></g>"##,
         crate::report::escape(title),
         crate::report::escape(title),
         crate::report::escape(x_label),
         crate::report::escape(y_label),
-        min_x,
-        max_x,
-        min_y,
-        max_y
+        tick(min_x),
+        tick(max_x),
+        tick(min_y),
+        tick(max_y)
     );
     for (x, y, label) in points {
-        let cx = scale(*x, min_x, max_x, 70.0, 670.0);
-        let cy = scale(*y, min_y, max_y, 300.0, -280.0);
+        let cx = scale(*x, min_x, max_x, 120.0, 620.0);
+        let cy = scale(*y, min_y, max_y, 280.0, -260.0);
         out.push_str(&format!(r##"<circle cx="{cx:.2}" cy="{cy:.2}" r="5" fill="#007f86"><title>{}</title></circle>"##, crate::report::escape(label)));
     }
     out.push_str("</svg></figure>");
     out
+}
+
+fn representative_workload<'a>(
+    points: &'a [MeasurementPoint],
+    coverage: &'a [CoveragePoint],
+) -> Option<&'a WorkloadIdentity> {
+    points
+        .first()
+        .map(|point| &point.workload)
+        .or_else(|| coverage.first().map(|item| &item.workload))
+}
+
+fn group_heading(kind: &str, points: &[MeasurementPoint], coverage: &[CoveragePoint]) -> String {
+    match representative_workload(points, coverage) {
+        Some(workload) => format!(
+            "{}: case <code>{}</code> · output {}×{}×{} · {} thread{} · {:?} boundary",
+            crate::report::escape(kind),
+            crate::report::escape(&workload.case_id),
+            workload.output.image.width,
+            workload.output.image.height,
+            workload.output.image.components,
+            workload.threads,
+            if workload.threads == 1 { "" } else { "s" },
+            workload.protocol.boundary,
+        ),
+        None => crate::report::escape(kind),
+    }
 }
 
 fn point_table(points: &[MeasurementPoint]) -> String {
@@ -426,10 +461,10 @@ fn coverage_table(coverage: &[CoveragePoint]) -> String {
 /// Render a standalone, network-free factual series report with SVG scatterplots.
 pub fn html(series: &Series) -> String {
     let mut out = format!(
-        r##"<!doctype html><html lang="en-AU"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Codec benchmark series</title><link rel="icon" href="data:,"><style>body{{font:16px system-ui;max-width:1300px;margin:3rem auto;padding:0 1rem;color:#182b35;background:#f6f8f9}}table{{border-collapse:collapse;width:100%;background:white;margin:1rem 0}}td,th{{padding:.65rem;text-align:left;border-bottom:1px solid #ccd8df;vertical-align:top}}code{{overflow-wrap:anywhere}}svg{{max-width:100%;height:auto;background:white}}section{{margin:3rem 0}}h1{{font-size:2rem}}</style><h1>Codec benchmark factual series</h1><p>{}</p><p>Scatterplots show observed completed points only. They do not interpolate curves, match quality, rank populations or make claims across unlike machines or settings.</p>"##,
+        r##"<!doctype html><html lang="en-AU"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Codec benchmark series</title><link rel="icon" href="data:,"><style>body{{font:16px system-ui;max-width:1300px;margin:3rem auto;padding:0 1rem;color:#182b35;background:#f6f8f9}}table{{border-collapse:collapse;width:100%;background:white;margin:1rem 0}}td,th{{padding:.65rem;text-align:left;border-bottom:1px solid #ccd8df;vertical-align:top}}code{{overflow-wrap:anywhere}}svg{{display:block;width:100%;max-width:760px;height:auto;background:white}}section{{margin:3rem 0}}h1{{font-size:2rem}}details{{margin:1rem 0}}summary{{cursor:pointer;font-weight:600}}</style><h1>Codec benchmark factual series</h1><p>{}</p><p>Scatterplots show observed completed points only. They do not interpolate curves, match quality, rank populations or make claims across unlike machines or settings.</p>"##,
         crate::report::escape(&series.method)
     );
-    for (index, group) in series.rate_distortion.iter().enumerate() {
+    for group in &series.rate_distortion {
         let points = group
             .points
             .iter()
@@ -437,10 +472,11 @@ pub fn html(series: &Series) -> String {
                 point.actual_bits_per_pixel.map(|bpp| {
                     (
                         bpp,
-                        point.mean_batch_ns,
+                        point.mse,
                         format!(
-                            "run {}; source {}; PSNR {}; MSE {:.8}",
+                            "run {}; implementation {}; source {}; PSNR {}; MSE {:.8}",
                             point.run.run_id,
+                            point.run.implementation,
                             point.run.source_identity,
                             point.psnr_db.map_or_else(
                                 || "infinite".into(),
@@ -452,9 +488,9 @@ pub fn html(series: &Series) -> String {
                 })
             })
             .collect::<Vec<_>>();
-        out.push_str(&format!("<section><h2>Rate/distortion group {}</h2><p>Grouping retains input, output semantics, thread count, protocol, environment, machine, harness and every setting except the explicit rate controls <code>target_bpp</code>, <code>compression_ratio</code> and <code>qstep</code>.</p>{}<h3>Points</h3>{}<h3>Retained coverage</h3>{}</section>", index + 1, svg_scatter("Actual bpp versus mean batch time", "actual bpp", "mean batch time (ns)", &points), point_table(&group.points), coverage_table(&group.coverage)));
+        out.push_str(&format!("<section><h2>{}</h2><p>Grouping retains input, output semantics, thread count, protocol, environment, machine, harness and every setting except the explicit rate controls <code>target_bpp</code>, <code>compression_ratio</code> and <code>qstep</code>.</p>{}<details><summary>All factual points and retained coverage ({} points; {} records)</summary><h3>Points</h3>{}<h3>Retained coverage</h3>{}</details></section>", group_heading("Rate/distortion", &group.points, &group.coverage), svg_scatter("Actual bpp versus MSE", "actual bpp", "MSE", &points), group.points.len(), group.coverage.len(), point_table(&group.points), coverage_table(&group.coverage)));
     }
-    for (index, group) in series.progress.iter().enumerate() {
+    for group in &series.progress {
         let points = group
             .points
             .iter()
@@ -470,7 +506,7 @@ pub fn html(series: &Series) -> String {
                 )
             })
             .collect::<Vec<_>>();
-        out.push_str(&format!("<section><h2>Progress group {}</h2><p>Source revision is listed against observed time for this exact grouped workload. It does not make unlike machines, configurations or implementations comparable.</p>{}<h3>Points</h3>{}<h3>Retained coverage</h3>{}</section>", index + 1, svg_scatter("Source revision/run order versus mean batch time", "source revision/run order", "mean batch time (ns)", &points), point_table(&group.points), coverage_table(&group.coverage)));
+        out.push_str(&format!("<section><h2>{}</h2><p>Source revision is listed against observed time for this exact grouped workload. It does not make unlike machines, configurations or implementations comparable.</p>{}<details><summary>All factual points and retained coverage ({} points; {} records)</summary><h3>Points</h3>{}<h3>Retained coverage</h3>{}</details></section>", group_heading("Progress", &group.points, &group.coverage), svg_scatter("Source revision/run order versus mean batch time", "source revision/run order", "mean batch time (ns)", &points), group.points.len(), group.coverage.len(), point_table(&group.points), coverage_table(&group.coverage)));
     }
     out.push_str("</html>");
     out
