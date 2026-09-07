@@ -23,13 +23,14 @@ jobs:
         run: cargo check --locked --all-targets
   workers:
     runs-on: ubuntu-24.04
+    container: debian:trixie
     steps:
+      - name: Install independent codec tools and build prerequisites
+        run: apt-get update && apt-get install -y libopenjp2-7-dev libopenjp2-tools openjph-tools pkg-config build-essential git ca-certificates python3 curl
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
-      - name: Install independent codec tools
-        run: sudo apt-get update && sudo apt-get install -y libopenjp2-7-dev libopenjp2-tools openjph-tools pkg-config
       - uses: actions/checkout@v4
         with:
           repository: emuella/emuella-testdata

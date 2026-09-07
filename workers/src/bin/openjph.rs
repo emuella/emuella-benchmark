@@ -16,7 +16,7 @@ fn pnm(raw: &[u8], i: &ImageSpec) -> Result<Vec<u8>> {
     )
     .into_bytes();
     if i.precision == 16 {
-        for x in raw.chunks_exact(2) {
+        for x in raw.as_chunks::<2>().0.iter() {
             bytes.extend_from_slice(&[x[1], x[0]]);
         }
     } else {

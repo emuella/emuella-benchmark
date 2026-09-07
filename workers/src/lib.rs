@@ -21,7 +21,9 @@ pub fn raw(bytes: &[u8], image: &ImageSpec) -> Result<Vec<i32>> {
         bytes.iter().map(|x| i32::from(*x)).collect()
     } else {
         bytes
-            .chunks_exact(2)
+            .as_chunks::<2>()
+            .0
+            .iter()
             .map(|x| i32::from(u16::from_le_bytes([x[0], x[1]])))
             .collect()
     })

@@ -24,7 +24,9 @@ pub fn read_raw(path: &Path, image: &ImageSpec) -> Result<Vec<i32>> {
             .collect::<Vec<_>>()
     } else {
         bytes
-            .chunks_exact(2)
+            .as_chunks::<2>()
+            .0
+            .iter()
             .map(|x| {
                 if image.signed {
                     i32::from(i16::from_le_bytes([x[0], x[1]]))
