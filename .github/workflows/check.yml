@@ -1,0 +1,52 @@
+name: Check
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Canonical verification
+        run: sh scripts/check.sh
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.88.0
+      - name: Minimum supported Rust
+        run: cargo check --locked --all-targets
+  workers:
+    runs-on: ubuntu-24.04
+    container: debian:trixie
+    steps:
+      - name: Install independent codec tools and build prerequisites
+        run: apt-get update && apt-get install -y libopenjp2-7-dev libopenjp2-tools openjph-tools pkg-config build-essential git ca-certificates python3 curl
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: actions/checkout@v4
+        with:
+          repository: emuella/emuella-testdata
+          ref: b4b8c8f51cd36ace3764487d53b5423dc6baab50
+          path: catalogue
+      - name: Trust the two checked-out repositories in the job container
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE/catalogue"
+      - name: Worker checks
+        run: |
+          cargo fmt --manifest-path workers/Cargo.toml -- --check
+          cargo clippy --manifest-path workers/Cargo.toml --all-targets -- -D warnings
+          cargo test --manifest-path workers/Cargo.toml --all-targets
+      - name: Build identified workers and exercise real codecs
+        run: |
+          python3 scripts/build-workers.py --output "$RUNNER_TEMP/benchmark-workers"
+          cargo build --release --bins
+          python3 scripts/qualify.py --benchmark "$PWD/target/release/emuella-benchmark" --workers "$RUNNER_TEMP/benchmark-workers" --catalogue "$PWD/catalogue" --output "$RUNNER_TEMP/benchmark-qualification" --quick
