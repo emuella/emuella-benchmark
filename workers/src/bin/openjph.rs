@@ -67,7 +67,7 @@ fn read_pnm(path: &Path, i: &ImageSpec) -> Result<Vec<i32>> {
     }
     let mut data = bytes.get(offset..).ok_or("truncated PNM")?.to_vec();
     if i.precision == 16 {
-        for x in data.chunks_exact_mut(2) {
+        for x in data.as_chunks_mut::<2>().0 {
             x.swap(0, 1);
         }
     }
