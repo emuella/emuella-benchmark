@@ -176,11 +176,12 @@ pub fn assess(trace: &Trace, threshold_bytes: Option<&[u8]>) -> Result<Assessmen
             nonnegative(event.at_ms)
                 && event.at_ms >= previous
                 && !event.kind.trim().is_empty()
+                && !event.consumer.trim().is_empty()
                 && !event.detail.trim().is_empty(),
-            "events must be ordered and have a kind and evidence detail",
+            "events must be ordered and have a kind, consumer and evidence detail",
         )?;
         ensure(
-            event.source.is_empty() || trace.identity.inputs.contains_key(&event.source),
+            trace.identity.inputs.contains_key(&event.source),
             "event references an unknown source identity",
         )?;
         previous = event.at_ms;

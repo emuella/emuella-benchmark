@@ -86,6 +86,10 @@ fn rejects_changed_thresholds_posthoc_freeze_and_bad_event_order() {
         ("/identity/revisions/application", json!("short")),
         ("/events/0/at_ms", json!(-1)),
         ("/events/0/source", json!("unknown")),
+        ("/events/0/source", json!("")),
+        ("/events/0/source", json!(" ")),
+        ("/events/0/consumer", json!("")),
+        ("/events/0/consumer", json!(" \t")),
     ] {
         let mut value = original.clone();
         *value.pointer_mut(pointer).unwrap() = replacement;

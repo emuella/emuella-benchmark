@@ -33,7 +33,10 @@ must instead carry a reason. Keep these quantities separate in application trace
 | First useful, detail, revisit and visible-thumbnail latency | Named demand to named completion |
 
 Events carry monotonic elapsed milliseconds, kind, consumer, source identity,
-generation and evidence detail. Keep demand, cancellation acknowledgement, stale
+generation and evidence detail. Every event needs a non-blank consumer and a
+declared input identity. Trace-level environment/cache fields describe global
+state; unattributed global events cannot substitute for consumer coverage.
+Keep demand, cancellation acknowledgement, stale
 completion rejection, transfer interruption, retry, reconnect, cache eviction and
 presentation distinct. A label such as `abort-image-switch` is not evidence that
 a transfer was aborted: record the actual acknowledgement and counters. Application
