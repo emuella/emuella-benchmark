@@ -38,6 +38,7 @@ and cannot be silently consumed as completed runs. No pixels appear in JSON or
 HTML reports. Worker logs may contain adapter diagnostics: workers must not print
 pixel payloads or secrets.
 
+[Composed journeys](docs/composed-journeys.md) separately admit persistent application/cache/GPU traces.
 [Protocol](docs/protocol.md) defines the JSON fields and measurement contract.
 [Comparison methodology](docs/comparisons.md) explains uncertainty and verdicts.
 [Multi-run series](docs/series.md) describes factual rate/distortion and progress extracts.

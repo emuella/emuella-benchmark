@@ -10,11 +10,18 @@ fn load_run(path: &str) -> Result<Run> {
     })
 }
 fn usage() -> &'static str {
-    "Usage:\n  emuella-benchmark run EXPERIMENT.json WORKER.json NEW_OUTPUT_DIR\n  emuella-benchmark pair EXPERIMENT.json BASELINE_WORKER.json CANDIDATE_WORKER.json NEW_OUTPUT_DIR\n  emuella-benchmark compare BASELINE_RUN CANDIDATE_RUN [--json]\n  emuella-benchmark report BASELINE_RUN CANDIDATE_RUN NEW_REPORT.html\n  emuella-benchmark series NEW_REPORT.html RUN...\n  emuella-benchmark points RUN... NEW_POINTS.json\n  emuella-benchmark diagnose EXPERIMENT.json WORKER.json CASE_ID NEW_OUTPUT_DIR\n\nWorker executable, args and artefacts are declared in WORKER.json. Runs never overwrite existing output directories. Compare exit codes: 0 improved/equivalent; 2 regression; 3 inconclusive; 4 invalid/not-comparable. Errors: 1."
+    "Usage:\n  emuella-benchmark journey TRACE.json [THRESHOLDS.json]\n  emuella-benchmark run EXPERIMENT.json WORKER.json NEW_OUTPUT_DIR\n  emuella-benchmark pair EXPERIMENT.json BASELINE_WORKER.json CANDIDATE_WORKER.json NEW_OUTPUT_DIR\n  emuella-benchmark compare BASELINE_RUN CANDIDATE_RUN [--json]\n  emuella-benchmark report BASELINE_RUN CANDIDATE_RUN NEW_REPORT.html\n  emuella-benchmark series NEW_REPORT.html RUN...\n  emuella-benchmark points RUN... NEW_POINTS.json\n  emuella-benchmark diagnose EXPERIMENT.json WORKER.json CASE_ID NEW_OUTPUT_DIR\n\nWorker executable, args and artefacts are declared in WORKER.json. Runs never overwrite existing output directories. Compare exit codes: 0 improved/equivalent; 2 regression; 3 inconclusive; 4 invalid/not-comparable. Errors: 1."
 }
 fn execute() -> Result<i32> {
     let args: Vec<_> = std::env::args().skip(1).collect();
     match args.first().map(String::as_str) {
+        Some("journey") if args.len() == 2 || args.len() == 3 => {
+            let trace = read_json(Path::new(&args[1]))?;
+            let thresholds = args.get(2).map(std::fs::read).transpose()?;
+            let assessment = emuella_benchmark::journey::assess(&trace, thresholds.as_deref())?;
+            println!("{}", serde_json::to_string_pretty(&assessment)?);
+            Ok(if assessment.qualified { 0 } else { 4 })
+        }
         Some("run") if args.len() == 4 => {
             let run = runner::run(
                 &read_json(Path::new(&args[1]))?,
