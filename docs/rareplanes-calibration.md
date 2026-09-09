@@ -101,3 +101,40 @@ If a full-size case reaches an existing codec resource or admission guard, the
 calibration retains that unsupported observation. A crop is not substituted.
 Changing the relevant scalable encode profile belongs in a separate codec-owned
 workstream.
+
+## Independent verification of retained Emuella streams
+
+The opt-in companion journey retains one deterministic public Emuella encode
+per admitted asset and verifies each full image using both native decode workers.
+It shares the timed worker's public encode path and classic lossless single-tile
+D2 profile, including reversible colour transform for RGB. It leaves the
+five-round 120-batch calibration protocol and its OpenJPEG common streams intact.
+Both MS16 exclusions and the earlier calibration record remain unchanged.
+
+```sh
+python3 scripts/rareplanes-verify-emuella.py \
+  --benchmark "$RAREPLANES_BUILD/harness-target/release/emuella-benchmark" \
+  --workers "$RAREPLANES_BUILD/workers" \
+  --build-provenance "$RAREPLANES_STORE/worker-build-provenance.json" \
+  --prepared "$RAREPLANES_STORE/prepared/prepared.json" \
+  --store "$RAREPLANES_STORE" \
+  --output "$RAREPLANES_STORE/emuella-verification-COMMITTED-BENCHMARK-REVISION"
+```
+
+Use a clean committed checkout and workers built from the intended final codec
+revision. The new output must be a direct child of the authorised persistent
+store. Each export and each verification batch has a 120-second limit. Export
+requests, responses, logs, codestreams, decode runs and the summary remain there;
+no protected payload belongs in Git or build scratch. The worker's additive
+`--export-lossless REQUEST RESPONSE NEW_CODESTREAM` entry point uses one encode,
+no warmup and a new output file; ordinary worker invocations are unaffected.
+
+The separate summary binds prepared and source identities, retained stream
+hashes, applied encode profiles, build provenance, worker executable identities
+and raw decode run hashes. It requires all six full-reference decodes to be exact
+for each decoder and checks input, executable, build and orchestration identities
+again on completion. An export failure retains its request and available log
+without claiming completed verification; a decode failure is retained in the
+summary and exits 4. Setup/export failures exit 1. Time and process peak RSS in
+this journey include its own verification context and are separate from both the
+headline matrix and codec-owned additional working-allocation measurements.
