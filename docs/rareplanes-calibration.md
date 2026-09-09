@@ -144,9 +144,10 @@ The separate summary binds prepared and source identities, retained stream
 hashes, applied encode profiles, build provenance, worker executable identities
 and raw decode run hashes. It requires all eight full-reference decodes to be exact
 for each decoder and checks input, executable, build and orchestration identities
-again on completion. An export failure retains its request and available log
-without claiming completed verification; a decode failure is retained in the
-summary and exits 4. Setup/export failures exit 1. Time and process peak RSS in
+again on completion. An export failure retains its request, available response and log
+without claiming completed verification; remaining exports and successful-stream
+decodes continue. Export or decode failures are retained in the summary and
+exit 4. Setup failures exit 1. Time and process peak RSS in
 this journey include its own verification context and are separate from both the
 headline matrix and codec-owned additional working-allocation measurements.
 
@@ -177,3 +178,31 @@ The [native eight-band candidate report](native-msi.md) records the subsequent
 160 exact matrix batches, 80 separate retained-stream decodes, independent MSI
 header observations and separate authored allocation probes. It preserves the
 historical records above and identifies the exact candidates measured.
+
+## Explicit expanded selections
+
+Both runners accept `--selection /path/to/testdata-source-lock.json` alongside
+`--prepared`. The optional version 1 source lock is owned by testdata. Its
+nonempty `bundles` list declares unique safe IDs and `split` (`train` or `test`,
+with `train` the historical default); its `assets` list locks source paths,
+positive byte counts and SHA-256 digests. Admission requires all three source
+TIFFs per selected bundle and all four prepared products per bundle. PAN16 binds
+to PAN, RGB8 to PS-RGB, and both MS16 and RGB16 to MS. Prepared source paths,
+digests and `provenance.source_lock.sha256` must match that selection. Metadata
+and licence source locks may accompany the TIFF matrix.
+
+Without `--selection`, admission preserves the original strict two-bundle,
+eight-product matrix. Expanded selections keep the same five-round, four-journey
+protocol: N bundles produce 80N timed batches and, when every export succeeds,
+40N separate retained-stream verification batches. Both summaries record
+`selection_sha256` (null for historical default admission) and recheck its bytes
+on completion. Selection changes prevent a successful completed disposition.
+
+The separate verification runner retains individual unsupported or failed
+exports with request, available response and log digests, then continues the
+remaining assets. It decodes only successfully exported streams and returns 4
+if any export or verification failed. When no exports succeed it writes an
+incomplete factual summary without claiming any decode runs. Setup failures
+still return 1. Common OpenJPEG stream generation remains a setup prerequisite
+for the timing matrix; a failure retains the output directory and prevents a
+completed matrix claim.
