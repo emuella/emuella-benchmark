@@ -60,6 +60,30 @@ complete observation exits zero. Exit status 4 means retained non-success
 coverage; the summary is still written when the runner produced factual run
 records. Setup or contract failures exit 1.
 
+## Retained checkpoint observation
+
+[The factual checkpoint record](evidence/rareplanes-calibration-checkpoint.json)
+was acquired with orchestration revision
+`9858bbb073a2077236f536ab8b9a38e9aadcf6c9` and summarised with the separately
+identified candidate script. It is retained calibration evidence rather than
+terminal exact-head qualification.
+
+| Journey | Completed exact batches | Unsupported batches |
+|---|---:|---:|
+| Emuella classic lossless encode | 20 | 10 |
+| OpenJPEG classic lossless encode | 30 | 0 |
+| Emuella shared-stream decode | 30 | 0 |
+| OpenJPEG shared-stream decode | 30 | 0 |
+
+Every completed batch reconstructed the full input exactly. Emuella consistently
+rejected the five Apple Valley PAN16 rounds at its existing 16-million-sample
+image guard and the five Apple Valley RGB8 rounds at its corresponding
+per-component guard. These are calibrated unsupported results, not missing
+coverage. The record gives per-case mean/minimum/maximum operation time,
+sample-value throughput, measured output bytes, raw-to-encoded compression ratio
+and maximum observed worker-process RSS, together with raw run digests and exact
+input, codestream, harness, worker and build identities.
+
 ## Interpretation limits
 
 This is a practical resource and mechanism calibration on two deliberately
