@@ -10,6 +10,14 @@ publish = false
 default = ["emuella", "openjpeg"]
 emuella = ["dep:emuella-j2k", "dep:emuella-j2k-codestream", "dep:rayon"]
 openjpeg = []
+simd = ["emuella", "emuella-j2k/simd", "emuella-j2k-codestream/simd"]
+
+[profile.perf]
+inherits = "release"
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+debug = "line-tables-only"
 
 [dependencies]
 emuella-benchmark = { path = ".." }
