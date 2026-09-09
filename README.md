@@ -67,6 +67,10 @@ python3 scripts/calibrate.py --benchmark /path/to/emuella-benchmark \
   --output /path/to/new-calibration
 ```
 
+Worker builds default to the historical release profile with parallel support
+and no optional SIMD. Add `--profile perf` for the tuned worker profile or
+`--simd` with either profile. See [build provenance and compiler overrides](docs/workers.md).
+
 Qualification requires a clean committed benchmark source (the explicitly labelled
 `--allow-dirty-probe` mode is exploratory only). It exercises shared lossless codestreams, native encode/decode,
 partial output, threads, lossy measured points, diagnostics and HTJ2K. `--quick`

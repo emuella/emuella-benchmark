@@ -13,7 +13,7 @@ python3 scripts/build-workers.py --output /approved/scratch/build-baseline
 ```
 
 Choose a new absolute output directory outside the checkout for each build. The
-helper snapshots project-owned adapter/core source, builds release executables,
+helper snapshots project-owned adapter/core source, builds release executables by default,
 and writes `emuella-worker.json`, `openjpeg-worker.json`, `openjph-worker.json`
 and `build-provenance.json`. Pass a worker JSON directly to the harness. Native
 OpenJPEG binaries receive an RPATH from the installed pkg-config library path;
@@ -33,13 +33,45 @@ python3 scripts/build-workers.py --output /approved/scratch/build-candidate \
 The checkout must match the exact requested revision and be clean before and
 after building. Cargo overrides and dependency resolution occur in the build
 snapshot, leaving the benchmark checkout's lockfile unchanged. The provenance
-sidecar records compiler identities, release profile, enabled features,
+sidecar records compiler identities, requested profile, observed features,
 performance-relevant build flags, every adapter/core source digest and the exact
 resolved worker dependency lock. Definitions bind this sidecar and the actual
 runtime shared libraries; OpenJPH also binds both installed CLI executables and
 their shared dependencies. Local source paths and executable paths exist only in
 runtime manifests, binaries and provenance. Do not commit build snapshots or
 runtime result inputs. Use separate target directories for concurrent builds.
+
+Select the worker-owned tuned profile with `--profile perf`, and optionally add
+`--simd` to either profile. The four build variants are `--profile release`,
+`--profile release --simd`, `--profile perf`, and `--profile perf --simd`.
+Omitting both options preserves release compilation without optional SIMD.
+The `perf` profile inherits release and requests optimisation level 3, ThinLTO,
+one codegen unit and line-table debug information. SIMD forwards to both the
+public codec facade and the diagnostic codestream dependency. Parallel support
+remains enabled in all four variants; runtime thread budgets remain independent.
+Neither option changes codec source or coding settings.
+
+`requested_build` records the selected profile, SIMD switch and use of default
+features. The legacy `profile` field is also the requested profile name;
+`features` now lists observed Cargo artefact features. `build_observations`
+retains the exact Cargo command, configuration-file identities and compiler
+artefacts, including each package's resolved features, Cargo-reported profile,
+executable path and cache freshness. The helper copies these reported executable
+paths, including target-specific paths selected by Cargo configuration.
+`build_environment` records relevant compiler, profile, target and native build
+overrides. The source snapshot and resolved lock remain part of provenance.
+
+Cargo's JSON artefact profiles do not describe every effective compiler option:
+rustflags can override profile values. The bound `cargo-build.jsonl` and verbose
+`cargo-build.stderr` retain the observations and ordered commands dispatched by
+Cargo, including LTO and codegen arguments when a crate is compiled. Use fresh
+target directories for build qualification. Cached (`fresh: true`) artefacts
+have no new compiler command, and compiler wrappers can transform dispatched
+arguments internally; those internals are not observed. Do not infer a fully
+verified effective profile from the requested name or Cargo profile fields
+alone. Configuration files are identified by path and digest without copying
+potential credentials. These logs and environment values are local build
+evidence and may contain machine paths; do not publish them verbatim.
 
 The default Emuella source is revision
 `1c1a7fbc583d69c6d57bfd1da4248aa6fae071cc`. Its public facade owns headline operations;
