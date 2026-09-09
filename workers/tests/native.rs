@@ -13,7 +13,13 @@ fn case(dir: &std::path::Path, components: u16, precision: u8) -> Case {
     };
     let samples: Vec<u8> = (0..image.sample_count().unwrap())
         .flat_map(|p| {
-            let value = ((p * 977 + p * p * 3) & ((1_usize << precision) - 1)) as u16;
+            let value = if p < usize::from(components) {
+                // Distinct first-pixel bands, both U16 endpoints and asymmetric bytes.
+                [0, 65535, 0x1234, 0xabcd, 0x00ff, 0xff00, 32768, 32767][p % 8]
+                    & ((1_u32 << precision) - 1) as u16
+            } else {
+                ((p * 977 + p * p * 3) & ((1_usize << precision) - 1)) as u16
+            };
             if precision == 8 {
                 vec![value as u8]
             } else {
@@ -85,8 +91,11 @@ fn lossless_native_matrix_verifies_every_measured_output() {
         env!("CARGO_BIN_EXE_emuella-worker"),
         env!("CARGO_BIN_EXE_openjpeg-worker"),
     ] {
-        for components in [1, 3] {
+        for components in [1, 3, 8] {
             for precision in [8, 16] {
+                if components == 8 && precision == 8 {
+                    continue;
+                }
                 let temp = tempfile::tempdir().unwrap();
                 let c = case(temp.path(), components, precision);
                 let response = invoke(binary, temp.path(), c.clone(), false);
@@ -276,8 +285,11 @@ fn openjpeg_reports_unsupported_diagnostics_for_encode_and_decode() {
 
 #[test]
 fn exported_public_streams_verify_independently_and_never_overwrite() {
-    for components in [1, 3] {
+    for components in [1, 3, 8] {
         for precision in [8, 16] {
+            if components == 8 && precision == 8 {
+                continue;
+            }
             let temp = tempfile::tempdir().unwrap();
             let dir = temp.path();
             let mut original = case(dir, components, precision);
@@ -340,5 +352,124 @@ fn exported_public_streams_verify_independently_and_never_overwrite() {
             assert!(!rejected.status.success());
             assert!(!dir.join("invalid.j2k").exists());
         }
+    }
+}
+
+#[test]
+fn eight_band_workers_reject_out_of_scope_requests() {
+    for binary in [
+        env!("CARGO_BIN_EXE_emuella-worker"),
+        env!("CARGO_BIN_EXE_openjpeg-worker"),
+    ] {
+        let temp = tempfile::tempdir().unwrap();
+        for (components, precision) in [(8, 8), (2, 16), (7, 16), (9, 16)] {
+            let c = case(temp.path(), components, precision);
+            assert_eq!(
+                invoke(binary, temp.path(), c, false).status,
+                WorkerStatus::Unsupported
+            );
+        }
+        for setting in [
+            serde_json::json!(0),
+            serde_json::json!(1),
+            serde_json::json!(3),
+        ] {
+            let mut c = case(temp.path(), 8, 16);
+            c.settings.insert("decomposition_levels".into(), setting);
+            assert_eq!(
+                invoke(binary, temp.path(), c, false).status,
+                WorkerStatus::Unsupported
+            );
+        }
+        let mut c = case(temp.path(), 8, 16);
+        c.settings.insert("coding".into(), serde_json::json!("ht"));
+        assert_eq!(
+            invoke(binary, temp.path(), c, false).status,
+            WorkerStatus::Unsupported
+        );
+        let mut c = case(temp.path(), 8, 16);
+        c.output.lossless = false;
+        c.output.minimum_psnr_db = Some(0.0);
+        c.settings.insert("target_bpp".into(), serde_json::json!(1));
+        assert_eq!(
+            invoke(binary, temp.path(), c, false).status,
+            WorkerStatus::Unsupported
+        );
+    }
+}
+
+#[test]
+fn independent_openjpeg_msi_stream_decodes_exactly_and_rejects_profile_changes() {
+    unsafe extern "C" {
+        fn benchmark_openjpeg_encode(
+            samples: *const i32,
+            w: u32,
+            h: u32,
+            components: u32,
+            bits: u32,
+            levels: i32,
+            lossless: i32,
+            ratio: f64,
+            threads: i32,
+            out: *mut *mut u8,
+            len: *mut usize,
+        ) -> i32;
+        fn benchmark_openjpeg_free(p: *mut std::ffi::c_void);
+    }
+    let temp = tempfile::tempdir().unwrap();
+    let dir = temp.path();
+    let mut c = case(dir, 8, 16);
+    let values =
+        emuella_benchmark_workers::raw(&fs::read(&c.input.path).unwrap(), &c.image).unwrap();
+    let mut out = std::ptr::null_mut();
+    let mut len = 0;
+    // Authored input stays borrowed; the public-API adapter allocation is freed once.
+    let stream = unsafe {
+        assert_eq!(
+            benchmark_openjpeg_encode(
+                values.as_ptr(),
+                33,
+                29,
+                8,
+                16,
+                2,
+                1,
+                1.0,
+                1,
+                &mut out,
+                &mut len
+            ),
+            1
+        );
+        let stream = std::slice::from_raw_parts(out, len).to_vec();
+        benchmark_openjpeg_free(out.cast());
+        stream
+    };
+    emuella_benchmark_workers::msi::validate_stream(&stream, &c.image).unwrap();
+    c.reference = Some(c.input.clone());
+    c.input.path = dir.join("independent.j2k");
+    c.input.sha256 = format!("{:x}", Sha256::digest(&stream));
+    fs::write(&c.input.path, &stream).unwrap();
+    c.operation = Operation::Decode;
+    c.settings.remove("decomposition_levels");
+    for binary in [
+        env!("CARGO_BIN_EXE_emuella-worker"),
+        env!("CARGO_BIN_EXE_openjpeg-worker"),
+    ] {
+        let response = invoke(binary, dir, c.clone(), false);
+        assert_eq!(response.status, WorkerStatus::Ok, "{:?}", response.message);
+        assert!(response.correctness.unwrap().exact);
+        // Header profile mutations must be rejected before entering either timer.
+        for offset in [74, 75, 78, 79] {
+            let mut changed = stream.clone();
+            changed[offset] ^= 1;
+            fs::write(&c.input.path, &changed).unwrap();
+            let mut malformed = c.clone();
+            malformed.input.sha256 = format!("{:x}", Sha256::digest(&changed));
+            let response = invoke(binary, dir, malformed, false);
+            assert_eq!(response.status, WorkerStatus::Unsupported);
+            assert!(response.samples_ns.is_empty());
+        }
+        fs::write(&c.input.path, &stream).unwrap();
     }
 }

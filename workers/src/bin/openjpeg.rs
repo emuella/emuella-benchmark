@@ -131,6 +131,9 @@ fn run(r: &WorkerRequest) -> Result<WorkerResponse> {
         return Err("unsupported compression ratio outside 1..f32::MAX".into());
     }
     let input = asset(&c.input)?;
+    if c.operation == Operation::Decode {
+        msi::validate_stream(&input, &c.image)?;
+    }
     let samples = if c.operation == Operation::Encode {
         raw(&input, &c.image)?
     } else {

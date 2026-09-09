@@ -87,9 +87,11 @@ int benchmark_openjpeg_encode(const int32_t *samples, uint32_t w, uint32_t h,
   opj_stream_t *s = NULL;
   opj_codec_t *codec = NULL;
   opj_image_t *image = NULL;
-  opj_image_cmptparm_t params[3];
+  opj_image_cmptparm_t params[8];
   memset(params, 0, sizeof(params));
-  if (components != 1 && components != 3)
+  if (components != 1 && components != 3 && components != 8)
+    return 0;
+  if (components == 8 && (bits != 16 || !lossless || levels != 2))
     return 0;
   for (uint32_t c = 0; c < components; c++) {
     params[c].dx = 1;
@@ -99,7 +101,8 @@ int benchmark_openjpeg_encode(const int32_t *samples, uint32_t w, uint32_t h,
     params[c].prec = bits;
   }
   image = opj_image_create(components, params,
-                           components == 1 ? OPJ_CLRSPC_GRAY : OPJ_CLRSPC_SRGB);
+                           components == 1 ? OPJ_CLRSPC_GRAY :
+                           components == 3 ? OPJ_CLRSPC_SRGB : OPJ_CLRSPC_UNSPECIFIED);
   if (!image)
     goto done;
   image->x1 = w;

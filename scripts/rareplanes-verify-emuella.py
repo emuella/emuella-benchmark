@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Retain and independently verify six Emuella RarePlanes lossless streams.
+"""Retain and independently verify eight Emuella RarePlanes lossless streams.
 
-This opt-in journey is separate from the unchanged 120-batch timing matrix.
+This opt-in journey is separate from the 160-batch timing matrix.
 All inputs, streams and results must remain inside the approved store.
 """
 
@@ -88,7 +88,7 @@ def export_streams(assets, prepared_digest, executable, output):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    for name in ("benchmark", "workers", "build-provenance", "prepared", "store", "output"):
+    for name in ("benchmark", "workers", "build-provenance", "prepared", "store", "output", "opj-dump"):
         parser.add_argument("--" + name, type=Path, required=True)
     args = parser.parse_args()
     try:
@@ -101,7 +101,7 @@ def main():
             raise ValueError("verification requires a clean committed benchmark checkout")
         revision = calibration.git("rev-parse", "HEAD")
         identity_paths = [Path(__file__), Path(calibration.__file__), args.benchmark,
-                          args.build_provenance]
+                          args.build_provenance, args.opj_dump]
         definitions = {}
         for name in ("emuella", "openjpeg"):
             path = args.workers / (name + "-worker.json")
@@ -120,6 +120,11 @@ def main():
             (output / child).mkdir()
         streams = export_streams(assets, prepared_digest,
                                  Path(definitions["emuella"]["executable"]), output)
+        for asset in assets:
+            if asset["image"]["components"] == 8:
+                record = streams[asset["id"]]
+                record["independent_inspection"] = calibration.inspect_msi_stream(
+                    record["path"], asset["image"], args.opj_dump, output / "streams" / asset["id"])
         runtime_streams = {key: {**value, "path": str(value["path"])} for key, value in streams.items()}
         calibration.write_new(output / "inputs" / "emuella-streams.json", runtime_streams)
         experiment_path = output / "inputs" / "decode.json"
@@ -144,7 +149,7 @@ def main():
                 or any(calibration.digest_file(v["path"]) != v["sha256"] for v in streams.values())):
             failures.append({"name": "identity", "stderr": "source, build or input changed during verification"})
         complete = (not failures and len(runs) == 2 and all(
-            len(run["observations"]) == 6 and all(
+            len(run["observations"]) == 8 and all(
                 row["disposition"] == "completed_exact" for row in run["observations"])
             for run in runs))
         summary = {
