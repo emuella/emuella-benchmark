@@ -76,7 +76,13 @@ def export_streams(assets, prepared_digest, executable, output, failures=None):
                 raise
             log_path = output / "inputs" / (asset_id + "-export.log")
             if not log_path.exists():
-                log_path.write_text(str(error))
+                log = str(error).encode("utf-8") + b"\n"
+                if isinstance(error, subprocess.TimeoutExpired):
+                    for label, captured in (("stderr", error.stderr), ("stdout", error.stdout)):
+                        if captured is not None:
+                            payload = captured.encode("utf-8") if isinstance(captured, str) else captured
+                            log += label.encode("ascii") + b":\n" + payload + b"\n"
+                log_path.write_bytes(log)
             status = "export_failed"
             if response_path.is_file():
                 try:

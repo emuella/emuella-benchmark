@@ -127,7 +127,12 @@ class IndependentVerificationTests(unittest.TestCase):
                 request = json.loads(Path(command[2]).read_text())
                 calls.append(request)
                 if len(calls) == 2:
-                    raise module.subprocess.TimeoutExpired(command, 120)
+                    raise module.subprocess.TimeoutExpired(
+                        command, 120, output=b"authored partial output",
+                        stderr=b"authored timeout diagnostic\xff")
+                if len(calls) == 3:
+                    raise module.subprocess.TimeoutExpired(
+                        command, 120, stderr="authored text diagnostic")
                 Path(command[3]).write_text(json.dumps({
                     "schema_version": 1, "request_id": request["request_id"],
                     "applied_case": request["case"], "status": "unsupported"}))
@@ -141,6 +146,14 @@ class IndependentVerificationTests(unittest.TestCase):
             self.assertEqual(len(failures), len(assets))
             self.assertEqual(failures[0]["disposition"], "unsupported")
             self.assertEqual(failures[1]["disposition"], "export_failed")
+            timeout_log = root / "inputs" / (failures[1]["name"] + "-export.log")
+            self.assertIn(b"timed out after 120 seconds", timeout_log.read_bytes())
+            self.assertIn(b"authored timeout diagnostic\xff", timeout_log.read_bytes())
+            self.assertIn(b"authored partial output", timeout_log.read_bytes())
+            self.assertEqual(failures[1]["records_sha256"]["log"],
+                             module.calibration.digest_file(timeout_log))
+            text_log = root / "inputs" / (failures[2]["name"] + "-export.log")
+            self.assertIn("authored text diagnostic", text_log.read_text())
             for failure in failures:
                 self.assertIn("request", failure["records_sha256"])
                 self.assertIn("log", failure["records_sha256"])
