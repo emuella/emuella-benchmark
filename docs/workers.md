@@ -64,7 +64,10 @@ overrides. The source snapshot and resolved lock remain part of provenance.
 Cargo's JSON artefact profiles do not describe every effective compiler option:
 rustflags can override profile values. The bound `cargo-build.jsonl` and verbose
 `cargo-build.stderr` retain the observations and ordered commands dispatched by
-Cargo, including LTO and codegen arguments when a crate is compiled. Use fresh
+Cargo, including LTO and codegen arguments when a crate is compiled. Despite its
+`.jsonl` suffix, the raw stdout log also retains prefixed build-script output
+interleaved by Cargo's verbose mode; only structured Cargo events feed provenance.
+Use fresh
 target directories for build qualification. Cached (`fresh: true`) artefacts
 have no new compiler command, and compiler wrappers can transform dispatched
 arguments internally; those internals are not observed. Do not infer a fully

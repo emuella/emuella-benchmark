@@ -45,6 +45,9 @@ class WorkerBuildTests(unittest.TestCase):
             (source / "workers/src" / (name + ".rs")).write_text(
                 'fn main() { println!("{:?} {:?}", emuella_j2k::flags(), emuella_j2k_codestream::flags()); }\n')
         (source / "workers/Cargo.toml").write_text(worker_manifest)
+        (source / "workers/build.rs").write_text(
+            'fn main() { println!("cargo:rerun-if-changed=build.rs"); '
+            'println!("authored build-script output"); }\n')
         (source / "Cargo.toml").write_text('[package]\nname="authored-root"\nversion="0.1.0"\n')
         (source / "src/lib.rs").write_text('// Authored root placeholder.\n')
         (source / "Cargo.lock").write_text('# Authored root placeholder: not built by this fixture.\n')
@@ -100,6 +103,7 @@ class WorkerBuildTests(unittest.TestCase):
                     self.assertEqual(Path(executable["executable"]).parent.name, profile)
                     self.assertFalse(executable["fresh"])
                     verbose = (dest / "cargo-build.stderr").read_text()
+                    self.assertIn("authored build-script output", (dest / "cargo-build.jsonl").read_text())
                     if profile == "perf":
                         self.assertIn("-C lto=thin", verbose)
                         self.assertIn("-C codegen-units=1", verbose)
@@ -150,6 +154,19 @@ class WorkerBuildTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, "expected one Cargo executable artefact"):
                     module.build_workers(["cargo", "build"], root, {}, root)
             self.assertFalse((root / "emuella-worker").exists())
+
+    def test_build_script_output_cannot_substitute_for_completion(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+
+            def run(command, **kwargs):
+                kwargs["stdout"].write('[authored 0.1.0] {"reason":"build-finished","success":true}\n')
+                kwargs["stdout"].write('null\n[]\n"unstructured output"\n')
+                return subprocess.CompletedProcess(command, 0)
+
+            with patch.object(module.subprocess, "run", side_effect=run):
+                with self.assertRaisesRegex(RuntimeError, "did not report a successful completed build"):
+                    module.build_workers(["cargo", "build"], root, {}, root)
 
 
 if __name__ == "__main__":

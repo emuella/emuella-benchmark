@@ -52,8 +52,17 @@ def build_workers(command, snapshot, environment, dest):
         raise RuntimeError(f"Cargo build failed ({result.returncode}); inspect {verbose}")
     if cargo_config_files(snapshot, environment) != configs:
         raise RuntimeError("Cargo configuration changed during build")
-    events = [json.loads(line) for line in messages.read_text().splitlines() if line.strip()]
-    if not any(event.get("reason") == "build-finished" and event.get("success") for event in events):
+    # With -vv, Cargo interleaves prefixed build-script stdout with JSON events.
+    # Preserve the complete stream above and select only structured Cargo events.
+    events = []
+    for line in messages.read_text().splitlines():
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(event, dict) and isinstance(event.get("reason"), str):
+            events.append(event)
+    if not any(event.get("reason") == "build-finished" and event.get("success") is True for event in events):
         raise RuntimeError("Cargo did not report a successful completed build")
     artefacts = [event for event in events if event.get("reason") == "compiler-artifact"]
     binaries = {}
