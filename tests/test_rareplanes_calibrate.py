@@ -82,6 +82,14 @@ class RarePlanesCalibrationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "integrity mismatch"):
                 module.load_prepared(prepared)
 
+    def test_output_is_a_normalised_new_direct_store_child(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = Path(tmp).resolve()
+            self.assertEqual(module.new_store_child(store, store / "run-a"), store / "run-a")
+            for requested in (store / "nested/run", store / "nested/../run", store / "../escaped"):
+                with self.subTest(requested=requested), self.assertRaisesRegex(ValueError, "direct child|parent traversal"):
+                    module.new_store_child(store, requested)
+
     def test_summary_keeps_failed_batches_without_store_paths(self):
         store = Path("/approved/rareplanes")
         case = {

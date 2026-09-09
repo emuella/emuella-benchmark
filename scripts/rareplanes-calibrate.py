@@ -9,6 +9,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import tomllib
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -58,6 +59,20 @@ def checked_relative_file(root, relative):
     if not path.is_file():
         raise ValueError("asset is not a regular file")
     return path
+
+
+def new_store_child(store, requested):
+    requested = requested.absolute()
+    if ".." in requested.parts:
+        raise ValueError("output must not contain parent traversal")
+    if requested.is_symlink():
+        raise ValueError("output must not be a symlink")
+    output = requested.resolve(strict=False)
+    if output.parent != store:
+        raise ValueError("output must be a direct child of the approved store")
+    if output.exists():
+        raise ValueError("output must be a new directory")
+    return output
 
 
 def validate_digest(value, label):
@@ -267,6 +282,7 @@ def create_common_streams(assets, store, prepared_path, output, preparation_tool
             "arguments": arguments,
             "arguments_sha256": hashlib.sha256(json.dumps(arguments, separators=(",", ":")).encode()).hexdigest(),
             "planar_sha256": planar_sha256,
+            "preparation_tool_sha256": digest_file(preparation_tool),
             "preparation_record": preparation_record,
         }
     runtime_record = {
@@ -297,6 +313,23 @@ def public_machine(machine):
     return {key: machine[key] for key in fields if key in machine}
 
 
+def public_build_provenance(path):
+    document = json.loads(path.read_text())
+    lock = tomllib.loads(document["resolved_worker_lock"])
+    dependencies = [
+        {key: package[key] for key in ("name", "version", "source", "checksum") if key in package}
+        for package in lock.get("package", [])
+    ]
+    fields = (
+        "emuella_revision", "emuella_tree", "rustc", "cargo", "cc", "openjpeg_pkg_config",
+        "profile", "features", "build_environment", "source_sha256", "resolved_worker_lock_sha256",
+    )
+    result = {key: document[key] for key in fields if key in document}
+    result["dependencies"] = dependencies
+    result["record_sha256"] = digest_file(path)
+    return result
+
+
 def summarise_run(run, raw_bytes_by_asset, roots):
     cases = {case["id"]: case for case in run["experiment"]["cases"]}
     grouped = {case_id: [] for case_id in cases}
@@ -319,6 +352,15 @@ def summarise_run(run, raw_bytes_by_asset, roots):
         mean_ns = sum(times) / len(times) if times else None
         exact = bool(ok) and all(batch["response"]["correctness"]["exact"] for batch in ok)
         complete = len(ok) == run["experiment"]["protocol"]["rounds"] and set(statuses) == {"ok"} and exact
+        expected_rounds = run["experiment"]["protocol"]["rounds"]
+        if complete:
+            disposition = "completed_exact"
+        elif len(batches) == expected_rounds and set(statuses) == {"unsupported"}:
+            disposition = "observed_unsupported"
+        elif len(batches) == expected_rounds and not ok:
+            disposition = "observed_non_success"
+        else:
+            disposition = "incomplete_or_failed"
         observations.append({
             "case_id": case_id,
             "operation": case["operation"],
@@ -327,7 +369,7 @@ def summarise_run(run, raw_bytes_by_asset, roots):
             "image": image,
             "settings": case["settings"],
             "threads": case["threads"],
-            "disposition": "completed_exact" if complete else "incomplete_or_failed",
+            "disposition": disposition,
             "statuses": dict(sorted(statuses.items())),
             "measured_time_ns": ({"mean": mean_ns, "minimum": min(times), "maximum": max(times)} if times else None),
             "sample_values_per_second": sample_values * 1_000_000_000 / mean_ns if mean_ns else None,
@@ -392,7 +434,8 @@ def unsupported_observations(assets):
     ]
 
 
-def make_summary(run_paths, assets, prepared_sha256, source_revision, dirty, roots, invocation_failures=None):
+def make_summary(run_paths, assets, prepared_sha256, source_identity, dirty, roots,
+                 build_provenance=None, streams=None, invocation_failures=None):
     raw_bytes = {asset["id"]: asset["bytes"] for asset in assets}
     runs = []
     for run_path in run_paths:
@@ -403,9 +446,29 @@ def make_summary(run_paths, assets, prepared_sha256, source_revision, dirty, roo
         "schema_version": 1,
         "method": "Five fresh-process rounds, one measured operation per batch, no warmup; input is loaded before each timed native codec operation.",
         "interpretation": "Factual full-location observations only; encoder MCT policies differ, so no universal speed or compression ranking is made.",
-        "orchestration_source_revision": source_revision,
+        "orchestration": source_identity,
         "provisional_dirty_source": dirty,
         "prepared_manifest_sha256": prepared_sha256,
+        "build_provenance": build_provenance,
+        "shared_codestreams": [
+            {
+                "asset_id": asset_id,
+                "sha256": record["sha256"],
+                "bytes": record["bytes"],
+                "generator": "OpenJPEG opj_compress",
+                "generator_sha256": record["generator_sha256"],
+                "planar_sha256": record["planar_sha256"],
+                "preparation_tool_sha256": record["preparation_tool_sha256"],
+                "preparation_record_sha256": hashlib.sha256(json.dumps(
+                    record["preparation_record"], sort_keys=True, separators=(",", ":")
+                ).encode()).hexdigest(),
+                "profile": {
+                    "coding": "classic", "decomposition_levels": 2, "tiles": 1,
+                    "progression": "LRCP", "layers": 1, "mct": False, "threads": 1,
+                },
+            }
+            for asset_id, record in sorted((streams or {}).items())
+        ],
         "inputs": [
             {
                 "asset_id": asset["id"], "bundle_id": asset["bundle_id"], "product": asset["product"],
@@ -437,6 +500,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--benchmark", type=Path, required=True)
     parser.add_argument("--workers", type=Path, required=True)
+    parser.add_argument("--build-provenance", type=Path, required=True)
     parser.add_argument("--prepared", type=Path, required=True)
     parser.add_argument("--preparation-tool", type=Path, required=True)
     parser.add_argument("--store", type=Path, required=True, help="approved RarePlanes artefact store")
@@ -447,27 +511,22 @@ def main():
     try:
         store = args.store.resolve(strict=True)
         prepared = args.prepared.resolve(strict=True)
-        output = args.output.absolute()
+        output = new_store_child(store, args.output)
         preparation_tool = args.preparation_tool.resolve(strict=True)
         benchmark = args.benchmark.resolve(strict=True)
         workers = args.workers.resolve(strict=True)
+        build_provenance_path = args.build_provenance.resolve(strict=True)
         if not store.is_dir() or store.is_symlink():
             raise ValueError("store must be an existing real directory")
         prepared.relative_to(store)
-        output.relative_to(store)
-        if output.exists() or output.is_symlink():
-            raise ValueError("output must be a new directory")
-        for parent in output.parents:
-            if parent == store.parent:
-                break
-            if parent.is_symlink():
-                raise ValueError("output ancestors within the store must not be symlinks")
         document, assets, prepared_sha256 = load_prepared(prepared)
         del document
         dirty = bool(git("status", "--porcelain", "--untracked-files=normal"))
         if dirty and not args.allow_dirty_probe:
             raise ValueError("calibration requires a clean committed benchmark candidate; use --allow-dirty-probe only for exploration")
         source_revision = git("rev-parse", "HEAD")
+        source_script_sha256 = digest_file(Path(__file__))
+        build_provenance = public_build_provenance(build_provenance_path)
         output.mkdir(parents=False)
         (output / "inputs").mkdir()
         streams = create_common_streams(assets, store, prepared, output, preparation_tool, args.opj_compress)
@@ -494,9 +553,30 @@ def main():
             if failure:
                 failure["stderr"] = sanitise_detail(failure["stderr"], (store, output))
                 failures.append(failure)
+        end_revision = git("rev-parse", "HEAD")
+        end_script_sha256 = digest_file(Path(__file__))
+        build_record_changed = build_provenance["record_sha256"] != digest_file(build_provenance_path)
+        source_changed = source_revision != end_revision or source_script_sha256 != end_script_sha256
+        if source_changed:
+            failures.append({
+                "name": "orchestration-source-identity", "returncode": None,
+                "stderr": "benchmark revision or orchestration script changed during the run",
+            })
+        if build_record_changed:
+            failures.append({
+                "name": "build-provenance-identity", "returncode": None,
+                "stderr": "build provenance record changed during the run",
+            })
+        source_identity = {
+            "revision_at_start": source_revision,
+            "revision_at_completion": end_revision,
+            "script_sha256_at_start": source_script_sha256,
+            "script_sha256_at_completion": end_script_sha256,
+            "changed_during_run": source_changed,
+        }
         run_paths = sorted(run_root.glob("*/run.json"))
-        summary = make_summary(run_paths, assets, prepared_sha256, source_revision, dirty,
-                               (store, output), failures)
+        summary = make_summary(run_paths, assets, prepared_sha256, source_identity, dirty,
+                               (store, output), build_provenance, streams, failures)
         write_new(output / "rareplanes-calibration-summary.json", summary)
         print(json.dumps(summary, indent=2, sort_keys=True))
         expected = len(run_specs)
