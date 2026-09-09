@@ -80,16 +80,77 @@ def validate_digest(value, label):
         raise ValueError(f"{label} must be a lowercase SHA-256 digest")
 
 
-def load_prepared(path):
+def load_selection(path):
+    """Admit a testdata-owned source lock without acquiring its source objects."""
+    if path.is_symlink() or not path.is_file():
+        raise ValueError("selection must be a regular file")
+    payload = path.read_bytes()
+    document = json.loads(payload)
+    if not isinstance(document, dict) or document.get("schema_version") != 1:
+        raise ValueError("selection needs schema_version 1")
+    rows = document.get("bundles")
+    if not isinstance(rows, list) or not rows:
+        raise ValueError("selection must contain nonempty bundles")
+    bundles = []
+    splits = {}
+    for row in rows:
+        bundle = row.get("id") if isinstance(row, dict) else None
+        if (not isinstance(bundle, str) or not re.fullmatch(r"[A-Za-z0-9_]+", bundle)
+                or bundle in bundles):
+            raise ValueError("selection bundle IDs must be safe and unique")
+        split = row.get("split", "train")
+        if split not in ("train", "test"):
+            raise ValueError("selection bundle split must be train or test")
+        bundles.append(bundle)
+        splits[bundle] = split
+    rows = document.get("assets")
+    if not isinstance(rows, list) or not rows:
+        raise ValueError("selection must contain source locks")
+    sources = {}
+    for row in rows:
+        if not isinstance(row, dict) or not {"path", "sha256", "bytes"} <= row.keys():
+            raise ValueError("selection source lock is malformed")
+        relative = row["path"]
+        if (not isinstance(relative, str) or not relative or "\\" in relative
+                or Path(relative).is_absolute() or ".." in Path(relative).parts
+                or str(Path(relative)) != relative or relative in sources):
+            raise ValueError("selection source paths must be safe and unique")
+        validate_digest(row["sha256"], "selection source sha256")
+        if type(row["bytes"]) is not int or row["bytes"] <= 0:
+            raise ValueError("selection source bytes must be positive")
+        sources[relative] = row["sha256"]
+    expected = {f"real/{splits[bundle]}/{folder}/{bundle}.tif"
+                for bundle in bundles for folder in ("PAN", "MS", "PS-RGB")}
+    if {path for path in sources if path.endswith(".tif")} != expected:
+        raise ValueError("selection must lock exactly the selected source TIFF matrix")
+    return tuple(bundles), sources, hashlib.sha256(payload).hexdigest(), splits
+
+
+def selection_unchanged(path, expected_digest):
+    if path is None:
+        return True
+    try:
+        return not path.is_symlink() and path.is_file() and digest_file(path) == expected_digest
+    except OSError:
+        return False
+
+
+def load_prepared(path, selection=None):
+    bundles, sources, selection_digest, splits = (load_selection(selection) if selection is not None
+                                           else (BUNDLES, None, None, None))
     path = path.resolve(strict=True)
     if path.is_symlink() or not path.is_file():
         raise ValueError("prepared record must be a regular file")
     document = json.loads(path.read_text())
     if document.get("schema_version") != 1 or not isinstance(document.get("provenance"), dict):
         raise ValueError("prepared record needs schema_version 1 and provenance")
+    if selection is not None:
+        source_lock = document["provenance"].get("source_lock")
+        if not isinstance(source_lock, dict) or source_lock.get("sha256") != selection_digest:
+            raise ValueError("prepared provenance does not match the selection source lock")
     rows = document.get("assets")
-    if not isinstance(rows, list) or len(rows) != len(BUNDLES) * len(PRODUCTS):
-        raise ValueError("prepared record must contain the complete two-bundle product matrix")
+    if not isinstance(rows, list) or len(rows) != len(bundles) * len(PRODUCTS):
+        raise ValueError("prepared record must contain the complete selected bundle/product matrix")
     assets = []
     seen = set()
     for row in rows:
@@ -99,12 +160,19 @@ def load_prepared(path):
         }
         if not isinstance(row, dict) or not required <= row.keys():
             raise ValueError("prepared asset is missing required identity fields")
+        if not isinstance(row["bundle_id"], str) or not isinstance(row["product"], str):
+            raise ValueError("prepared bundle and product must be strings")
         key = (row["bundle_id"], row["product"])
-        if key in seen or row["bundle_id"] not in BUNDLES or row["product"] not in PRODUCTS:
+        if key in seen or row["bundle_id"] not in bundles or row["product"] not in PRODUCTS:
             raise ValueError("prepared asset has a duplicate or unexpected bundle/product")
         seen.add(key)
         if row["id"] != f"{row['bundle_id']}-{row['product']}":
             raise ValueError("prepared asset id does not match its bundle and product")
+        if sources is not None:
+            folder = {"PAN16": "PAN", "RGB8": "PS-RGB", "RGB16": "MS", "MS16": "MS"}[row["product"]]
+            expected_source = f"real/{splits[row['bundle_id']]}/{folder}/{row['bundle_id']}.tif"
+            if row["source_path"] != expected_source or row["source_sha256"] != sources[expected_source]:
+                raise ValueError("prepared source identity differs from the selection")
         components, precision, supported = PRODUCTS[row["product"]]
         image = row["image"]
         if not isinstance(image, dict) or set(image) != {"width", "height", "components", "precision", "signed"}:
@@ -130,9 +198,9 @@ def load_prepared(path):
         item["raw_path"] = raw
         item["supported"] = supported
         assets.append(item)
-    if seen != {(bundle, product) for bundle in BUNDLES for product in PRODUCTS}:
+    if seen != {(bundle, product) for bundle in bundles for product in PRODUCTS}:
         raise ValueError("prepared record is missing a selected bundle/product")
-    assets.sort(key=lambda item: (BUNDLES.index(item["bundle_id"]), tuple(PRODUCTS).index(item["product"])))
+    assets.sort(key=lambda item: (bundles.index(item["bundle_id"]), tuple(PRODUCTS).index(item["product"])))
     return document, assets, digest_file(path)
 
 
@@ -603,6 +671,7 @@ def main():
     parser.add_argument("--workers", type=Path, required=True)
     parser.add_argument("--build-provenance", type=Path, required=True)
     parser.add_argument("--prepared", type=Path, required=True)
+    parser.add_argument("--selection", type=Path, help="explicit testdata version 1 source lock")
     parser.add_argument("--preparation-tool", type=Path, required=True)
     parser.add_argument("--store", type=Path, required=True, help="approved RarePlanes artefact store")
     parser.add_argument("--output", type=Path, required=True, help="new run directory within --store")
@@ -621,7 +690,8 @@ def main():
         if not store.is_dir() or store.is_symlink():
             raise ValueError("store must be an existing real directory")
         prepared.relative_to(store)
-        document, assets, prepared_sha256 = load_prepared(prepared)
+        document, assets, prepared_sha256 = load_prepared(prepared, args.selection)
+        selection_sha256 = document["provenance"]["source_lock"]["sha256"] if args.selection else None
         del document
         dirty = bool(git("status", "--porcelain", "--untracked-files=normal"))
         if dirty and not args.allow_dirty_probe:
@@ -661,7 +731,8 @@ def main():
         end_script_sha256 = digest_file(Path(__file__))
         build_record_changed = build_provenance["record_sha256"] != digest_file(build_provenance_path)
         source_changed = source_revision != end_revision or source_script_sha256 != end_script_sha256
-        if (load_prepared(prepared)[2] != prepared_sha256
+        if (not selection_unchanged(args.selection, selection_sha256)
+                or load_prepared(prepared, args.selection)[2] != prepared_sha256
                 or any(digest_file(path) != digest for path, digest in independent_tools.items())
                 or any(digest_file(record["path"]) != record["sha256"] for record in streams.values())):
             failures.append({"name": "input-stream-tool-identity", "returncode": None,
@@ -686,6 +757,7 @@ def main():
         run_paths = sorted(run_root.glob("*/run.json"))
         summary = make_summary(run_paths, assets, prepared_sha256, source_identity, dirty,
                                (store, output), build_provenance, streams, failures)
+        summary["selection_sha256"] = selection_sha256
         write_new(output / "rareplanes-calibration-summary.json", summary)
         print(json.dumps(summary, indent=2, sort_keys=True))
         expected = len(run_specs)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Retain and independently verify eight Emuella RarePlanes lossless streams.
+"""Retain and independently verify selected Emuella RarePlanes lossless streams.
 
-This opt-in journey is separate from the 160-batch timing matrix.
+This opt-in journey is separate from the headline timing matrix.
 All inputs, streams and results must remain inside the approved store.
 """
 
@@ -46,7 +46,7 @@ def validate_export_response(request, response):
         raise RuntimeError("export response differs from requested identity, profile or exact semantics")
 
 
-def export_streams(assets, prepared_digest, executable, output):
+def export_streams(assets, prepared_digest, executable, output, failures=None):
     streams = {}
     sources = {asset["id"]: asset["source_sha256"] for asset in assets}
     encode = calibration.build_encode_experiment(assets, prepared_digest)
@@ -58,18 +58,43 @@ def export_streams(assets, prepared_digest, executable, output):
         response_path = output / "inputs" / (asset_id + "-response.json")
         stream = output / "streams" / (asset_id + ".j2k")
         calibration.write_new(request_path, request)
-        result = subprocess.run(
-            [str(executable), "--export-lossless", str(request_path), str(response_path), str(stream)],
-            capture_output=True, text=True, timeout=120)
-        (output / "inputs" / (asset_id + "-export.log")).write_text(result.stderr)
-        if result.returncode:
-            raise RuntimeError(f"Emuella export failed for {asset_id}; retained export log")
-        response = json.loads(response_path.read_text())
-        validate_export_response(request, response)
-        if (response.get("status") != "ok" or not response.get("correctness", {}).get("exact")
-                or stream.is_symlink() or not stream.is_file() or stream.stat().st_size == 0
-                or response.get("output_bytes") != stream.stat().st_size):
-            raise RuntimeError(f"Emuella export was not exact for {asset_id}")
+        try:
+            result = subprocess.run(
+                [str(executable), "--export-lossless", str(request_path), str(response_path), str(stream)],
+                capture_output=True, text=True, timeout=120)
+            (output / "inputs" / (asset_id + "-export.log")).write_text(result.stderr)
+            if result.returncode:
+                raise RuntimeError(f"Emuella export failed for {asset_id}; retained export log")
+            response = json.loads(response_path.read_text())
+            validate_export_response(request, response)
+            if (response.get("status") != "ok" or not response.get("correctness", {}).get("exact")
+                    or stream.is_symlink() or not stream.is_file() or stream.stat().st_size == 0
+                    or response.get("output_bytes") != stream.stat().st_size):
+                raise RuntimeError(f"Emuella export was not exact for {asset_id}")
+        except (OSError, ValueError, RuntimeError, TypeError, AttributeError, subprocess.SubprocessError) as error:
+            if failures is None:
+                raise
+            log_path = output / "inputs" / (asset_id + "-export.log")
+            if not log_path.exists():
+                log_path.write_text(str(error))
+            status = "export_failed"
+            if response_path.is_file():
+                try:
+                    response = json.loads(response_path.read_text())
+                    if (response.get("status") == "unsupported"
+                            and response.get("request_id") == request["request_id"]
+                            and response.get("applied_case") == request["case"]
+                            and response.get("schema_version") == request["schema_version"]):
+                        status = "unsupported"
+                except (ValueError, AttributeError):
+                    pass
+            records = {"request": request_path, "response": response_path,
+                       "log": output / "inputs" / (asset_id + "-export.log")}
+            failures.append({"name": asset_id, "stage": "export", "disposition": status,
+                             "stderr": str(error),
+                             "records_sha256": {key: calibration.digest_file(path)
+                                                for key, path in records.items() if path.is_file()}})
+            continue
         streams[asset_id] = {
             "path": stream, "sha256": calibration.digest_file(stream), "bytes": stream.stat().st_size,
             "generator_sha256": calibration.digest_file(executable),
@@ -90,13 +115,15 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("benchmark", "workers", "build-provenance", "prepared", "store", "output", "opj-dump"):
         parser.add_argument("--" + name, type=Path, required=True)
+    parser.add_argument("--selection", type=Path, help="explicit testdata version 1 source lock")
     args = parser.parse_args()
     try:
         store = args.store.resolve(strict=True)
         prepared = args.prepared.resolve(strict=True)
         prepared.relative_to(store)
         output = calibration.new_store_child(store, args.output)
-        _, assets, prepared_digest = calibration.load_prepared(prepared)
+        document, assets, prepared_digest = calibration.load_prepared(prepared, args.selection)
+        selection_sha256 = document["provenance"]["source_lock"]["sha256"] if args.selection else None
         if calibration.git("status", "--porcelain", "--untracked-files=normal"):
             raise ValueError("verification requires a clean committed benchmark checkout")
         revision = calibration.git("rev-parse", "HEAD")
@@ -118,9 +145,11 @@ def main():
         output.mkdir()
         for child in ("inputs", "streams", "runs"):
             (output / child).mkdir()
+        failures = []
         streams = export_streams(assets, prepared_digest,
-                                 Path(definitions["emuella"]["executable"]), output)
-        for asset in assets:
+                                 Path(definitions["emuella"]["executable"]), output, failures)
+        exported_assets = [asset for asset in assets if asset["id"] in streams]
+        for asset in exported_assets:
             if asset["image"]["components"] == 8:
                 record = streams[asset["id"]]
                 record["independent_inspection"] = calibration.inspect_msi_stream(
@@ -128,10 +157,10 @@ def main():
         runtime_streams = {key: {**value, "path": str(value["path"])} for key, value in streams.items()}
         calibration.write_new(output / "inputs" / "emuella-streams.json", runtime_streams)
         experiment_path = output / "inputs" / "decode.json"
-        calibration.write_new(experiment_path, decode_experiment(assets, prepared_digest, streams))
-        failures = []
+        if exported_assets:
+            calibration.write_new(experiment_path, decode_experiment(exported_assets, prepared_digest, streams))
         runs = []
-        for name in ("emuella", "openjpeg"):
+        for name in (("emuella", "openjpeg") if exported_assets else ()):
             run_dir = output / "runs" / (name + "-emuella-stream-decode")
             failure = calibration.invoke_run(args.benchmark, experiment_path,
                                              args.workers / (name + "-worker.json"), run_dir)
@@ -145,11 +174,12 @@ def main():
         if (revision != calibration.git("rev-parse", "HEAD")
                 or calibration.git("status", "--porcelain", "--untracked-files=normal")
                 or any(calibration.digest_file(path) != digest for path, digest in identities.items())
-                or calibration.load_prepared(prepared)[2] != prepared_digest
+                or not calibration.selection_unchanged(args.selection, selection_sha256)
+                or calibration.load_prepared(prepared, args.selection)[2] != prepared_digest
                 or any(calibration.digest_file(v["path"]) != v["sha256"] for v in streams.values())):
             failures.append({"name": "identity", "stderr": "source, build or input changed during verification"})
         complete = (not failures and len(runs) == 2 and all(
-            len(run["observations"]) == 8 and all(
+            len(run["observations"]) == len(assets) and all(
                 row["disposition"] == "completed_exact" for row in run["observations"])
             for run in runs))
         summary = {
@@ -159,6 +189,7 @@ def main():
             "orchestration_revision": revision,
             "orchestration_sha256": identities[Path(__file__)],
             "calibration_script_sha256": identities[Path(calibration.__file__)],
+            "selection_sha256": selection_sha256,
             "prepared_manifest_sha256": prepared_digest, "build_provenance": build,
             "streams": [{"asset_id": key, **{k: v for k, v in value.items() if k != "path"}}
                         for key, value in streams.items()],

@@ -73,6 +73,78 @@ class IndependentVerificationTests(unittest.TestCase):
                 self.assertEqual(case["image"], case["output"]["image"])
             self.assertEqual(len(module.calibration.unsupported_observations(assets)), 0)
 
+    def test_empty_expanded_exports_write_summary_and_recheck_selection(self):
+        from test_rareplanes_selection import SelectionTests
+        for tamper in (False, True):
+            with self.subTest(tamper=tamper), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                prepared, selection, _, lock = SelectionTests().fixture(root)
+                selection_digest = module.calibration.digest_file(selection)
+                executable = root / "worker"
+                executable.write_bytes(b"authored")
+                for name in ("emuella", "openjpeg"):
+                    (root / (name + "-worker.json")).write_text(json.dumps({"executable": str(executable)}))
+                output = root / "result"
+                argv = ["verify", "--benchmark", str(executable), "--workers", str(root),
+                        "--build-provenance", str(executable), "--prepared", str(prepared),
+                        "--selection", str(selection), "--store", str(root),
+                        "--output", str(output), "--opj-dump", str(executable)]
+
+                def exports(assets, digest, worker, destination, failures):
+                    self.assertEqual(len(assets), 12)
+                    failures.extend({"name": a["id"], "stderr": "authored unsupported"} for a in assets)
+                    if tamper:
+                        lock["note"] = "mutated during export"
+                        selection.write_text(json.dumps(lock))
+                    return {}
+
+                with patch.object(module.sys, "argv", argv), \
+                        patch.object(module.calibration, "git", side_effect=lambda *args: "" if args[0] == "status" else "revision"), \
+                        patch.object(module.calibration, "public_build_provenance", return_value={}), \
+                        patch.object(module, "export_streams", side_effect=exports), \
+                        patch.object(module.calibration, "invoke_run") as run, \
+                        patch("builtins.print"):
+                    self.assertEqual(module.main(), 4)
+                    run.assert_not_called()
+                summary = json.loads((output / "rareplanes-emuella-verification-summary.json").read_text())
+                self.assertFalse(summary["complete"])
+                self.assertEqual(summary["runs"], [])
+                self.assertEqual(summary["selection_sha256"], selection_digest)
+                self.assertEqual(any(f["name"] == "identity" for f in summary["failures"]), tamper)
+
+    def test_failed_exports_continue_and_retain_identities(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            prepared = fixtures.RarePlanesCalibrationTests().prepared_fixture(root)
+            _, assets, digest = module.calibration.load_prepared(prepared)
+            executable = root / "worker"
+            executable.write_bytes(b"authored")
+            for child in ("inputs", "streams"):
+                (root / child).mkdir()
+            calls = []
+
+            def export(command, **kwargs):
+                request = json.loads(Path(command[2]).read_text())
+                calls.append(request)
+                if len(calls) == 2:
+                    raise module.subprocess.TimeoutExpired(command, 120)
+                Path(command[3]).write_text(json.dumps({
+                    "schema_version": 1, "request_id": request["request_id"],
+                    "applied_case": request["case"], "status": "unsupported"}))
+                return type("Result", (), {"returncode": 4, "stderr": "authored guard"})()
+
+            failures = []
+            with patch.object(module.subprocess, "run", side_effect=export):
+                streams = module.export_streams(assets, digest, executable, root, failures)
+            self.assertEqual(streams, {})
+            self.assertEqual(len(calls), len(assets))
+            self.assertEqual(len(failures), len(assets))
+            self.assertEqual(failures[0]["disposition"], "unsupported")
+            self.assertEqual(failures[1]["disposition"], "export_failed")
+            for failure in failures:
+                self.assertIn("request", failure["records_sha256"])
+                self.assertIn("log", failure["records_sha256"])
+
     def test_failed_export_is_not_admitted_as_verification(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
