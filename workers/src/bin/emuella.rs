@@ -135,6 +135,9 @@ fn run(r: &WorkerRequest, export: Option<&std::path::Path>) -> Result<WorkerResp
     };
     let input = asset(&c.input)?;
     if c.operation == Operation::Decode {
+        msi::validate_stream(&input, &c.image)?;
+    }
+    if c.operation == Operation::Decode {
         let metadata = codec::inspect(&input, &codec::InspectOptions::default()).map_err(error)?;
         let actual = metadata
             .image
@@ -171,8 +174,10 @@ fn run(r: &WorkerRequest, export: Option<&std::path::Path>) -> Result<WorkerResp
         },
         if c.image.components == 1 {
             codec::ColorModel::Grayscale
-        } else {
+        } else if c.image.components == 3 {
             codec::ColorModel::Rgb
+        } else {
+            codec::ColorModel::Unknown
         },
         codec::ComponentLayout::Interleaved,
     )

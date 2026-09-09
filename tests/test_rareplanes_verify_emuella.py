@@ -16,7 +16,7 @@ spec.loader.exec_module(module)
 
 
 class IndependentVerificationTests(unittest.TestCase):
-    def test_six_exports_bind_full_references_and_separate_protocol(self):
+    def test_eight_exports_bind_full_references_and_separate_protocol(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             prepared = fixtures.RarePlanesCalibrationTests().prepared_fixture(root)
@@ -45,8 +45,8 @@ class IndependentVerificationTests(unittest.TestCase):
                         "tiles": 1, "decomposition_levels": 2, "coding": "classic",
                         "progression_order": "lrcp", "quality_layers": 1,
                         "multiple_component_transform": (
-                            "none" if request["case"]["image"]["components"] == 1
-                            else "reversible_colour_transform"),
+                            "reversible_colour_transform" if request["case"]["image"]["components"] == 3
+                            else "none"),
                     }},
                 }))
                 return type("Result", (), {"returncode": 0, "stderr": ""})()
@@ -62,8 +62,8 @@ class IndependentVerificationTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "differs from requested"):
                 module.validate_export_response(request, response)
             experiment = module.decode_experiment(assets, digest, streams)
-            self.assertEqual(len(calls), 6)
-            self.assertEqual(len(experiment["cases"]), 6)
+            self.assertEqual(len(calls), 8)
+            self.assertEqual(len(experiment["cases"]), 8)
             self.assertEqual(module.calibration.PROTOCOL["rounds"], 5)
             for case in experiment["cases"]:
                 self.assertEqual(case["input"]["provenance"]["generator"],
@@ -71,7 +71,7 @@ class IndependentVerificationTests(unittest.TestCase):
                 self.assertEqual(case["reference"]["sha256"],
                                  case["input"]["provenance"]["prepared_sha256"])
                 self.assertEqual(case["image"], case["output"]["image"])
-            self.assertEqual(len(module.calibration.unsupported_observations(assets)), 2)
+            self.assertEqual(len(module.calibration.unsupported_observations(assets)), 0)
 
     def test_failed_export_is_not_admitted_as_verification(self):
         with tempfile.TemporaryDirectory() as directory:

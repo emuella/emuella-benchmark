@@ -44,12 +44,12 @@ class RarePlanesCalibrationTests(unittest.TestCase):
         path.write_text(json.dumps(record))
         return path
 
-    def test_prepared_metadata_becomes_six_explicit_experiments(self):
+    def test_prepared_metadata_becomes_eight_explicit_experiments(self):
         with tempfile.TemporaryDirectory() as tmp:
             prepared = self.prepared_fixture(Path(tmp))
             _, assets, prepared_sha256 = module.load_prepared(prepared)
             encode = module.build_encode_experiment(assets, prepared_sha256)
-            self.assertEqual(len(encode["cases"]), 6)
+            self.assertEqual(len(encode["cases"]), 8)
             self.assertEqual(encode["protocol"], module.PROTOCOL)
             for case in encode["cases"]:
                 self.assertEqual(case["settings"], {"coding": "classic", "decomposition_levels": 2})
@@ -65,13 +65,36 @@ class RarePlanesCalibrationTests(unittest.TestCase):
                 for asset in assets if asset["supported"]
             }
             decode = module.build_decode_experiment(assets, prepared_sha256, streams)
-            self.assertEqual(len(decode["cases"]), 6)
+            self.assertEqual(len(decode["cases"]), 8)
             for case in decode["cases"]:
                 self.assertEqual(case["settings"], {"coding": "classic"})
                 self.assertEqual(case["reference"]["sha256"], case["input"]["provenance"]["prepared_sha256"])
             unsupported = module.unsupported_observations(assets)
-            self.assertEqual(len(unsupported), 2)
+            self.assertEqual(len(unsupported), 0)
             self.assertTrue(all(item["disposition"] == "not_submitted" for item in unsupported))
+
+    def test_independent_dump_validates_every_band_and_profile(self):
+        image = {"width": 33, "height": 29, "components": 8, "precision": 16, "signed": False}
+        # Authored minimal tool-format text, not copied external codec output.
+        dump = "Image info { x0=0, y0=0 x1=33, y1=29 numcomps=8 "
+        dump += " ".join(f"component {i} {{ dx=1, dy=1 prec=16 sgnd=0 }}" for i in range(8)) + " }"
+        dump += "Codestream info from main header: { tx0=0 ty0=0 tdx=33 tdy=29 tw=1 th=1 "
+        dump += "default tile { prg=0 numlayers=1 mct=0 "
+        dump += " ".join(f"comp {i} {{ numresolutions=3 qmfbid=1 qntsty=0 cblksty=0 roishift=0 }}"
+                         for i in range(8)) + " } }"
+        observed = module.parse_msi_dump(dump, image)
+        self.assertEqual(len(observed["components"]), 8)
+        self.assertEqual(observed["components"][7]["width"], 33)
+        for old, new in [("numcomps=8", "numcomps=7"), ("component 7", "component 6"),
+                         ("comp 7", "comp 6"), ("dx=1", "dx=2"), ("prec=16", "prec=15"),
+                         ("sgnd=0", "sgnd=1"), ("numresolutions=3", "numresolutions=2"),
+                         ("qmfbid=1", "qmfbid=0"), ("mct=0", "mct=1"),
+                         ("tw=1", "tw=2"), ("qntsty=0", "qntsty=2"),
+                         ("cblksty=0", "cblksty=64"), ("roishift=0", "roishift=1")]:
+            with self.subTest(field=old), self.assertRaises(ValueError):
+                module.parse_msi_dump(dump.replace(old, new, 1), image)
+        with self.assertRaises(ValueError):
+            module.parse_msi_dump(dump[:-1], image)
 
     def test_tamper_is_rejected_before_experiment_generation(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -129,6 +152,14 @@ class RarePlanesCalibrationTests(unittest.TestCase):
         self.assertNotIn("private", serialised)
         self.assertEqual(observation["compression_ratio_raw_over_encoded"], 2.0)
         self.assertEqual(observation["sample_values_per_second"], 20_000_000.0)
+        self.assertEqual(observation["spatial_pixels_per_second"], 20_000_000.0)
+        self.assertEqual(observation["component_samples_per_second"], 20_000_000.0)
+        self.assertEqual(observation["bits_per_spatial_pixel"], 8.0)
+        self.assertEqual(observation["bits_per_component_sample"], 8.0)
+        case["image"]["components"] = 8
+        eight = module.summarise_run(run, {f"{module.BUNDLES[0]}-PAN16": 32}, (store,))["observations"][0]
+        self.assertEqual(eight["component_samples_per_second"], eight["spatial_pixels_per_second"] * 8)
+        self.assertEqual(eight["bits_per_spatial_pixel"], eight["bits_per_component_sample"] * 8)
         self.assertEqual(observation["encode_profiles"], [{"coding": "classic", "mct": "none"}])
 
 

@@ -42,7 +42,7 @@ runtime manifests, binaries and provenance. Do not commit build snapshots or
 runtime result inputs. Use separate target directories for concurrent builds.
 
 The default Emuella source is revision
-`68c850906fc0592b257b47d83edbd8c966e8de98`. Its public facade owns headline operations;
+`1c1a7fbc583d69c6d57bfd1da4248aa6fae071cc`. Its public facade owns headline operations;
 the same pinned codestream crate exposes opt-in diagnostic instrumentation.
 `parallel` is enabled and each batch uses a local Rayon pool with the requested
 thread budget. This bounds available workers, without claiming that every codec
@@ -56,6 +56,17 @@ one or three uniformly sampled components, `colour: "native"`, and
 always packed interleaved native samples. Decode references must already have the
 requested ROI/reduced geometry and semantics. Neither metrics nor workers invent
 reduced-resolution reference samples by resizing full output.
+
+The two native workers additionally admit exactly eight unsigned U16_LE bands
+for classic lossless D2 full-image operations. Bands are positional native
+components: Emuella uses `ColorModel::Unknown`, OpenJPEG uses
+`OPJ_CLRSPC_UNSPECIFIED`, and neither applies MCT or infers colour/spectral meaning.
+Axes are 4 through 32768 with at most 32 Mi spatial pixels (256 Mi component
+samples). The profile is raw Part 1, one full-image tile/tile-part, LRCP, one layer,
+unit sampling and reversible 5/3. MSI U8, lossy, HT, ROI/reduction, other component
+counts and coding overrides are explicit unsupported workloads. This additive
+worker profile does not redefine the codec's broader existing decode admission.
+OpenJPH remains limited to the original grey/RGB contract.
 
 | Worker | Boundary | Encode settings | Partial decode |
 |---|---|---|---|
@@ -156,9 +167,13 @@ cargo clippy --manifest-path workers/Cargo.toml --all-targets -- -D warnings
 cargo test --manifest-path workers/Cargo.toml --release
 ```
 
-The authored native matrix checks grey/RGB, U8/U16, two threads, exact round trips,
+The authored native matrix checks grey/RGB U8/U16 and eight-band U16, two threads,
+full-range values and distinct band order, exact round trips,
 all-output metric counts, actual RSS, unknown settings, changed input digests,
 diagnostic execution/output equivalence and distinct unattainable-rate outcomes.
+Native MSI tests also prove Emuella-to-OpenJPEG and OpenJPEG-to-Emuella full-reference
+interoperability, reject unsupported requests, and exercise truncated envelopes,
+marker lengths, tile-part lengths and coding overrides before timing.
 A generated COD-profile regression also checks that classic RGB U8/U16 streams
 signal MCT at zero, one and two decomposition levels.
 The repository's qualification journey additionally exercises common codestream

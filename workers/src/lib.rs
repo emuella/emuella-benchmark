@@ -1,3 +1,4 @@
+pub mod msi;
 use emuella_benchmark::{contract::*, metrics};
 use sha2::{Digest, Sha256};
 use std::{collections::BTreeMap, fs, time::Instant};
@@ -42,11 +43,26 @@ pub fn validate(request: &WorkerRequest, boundary: Boundary, keys: &[&str]) -> R
         || c.output.image.signed
         || ![8, 16].contains(&c.image.precision)
         || ![8, 16].contains(&c.output.image.precision)
-        || ![1, 3].contains(&c.image.components)
+        || ![1, 3, 8].contains(&c.image.components)
         || c.output.colour != "native"
         || c.output.container != "j2k"
     {
-        return Err("unsupported sample/colour/container semantics: unsigned U8/U16, grey/RGB, native, j2k required".into());
+        return Err("unsupported sample/colour/container semantics: unsigned U8/U16 grey/RGB or native eight-band U16, native, j2k required".into());
+    }
+    if c.image.components == 8
+        && (boundary != Boundary::CodecOperation
+            || c.image.precision != 16
+            || !(4..=32768).contains(&c.image.width)
+            || !(4..=32768).contains(&c.image.height)
+            || u64::from(c.image.width) * u64::from(c.image.height) > 32 * 1024 * 1024
+            || c.output.image != c.image
+            || !c.output.lossless
+            || c.output.reduction != 0
+            || c.output.region.is_some()
+            || string(c, "coding", "classic")? != "classic"
+            || (c.operation == Operation::Encode && levels(c, 2)? != 2))
+    {
+        return Err("unsupported native eight-band profile: full-image unsigned U16 classic lossless D2 required".into());
     }
     for key in c.settings.keys() {
         if !keys.contains(&key.as_str()) {

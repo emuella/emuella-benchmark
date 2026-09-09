@@ -17,7 +17,7 @@ BUNDLES = ("30_104001002394E000", "47_104001001D2C7A00")
 PRODUCTS = {
     "PAN16": (1, 16, True),
     "RGB8": (3, 8, True),
-    "MS16": (8, 16, False),
+    "MS16": (8, 16, True),
     "RGB16": (3, 16, True),
 }
 PROTOCOL = {
@@ -229,7 +229,92 @@ def build_decode_experiment(assets, prepared_sha256, streams):
     }
 
 
-def create_common_streams(assets, store, prepared_path, output, preparation_tool, compressor):
+def parse_msi_dump(text, image):
+    """Read factual OpenJPEG main-header fields; do not infer spectral semantics.
+
+    The workers separately reject tile coding overrides before decode. opj_dump
+    reports main-header defaults, so this observation alone does not prove their
+    absence or validate entropy data.
+    """
+    def section(label):
+        matches = list(re.finditer(re.escape(label) + r"\s*\{", text))
+        if len(matches) != 1:
+            raise ValueError(f"independent dump requires one {label}")
+        start = matches[0].end()
+        depth = 1
+        for end in range(start, len(text)):
+            depth += (text[end] == "{") - (text[end] == "}")
+            if depth == 0:
+                return text[start:end]
+        raise ValueError("truncated independent dump")
+
+    def integer(body, key):
+        values = re.findall(r"(?<![\w])" + re.escape(key) + r"=(-?\d+)(?![\w])", body)
+        if len(values) != 1:
+            raise ValueError(f"independent dump requires one {key}")
+        return int(values[0])
+
+    pixels = section("Image info")
+    coding = section("Codestream info from main header:")
+    expected = {"x0": 0, "y0": 0, "x1": image["width"], "y1": image["height"], "numcomps": 8}
+    if image["components"] != 8 or image["precision"] != 16 or image["signed"]:
+        raise ValueError("independent MSI inspection requires eight unsigned16 components")
+    if any(integer(pixels, key) != value for key, value in expected.items()):
+        raise ValueError("independent image geometry/count differs")
+    image_components = re.findall(r"component (\d+)\s*\{([^{}]*)\}", pixels)
+    coding_components = re.findall(r"comp (\d+)\s*\{([^{}]*)\}", coding)
+    if ([int(n) for n, _ in image_components] != list(range(8))
+            or [int(n) for n, _ in coding_components] != list(range(8))):
+        raise ValueError("independent dump requires eight ordered component records")
+    tile = {"tx0": 0, "ty0": 0, "tdx": image["width"], "tdy": image["height"],
+            "tw": 1, "th": 1, "prg": 0, "numlayers": 1, "mct": 0}
+    if any(integer(coding, key) != value for key, value in tile.items()):
+        raise ValueError("independent tile/MCT/profile differs")
+    components = []
+    for (index, geometry), (_, style) in zip(image_components, coding_components):
+        fields = {key: integer(geometry, key) for key in ("dx", "dy", "prec", "sgnd")}
+        transforms = {key: integer(style, key) for key in
+                      ("numresolutions", "qmfbid", "qntsty", "cblksty", "roishift")}
+        if fields != {"dx": 1, "dy": 1, "prec": 16, "sgnd": 0} or transforms != {
+                "numresolutions": 3, "qmfbid": 1, "qntsty": 0, "cblksty": 0, "roishift": 0}:
+            raise ValueError("independent component precision/sampling/coding differs")
+        components.append({"index": int(index), "width": image["width"], "height": image["height"],
+                           "precision": 16, "signed": False, "dx": 1, "dy": 1,
+                           "decomposition_levels": 2, "reversible": True})
+    return {"components": components, "tiles": 1, "mct": False, "layers": 1,
+            "progression": "LRCP", "geometry_basis": "zero image origin and unit component sampling",
+            "scope": "independent main-header observation; worker admission separately excludes overrides"}
+
+
+def inspect_msi_stream(stream, image, inspector, output):
+    """Run the independently installed CLI outside every operation timer."""
+    inspector = inspector.resolve(strict=True)
+    tool_digest = digest_file(inspector)
+    stream_digest = digest_file(stream)
+    help_result = subprocess.run([str(inspector), "-h"], capture_output=True, text=True, timeout=120)
+    help_text = help_result.stdout + help_result.stderr
+    version = re.search(r"compiled against openjp2 library v([^\s.]+(?:\.[^\s.]+)*)", help_text)
+    if not version:
+        raise RuntimeError("opj_dump did not identify its library version")
+    help_path = output.with_suffix(".opj-dump-help.log")
+    log_path = output.with_suffix(".opj-dump.log")
+    with help_path.open("x") as log:
+        log.write(help_text)
+    result = subprocess.run([str(inspector), "-i", str(stream)], capture_output=True, text=True, timeout=120)
+    with log_path.open("x") as log:
+        log.write(result.stdout + result.stderr)
+    if result.returncode:
+        raise RuntimeError("independent opj_dump failed; retained inspection log")
+    observed = parse_msi_dump(result.stdout, image)
+    if tool_digest != digest_file(inspector) or stream_digest != digest_file(stream):
+        raise RuntimeError("independent inspection tool or codestream changed")
+    return {"tool": "OpenJPEG opj_dump", "tool_sha256": tool_digest,
+            "openjp2_version": version.group(1).rstrip("."), "codestream_sha256": stream_digest,
+            "raw_dump_sha256": digest_file(log_path), "tool_help_sha256": digest_file(help_path),
+            "observed": observed}
+
+
+def create_common_streams(assets, store, prepared_path, output, preparation_tool, compressor, inspector):
     compressor = compressor.resolve(strict=True)
     if not compressor.is_file():
         raise ValueError("opj_compress must be a regular file")
@@ -285,6 +370,9 @@ def create_common_streams(assets, store, prepared_path, output, preparation_tool
             "preparation_tool_sha256": digest_file(preparation_tool),
             "preparation_record": preparation_record,
         }
+        if image["components"] == 8:
+            records[asset["id"]]["independent_inspection"] = inspect_msi_stream(
+                stream, image, inspector, common / asset["id"])
     runtime_record = {
         "schema_version": 1,
         "generator": "OpenJPEG opj_compress",
@@ -348,7 +436,8 @@ def summarise_run(run, raw_bytes_by_asset, roots):
         encoded_bytes = (sum(sizes) / len(sizes)) if case["operation"] == "encode" and sizes else (
             Path(case["input"]["path"]).stat().st_size if case["operation"] == "decode" else None)
         image = case["image"]
-        sample_values = image["width"] * image["height"] * image["components"]
+        spatial_pixels = image["width"] * image["height"]
+        sample_values = spatial_pixels * image["components"]
         mean_ns = sum(times) / len(times) if times else None
         exact = bool(ok) and all(batch["response"]["correctness"]["exact"] for batch in ok)
         complete = len(ok) == run["experiment"]["protocol"]["rounds"] and set(statuses) == {"ok"} and exact
@@ -372,6 +461,10 @@ def summarise_run(run, raw_bytes_by_asset, roots):
             "disposition": disposition,
             "statuses": dict(sorted(statuses.items())),
             "measured_time_ns": ({"mean": mean_ns, "minimum": min(times), "maximum": max(times)} if times else None),
+            "spatial_pixels_per_second": spatial_pixels * 1_000_000_000 / mean_ns if mean_ns else None,
+            "component_samples_per_second": sample_values * 1_000_000_000 / mean_ns if mean_ns else None,
+            "bits_per_spatial_pixel": encoded_bytes * 8 / spatial_pixels if encoded_bytes else None,
+            "bits_per_component_sample": encoded_bytes * 8 / sample_values if encoded_bytes else None,
             "sample_values_per_second": sample_values * 1_000_000_000 / mean_ns if mean_ns else None,
             "operations_per_second": 1_000_000_000 / mean_ns if mean_ns else None,
             "measured_output_bytes": ({"mean": sum(sizes) / len(sizes), "minimum": min(sizes), "maximum": max(sizes)} if sizes else None),
@@ -413,6 +506,13 @@ def summarise_run(run, raw_bytes_by_asset, roots):
         "machine_identity_sha256": hashlib.sha256(machine_json).hexdigest(),
         "machine": public_machine(run["machine"]),
         "protocol": run["experiment"]["protocol"],
+        "measurement_units": {
+            "time": "nanoseconds", "size": "bytes", "peak_rss": "bytes",
+            "rss_scope": "whole worker process including setup and verification",
+            "spatial_pixel": "one image position across all bands",
+            "component_sample": "one scalar band value",
+            "sample_values_per_second": "alias of component_samples_per_second",
+        },
         "observations": observations,
     }
 
@@ -462,6 +562,7 @@ def make_summary(run_paths, assets, prepared_sha256, source_identity, dirty, roo
                 "preparation_record_sha256": hashlib.sha256(json.dumps(
                     record["preparation_record"], sort_keys=True, separators=(",", ":")
                 ).encode()).hexdigest(),
+                "independent_inspection": record.get("independent_inspection"),
                 "profile": {
                     "coding": "classic", "decomposition_levels": 2, "tiles": 1,
                     "progression": "LRCP", "layers": 1, "mct": False, "threads": 1,
@@ -506,6 +607,7 @@ def main():
     parser.add_argument("--store", type=Path, required=True, help="approved RarePlanes artefact store")
     parser.add_argument("--output", type=Path, required=True, help="new run directory within --store")
     parser.add_argument("--opj-compress", type=Path, required=True)
+    parser.add_argument("--opj-dump", type=Path, required=True)
     parser.add_argument("--allow-dirty-probe", action="store_true")
     args = parser.parse_args()
     try:
@@ -527,9 +629,11 @@ def main():
         source_revision = git("rev-parse", "HEAD")
         source_script_sha256 = digest_file(Path(__file__))
         build_provenance = public_build_provenance(build_provenance_path)
+        independent_tools = {path.resolve(strict=True): digest_file(path.resolve(strict=True))
+                             for path in (args.opj_compress, args.opj_dump, preparation_tool)}
         output.mkdir(parents=False)
         (output / "inputs").mkdir()
-        streams = create_common_streams(assets, store, prepared, output, preparation_tool, args.opj_compress)
+        streams = create_common_streams(assets, store, prepared, output, preparation_tool, args.opj_compress, args.opj_dump)
         encode = build_encode_experiment(assets, prepared_sha256)
         decode = build_decode_experiment(assets, prepared_sha256, streams)
         encode_path = output / "inputs" / "encode.json"
@@ -557,6 +661,11 @@ def main():
         end_script_sha256 = digest_file(Path(__file__))
         build_record_changed = build_provenance["record_sha256"] != digest_file(build_provenance_path)
         source_changed = source_revision != end_revision or source_script_sha256 != end_script_sha256
+        if (load_prepared(prepared)[2] != prepared_sha256
+                or any(digest_file(path) != digest for path, digest in independent_tools.items())
+                or any(digest_file(record["path"]) != record["sha256"] for record in streams.values())):
+            failures.append({"name": "input-stream-tool-identity", "returncode": None,
+                             "stderr": "prepared input, common stream or independent tool changed during the run"})
         if source_changed:
             failures.append({
                 "name": "orchestration-source-identity", "returncode": None,
