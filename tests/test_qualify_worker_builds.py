@@ -72,11 +72,24 @@ class WorkerBuildQualificationTests(unittest.TestCase):
                 module.validate_matrix(builds)
 
     def test_overrides_remain_outside_frozen_qualification(self):
-        builds = matrix()
-        for build in builds.values():
-            build["build_environment"] = {"RUSTFLAGS": "-C target-cpu=native"}
-        with self.assertRaisesRegex(ValueError, "excludes"):
-            module.validate_matrix(builds)
+        for key, value in {
+            "RUSTFLAGS": "-C target-cpu=native",
+            "CARGO_ENCODED_RUSTFLAGS": "-C\x1ftarget-cpu=native",
+            "RUSTC_WRAPPER": "/authored/wrapper",
+            "RUSTC_WORKSPACE_WRAPPER": "/authored/wrapper",
+            "CARGO_BUILD_RUSTFLAGS": "-C target-cpu=native",
+            "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS": "-C target-cpu=native",
+            "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_RUSTFLAGS": "-C target-cpu=native",
+            "CARGO_BUILD_RUSTC_WRAPPER": "/authored/wrapper",
+            "CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER": "/authored/wrapper",
+            "CARGO_PROFILE_RELEASE_OPT_LEVEL": "1",
+        }.items():
+            with self.subTest(key=key):
+                builds = matrix()
+                for build in builds.values():
+                    build["build_environment"] = {key: value}
+                with self.assertRaisesRegex(ValueError, "excludes"):
+                    module.validate_matrix(builds)
         builds = matrix()
         builds["release"]["build_observations"]["cargo_config_files"] = [{"path": "config", "sha256": "a" * 64}]
         with self.assertRaisesRegex(ValueError, "configuration"):

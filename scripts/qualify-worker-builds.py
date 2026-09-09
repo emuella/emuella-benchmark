@@ -93,8 +93,11 @@ def validate_matrix(builds):
         if codec[0].get("fresh") is not False:
             raise ValueError(f"{name}: qualification requires a freshly compiled codec")
         environment = build["build_environment"]
-        if any(value and (key in {"RUSTFLAGS", "CARGO_ENCODED_RUSTFLAGS", "RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER"}
-                          or key.startswith("CARGO_PROFILE_")) for key, value in environment.items()):
+        if any(value and (key in {"RUSTFLAGS", "CARGO_ENCODED_RUSTFLAGS", "RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER",
+                                 "CARGO_BUILD_RUSTFLAGS", "CARGO_BUILD_RUSTC_WRAPPER", "CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER"}
+                          or key.startswith("CARGO_PROFILE_")
+                          or (key.startswith("CARGO_TARGET_") and key.endswith("_RUSTFLAGS")))
+               for key, value in environment.items()):
             raise ValueError("qualification excludes compiler flags, wrappers and profile overrides")
         if build["build_observations"].get("cargo_config_files"):
             raise ValueError("qualification requires no unreviewed Cargo configuration overrides")
