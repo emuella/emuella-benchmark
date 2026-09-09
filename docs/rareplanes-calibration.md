@@ -140,3 +140,7 @@ without claiming completed verification; a decode failure is retained in the
 summary and exits 4. Setup/export failures exit 1. Time and process peak RSS in
 this journey include its own verification context and are separate from both the
 headline matrix and codec-owned additional working-allocation measurements.
+
+The subsequent [scalable lossless work package](scalable-lossless.md) records
+the 120-exact candidate matrix, merged-codec allocation scaling and retained
+baseline comparison. It preserves this earlier calibration as historical evidence.

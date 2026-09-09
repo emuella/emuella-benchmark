@@ -1,0 +1,736 @@
+{
+  "schema_version": 1,
+  "diagnostic_only": true,
+  "case_id": "30_104001002394E000-RGB16-encode",
+  "input_sha256": "3faf0be9dffeb0f3b5fab3675704a3b8f292755ef2ce7d6bfeb22beadd74a15c",
+  "input_shape": {
+    "width": 1332,
+    "height": 720,
+    "components": 3,
+    "precision": 16
+  },
+  "request_sha256": "5f420408cf882b1b251ede5eeec5452632510695e672247c030705adc7b6fb18",
+  "probe_source_sha256": {
+    "allocation_diagnostic.rs": "235b67fff8849749ba729117bfe5b99b4218be1a1d6ff74361e1ab5d05789e16",
+    "prepare.py": "72464826081099619b427d0f7f1ce49c5ce6e620056b539118f1384d1fa0a6e3",
+    "run.py": "fea2b710ed58b32d081779e230214a20e747bb1f66778aeb35ea6fd1d004c6b7"
+  },
+  "builds": {
+    "old": {
+      "codec_revision": "2568f1c40c83a40f527c7ee8f1600af511e046d0",
+      "codec_tree": "2c3a479bbd9ca577411c0c209dfb5edd292816ca",
+      "benchmark_revision": "f9674e8b7aee59b355ac350893ea66b674ba18bc",
+      "binary_sha256": "a0f3613b8c35b0cd37a78918a840df7e5b584175620c4477c12b53f679f511cb",
+      "instrumented_source_file_sha256": {
+        "workers/src/lib.rs": "0cf985eecd77db5165ad6d2022799969484f768c46421effc35ad63c47620ec9",
+        "workers/src/bin/emuella.rs": "9022b3a8b79e177312065d9734c36edfdb8a5b1bacd99b6166c8887702d94656",
+        "workers/src/allocation_diagnostic.rs": "235b67fff8849749ba729117bfe5b99b4218be1a1d6ff74361e1ab5d05789e16",
+        "workers/Cargo.toml": "01cca101a6c387c8071995b47fd1da0291ac31eb6e776531ce2c979158e4e4d5",
+        "workers/Cargo.lock": "d7921013f1e6c008f2088e683ea6428bdc3115b73633a2f4dc7c6955e8cff1b1",
+        "Cargo.toml": "14112077470f39f4864646be0aac561dd5f56e7e8285989a667e6c9cde710baa",
+        "Cargo.lock": "dc1283b4af49d39d6cae3a658e4641bc4a5fb71c669cb059e1c15b04f38f6047"
+      },
+      "instrumented_source_manifest_sha256": "d9ef064d7b755bd2ae845491cd39c85f31880f6655e3361c45d34348d2e93930",
+      "profile": "release",
+      "worker_features": [
+        "emuella"
+      ],
+      "codec_features": [
+        "parallel"
+      ],
+      "local_rayon_threads": 1,
+      "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+      "cargo": "cargo 1.97.1 (c980f4866 2026-06-30)",
+      "build_log_sha256": "73c8bd9331bea37d4f9182ba07d76f34a515140e82b973e747f60ec1dc779c15"
+    },
+    "new": {
+      "codec_revision": "68c850906fc0592b257b47d83edbd8c966e8de98",
+      "codec_tree": "4119597ba027e79cb7c6a97703c36431d486e418",
+      "benchmark_revision": "f9674e8b7aee59b355ac350893ea66b674ba18bc",
+      "binary_sha256": "a1f399de5b871511fcee4780b58dc7e417004ba3ec201a37f825ddadaac63afc",
+      "instrumented_source_file_sha256": {
+        "workers/src/lib.rs": "0cf985eecd77db5165ad6d2022799969484f768c46421effc35ad63c47620ec9",
+        "workers/src/bin/emuella.rs": "9022b3a8b79e177312065d9734c36edfdb8a5b1bacd99b6166c8887702d94656",
+        "workers/src/allocation_diagnostic.rs": "235b67fff8849749ba729117bfe5b99b4218be1a1d6ff74361e1ab5d05789e16",
+        "workers/Cargo.toml": "9e2465339915a2d3e62994a44c27a1eb4e02c206675a0509957e1c323657af17",
+        "workers/Cargo.lock": "d7921013f1e6c008f2088e683ea6428bdc3115b73633a2f4dc7c6955e8cff1b1",
+        "Cargo.toml": "14112077470f39f4864646be0aac561dd5f56e7e8285989a667e6c9cde710baa",
+        "Cargo.lock": "dc1283b4af49d39d6cae3a658e4641bc4a5fb71c669cb059e1c15b04f38f6047"
+      },
+      "instrumented_source_manifest_sha256": "1b00e37ee364066496a08dcc36b06effdfd1bb8bef1b5470b89c97ee65d5a20d",
+      "profile": "release",
+      "worker_features": [
+        "emuella"
+      ],
+      "codec_features": [
+        "parallel"
+      ],
+      "local_rayon_threads": 1,
+      "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+      "cargo": "cargo 1.97.1 (c980f4866 2026-06-30)",
+      "build_log_sha256": "01769de6afa9aa38d07b742712880188523e84d501d66f70fbb9524740511994"
+    }
+  },
+  "measurement_semantics": {
+    "requested_live": "All currently live requested Rust global-allocator bytes in the instrumented worker at that phase, including caller input/reference and any retained codestream. Allocator bookkeeping and native allocations are excluded.",
+    "phase_peak_requested": "Absolute live requested-byte maximum since the previous phase; includes the held baseline. Reallocation conservatively counts old and new requests concurrently.",
+    "rss": "Linux /proc/self/status VmRSS and VmHWM snapshots in bytes. These are process observations, not exact live requested allocations; kernel RSS accounting can be approximate.",
+    "phase_probe_overhead": "Phase logging reads /proc/self/status and writes a compact diagnostic to stderr outside codec-operation timing. Counters are captured before logging and reset after logging storage is dropped.",
+    "trim_control": "Separate diagnostic-only fresh process invokes libc malloc_trim(0) after encode. No codec, worker repository or production allocator policy is changed.",
+    "timing": "Instrumented diagnostic timings are not headline comparisons; authored scaling probes/builds could overlap."
+  },
+  "headline_context": {
+    "old": {
+      "run_sha256": "80129d72a4540ec806716c69202b3f7c0263ed16cb1f16bb996da431844b7e9b",
+      "batches": 5,
+      "rss_bytes": [
+        48697344,
+        48713728,
+        48709632,
+        48660480,
+        48644096
+      ],
+      "mean_rss_bytes": 48685056,
+      "mean_encode_ns": 471922396,
+      "all_exact": true
+    },
+    "new": {
+      "run_sha256": "1f95b5c7622092135b26f87486a9c79d13c1eb048cc2868a9b2d43883f2b2db1",
+      "batches": 5,
+      "rss_bytes": [
+        57712640,
+        57905152,
+        58101760,
+        58126336,
+        57499648
+      ],
+      "mean_rss_bytes": 57869107.2,
+      "mean_encode_ns": 467292561.2,
+      "all_exact": true
+    }
+  },
+  "untrimmed_repeats": [
+    {
+      "repeat": "old-0",
+      "phases": [
+        {
+          "phase": "before_operation",
+          "requested_live": 17279707,
+          "phase_peak_requested": 23032134,
+          "output_capacity": 0,
+          "vmrss": 26333184,
+          "vmhwm": 26333184
+        },
+        {
+          "phase": "after_operation",
+          "requested_live": 19969093,
+          "phase_peak_requested": 39565806,
+          "output_capacity": 0,
+          "vmrss": 46628864,
+          "vmhwm": 46628864
+        },
+        {
+          "phase": "before_decode",
+          "requested_live": 19969093,
+          "phase_peak_requested": 19969093,
+          "output_capacity": 2689386,
+          "vmrss": 46628864,
+          "vmhwm": 46628864
+        },
+        {
+          "phase": "after_decode",
+          "requested_live": 25723333,
+          "phase_peak_requested": 33396185,
+          "output_capacity": 2689386,
+          "vmrss": 48701440,
+          "vmhwm": 48701440
+        },
+        {
+          "phase": "after_raw_samples",
+          "requested_live": 37231813,
+          "phase_peak_requested": 37231813,
+          "output_capacity": 2689386,
+          "vmrss": 48701440,
+          "vmhwm": 48701440
+        },
+        {
+          "phase": "after_decoded_drop",
+          "requested_live": 31477573,
+          "phase_peak_requested": 37231813,
+          "output_capacity": 2689386,
+          "vmrss": 48701440,
+          "vmhwm": 48701440
+        },
+        {
+          "phase": "after_verify",
+          "requested_live": 28788187,
+          "phase_peak_requested": 31477573,
+          "output_capacity": 0,
+          "vmrss": 48701440,
+          "vmhwm": 48701440
+        },
+        {
+          "phase": "after_metrics",
+          "requested_live": 28788187,
+          "phase_peak_requested": 28788187,
+          "output_capacity": 0,
+          "vmrss": 48701440,
+          "vmhwm": 48701440
+        }
+      ],
+      "response_sha256": "3324d273d27d81018446594216ea6df3ec42e9c69cb6cb9ebcb9024329f077b6",
+      "phases_sha256": "0ac8887531689f10f488d75ff2cc65769070b22bde8ecab8ab3f309c218fa5fa",
+      "exact": true,
+      "output_bytes": 2689386
+    },
+    {
+      "repeat": "new-0",
+      "phases": [
+        {
+          "phase": "before_operation",
+          "requested_live": 17279707,
+          "phase_peak_requested": 23032134,
+          "output_capacity": 0,
+          "vmrss": 26382336,
+          "vmhwm": 26382336
+        },
+        {
+          "phase": "after_operation",
+          "requested_live": 22330587,
+          "phase_peak_requested": 36410339,
+          "output_capacity": 0,
+          "vmrss": 40161280,
+          "vmhwm": 40161280
+        },
+        {
+          "phase": "before_decode",
+          "requested_live": 22330587,
+          "phase_peak_requested": 22330587,
+          "output_capacity": 5050880,
+          "vmrss": 40161280,
+          "vmhwm": 40161280
+        },
+        {
+          "phase": "after_decode",
+          "requested_live": 28084827,
+          "phase_peak_requested": 35757679,
+          "output_capacity": 5050880,
+          "vmrss": 47034368,
+          "vmhwm": 47034368
+        },
+        {
+          "phase": "after_raw_samples",
+          "requested_live": 39593307,
+          "phase_peak_requested": 39593307,
+          "output_capacity": 5050880,
+          "vmrss": 58544128,
+          "vmhwm": 58544128
+        },
+        {
+          "phase": "after_decoded_drop",
+          "requested_live": 33839067,
+          "phase_peak_requested": 39593307,
+          "output_capacity": 5050880,
+          "vmrss": 58544128,
+          "vmhwm": 58544128
+        },
+        {
+          "phase": "after_verify",
+          "requested_live": 28788187,
+          "phase_peak_requested": 33839067,
+          "output_capacity": 0,
+          "vmrss": 58544128,
+          "vmhwm": 58544128
+        },
+        {
+          "phase": "after_metrics",
+          "requested_live": 28788187,
+          "phase_peak_requested": 28788187,
+          "output_capacity": 0,
+          "vmrss": 58544128,
+          "vmhwm": 58544128
+        }
+      ],
+      "response_sha256": "bc6d266bbc8394c4a50d90b72d29d4572c5f8c34cb8fa01337956780d84efef3",
+      "phases_sha256": "516ca5253fa990b3b2e86f0e63f539ef9c9867fa41bff178841f5dff7c01bc61",
+      "exact": true,
+      "output_bytes": 2689386
+    },
+    {
+      "repeat": "old-1",
+      "phases": [
+        {
+          "phase": "before_operation",
+          "requested_live": 17279707,
+          "phase_peak_requested": 23032134,
+          "output_capacity": 0,
+          "vmrss": 26411008,
+          "vmhwm": 26411008
+        },
+        {
+          "phase": "after_operation",
+          "requested_live": 19969093,
+          "phase_peak_requested": 39565806,
+          "output_capacity": 0,
+          "vmrss": 46837760,
+          "vmhwm": 46837760
+        },
+        {
+          "phase": "before_decode",
+          "requested_live": 19969093,
+          "phase_peak_requested": 19969093,
+          "output_capacity": 2689386,
+          "vmrss": 46837760,
+          "vmhwm": 46837760
+        },
+        {
+          "phase": "after_decode",
+          "requested_live": 25723333,
+          "phase_peak_requested": 33396185,
+          "output_capacity": 2689386,
+          "vmrss": 48713728,
+          "vmhwm": 48713728
+        },
+        {
+          "phase": "after_raw_samples",
+          "requested_live": 37231813,
+          "phase_peak_requested": 37231813,
+          "output_capacity": 2689386,
+          "vmrss": 48713728,
+          "vmhwm": 48713728
+        },
+        {
+          "phase": "after_decoded_drop",
+          "requested_live": 31477573,
+          "phase_peak_requested": 37231813,
+          "output_capacity": 2689386,
+          "vmrss": 48713728,
+          "vmhwm": 48713728
+        },
+        {
+          "phase": "after_verify",
+          "requested_live": 28788187,
+          "phase_peak_requested": 31477573,
+          "output_capacity": 0,
+          "vmrss": 48713728,
+          "vmhwm": 48713728
+        },
+        {
+          "phase": "after_metrics",
+          "requested_live": 28788187,
+          "phase_peak_requested": 28788187,
+          "output_capacity": 0,
+          "vmrss": 48713728,
+          "vmhwm": 48713728
+        }
+      ],
+      "response_sha256": "a48598032390f88118b77eaeeae5ee3957ceb9924770e2b8220168053b090e0e",
+      "phases_sha256": "00e4c30717d00a68fb6043caf6ae5f2a1b0385acf38bd4c77198cfad135d209e",
+      "exact": true,
+      "output_bytes": 2689386
+    },
+    {
+      "repeat": "new-1",
+      "phases": [
+        {
+          "phase": "before_operation",
+          "requested_live": 17279707,
+          "phase_peak_requested": 23032134,
+          "output_capacity": 0,
+          "vmrss": 26406912,
+          "vmhwm": 26406912
+        },
+        {
+          "phase": "after_operation",
+          "requested_live": 22330587,
+          "phase_peak_requested": 36410339,
+          "output_capacity": 0,
+          "vmrss": 40185856,
+          "vmhwm": 40185856
+        },
+        {
+          "phase": "before_decode",
+          "requested_live": 22330587,
+          "phase_peak_requested": 22330587,
+          "output_capacity": 5050880,
+          "vmrss": 40185856,
+          "vmhwm": 40185856
+        },
+        {
+          "phase": "after_decode",
+          "requested_live": 28084827,
+          "phase_peak_requested": 35757679,
+          "output_capacity": 5050880,
+          "vmrss": 47058944,
+          "vmhwm": 47058944
+        },
+        {
+          "phase": "after_raw_samples",
+          "requested_live": 39593307,
+          "phase_peak_requested": 39593307,
+          "output_capacity": 5050880,
+          "vmrss": 58568704,
+          "vmhwm": 58568704
+        },
+        {
+          "phase": "after_decoded_drop",
+          "requested_live": 33839067,
+          "phase_peak_requested": 39593307,
+          "output_capacity": 5050880,
+          "vmrss": 58568704,
+          "vmhwm": 58568704
+        },
+        {
+          "phase": "after_verify",
+          "requested_live": 28788187,
+          "phase_peak_requested": 33839067,
+          "output_capacity": 0,
+          "vmrss": 58568704,
+          "vmhwm": 58568704
+        },
+        {
+          "phase": "after_metrics",
+          "requested_live": 28788187,
+          "phase_peak_requested": 28788187,
+          "output_capacity": 0,
+          "vmrss": 58568704,
+          "vmhwm": 58568704
+        }
+      ],
+      "response_sha256": "2017a07f71d94a9fe1f41b8679533e34b240f97f65141d5de5c6699d0d45e933",
+      "phases_sha256": "80c70111120bc7a8923b6f5dacc447df74342123562bba2b733e2f669b1629e1",
+      "exact": true,
+      "output_bytes": 2689386
+    },
+    {
+      "repeat": "old-2",
+      "phases": [
+        {
+          "phase": "before_operation",
+          "requested_live": 17279707,
+          "phase_peak_requested": 23032134,
+          "output_capacity": 0,
+          "vmrss": 26361856,
+          "vmhwm": 26361856
+        },
+        {
+          "phase": "after_operation",
+          "requested_live": 19969093,
+          "phase_peak_requested": 39565806,
+          "output_capacity": 0,
+          "vmrss": 46723072,
+          "vmhwm": 46723072
+        },
+        {
+          "phase": "before_decode",
+          "requested_live": 19969093,
+          "phase_peak_requested": 19969093,
+          "output_capacity": 2689386,
+          "vmrss": 46723072,
+          "vmhwm": 46723072
+        },
+        {
+          "phase": "after_decode",
+          "requested_live": 25723333,
+          "phase_peak_requested": 33396185,
+          "output_capacity": 2689386,
+          "vmrss": 48664576,
+          "vmhwm": 48664576
+        },
+        {
+          "phase": "after_raw_samples",
+          "requested_live": 37231813,
+          "phase_peak_requested": 37231813,
+          "output_capacity": 2689386,
+          "vmrss": 48664576,
+          "vmhwm": 48664576
+        },
+        {
+          "phase": "after_decoded_drop",
+          "requested_live": 31477573,
+          "phase_peak_requested": 37231813,
+          "output_capacity": 2689386,
+          "vmrss": 48664576,
+          "vmhwm": 48664576
+        },
+        {
+          "phase": "after_verify",
+          "requested_live": 28788187,
+          "phase_peak_requested": 31477573,
+          "output_capacity": 0,
+          "vmrss": 48664576,
+          "vmhwm": 48664576
+        },
+        {
+          "phase": "after_metrics",
+          "requested_live": 28788187,
+          "phase_peak_requested": 28788187,
+          "output_capacity": 0,
+          "vmrss": 48664576,
+          "vmhwm": 48664576
+        }
+      ],
+      "response_sha256": "2f3a63e094f777d7d06f67e898265335f5877f1f707f0ce902b61843faae86a5",
+      "phases_sha256": "e45497ca0335be526f53d37365a1f69ca6cb248a5aa8305abee0f831e4d79257",
+      "exact": true,
+      "output_bytes": 2689386
+    },
+    {
+      "repeat": "new-2",
+      "phases": [
+        {
+          "phase": "before_operation",
+          "requested_live": 17279707,
+          "phase_peak_requested": 23032134,
+          "output_capacity": 0,
+          "vmrss": 26529792,
+          "vmhwm": 26529792
+        },
+        {
+          "phase": "after_operation",
+          "requested_live": 22330587,
+          "phase_peak_requested": 36410339,
+          "output_capacity": 0,
+          "vmrss": 40177664,
+          "vmhwm": 40177664
+        },
+        {
+          "phase": "before_decode",
+          "requested_live": 22330587,
+          "phase_peak_requested": 22330587,
+          "output_capacity": 5050880,
+          "vmrss": 40177664,
+          "vmhwm": 40177664
+        },
+        {
+          "phase": "after_decode",
+          "requested_live": 28084827,
+          "phase_peak_requested": 35757679,
+          "output_capacity": 5050880,
+          "vmrss": 47116288,
+          "vmhwm": 47116288
+        },
+        {
+          "phase": "after_raw_samples",
+          "requested_live": 39593307,
+          "phase_peak_requested": 39593307,
+          "output_capacity": 5050880,
+          "vmrss": 58626048,
+          "vmhwm": 58626048
+        },
+        {
+          "phase": "after_decoded_drop",
+          "requested_live": 33839067,
+          "phase_peak_requested": 39593307,
+          "output_capacity": 5050880,
+          "vmrss": 58626048,
+          "vmhwm": 58626048
+        },
+        {
+          "phase": "after_verify",
+          "requested_live": 28788187,
+          "phase_peak_requested": 33839067,
+          "output_capacity": 0,
+          "vmrss": 58626048,
+          "vmhwm": 58626048
+        },
+        {
+          "phase": "after_metrics",
+          "requested_live": 28788187,
+          "phase_peak_requested": 28788187,
+          "output_capacity": 0,
+          "vmrss": 58626048,
+          "vmhwm": 58626048
+        }
+      ],
+      "response_sha256": "7cb2e7b6116acf3ace17f6a6a5bdbda76bb31d240e5455ec33092eaf10134039",
+      "phases_sha256": "529e69fea3505e866bf58c83b1459680bd91eef2874ad8d16ecae763c51b3044",
+      "exact": true,
+      "output_bytes": 2689386
+    }
+  ],
+  "trim_controls": [
+    {
+      "label": "old-trim",
+      "phases": [
+        {
+          "phase": "before_operation",
+          "requested_live": 17279713,
+          "phase_peak_requested": 23032140,
+          "output_capacity": 0,
+          "vmrss": 26357760,
+          "vmhwm": 26357760
+        },
+        {
+          "phase": "after_operation",
+          "requested_live": 19969099,
+          "phase_peak_requested": 39565812,
+          "output_capacity": 0,
+          "vmrss": 46718976,
+          "vmhwm": 46718976
+        },
+        {
+          "phase": "before_decode",
+          "requested_live": 19969099,
+          "phase_peak_requested": 19969099,
+          "output_capacity": 2689386,
+          "vmrss": 46718976,
+          "vmhwm": 46718976
+        },
+        {
+          "phase": "after_diagnostic_malloc_trim",
+          "requested_live": 19969099,
+          "phase_peak_requested": 19969100,
+          "output_capacity": 0,
+          "vmrss": 43708416,
+          "vmhwm": 46080000
+        },
+        {
+          "phase": "after_decode",
+          "requested_live": 25723339,
+          "phase_peak_requested": 33396191,
+          "output_capacity": 2689386,
+          "vmrss": 45899776,
+          "vmhwm": 46080000
+        },
+        {
+          "phase": "after_raw_samples",
+          "requested_live": 37231819,
+          "phase_peak_requested": 37231819,
+          "output_capacity": 2689386,
+          "vmrss": 45899776,
+          "vmhwm": 46080000
+        },
+        {
+          "phase": "after_decoded_drop",
+          "requested_live": 31477579,
+          "phase_peak_requested": 37231819,
+          "output_capacity": 2689386,
+          "vmrss": 45899776,
+          "vmhwm": 46080000
+        },
+        {
+          "phase": "after_verify",
+          "requested_live": 28788193,
+          "phase_peak_requested": 31477579,
+          "output_capacity": 0,
+          "vmrss": 45899776,
+          "vmhwm": 46080000
+        },
+        {
+          "phase": "after_metrics",
+          "requested_live": 28788193,
+          "phase_peak_requested": 28788193,
+          "output_capacity": 0,
+          "vmrss": 45899776,
+          "vmhwm": 46080000
+        }
+      ],
+      "response_sha256": "6f549b35f2b83043946df63694657a2b7d94a95e857c72b7939af18c6f1fdb80",
+      "phases_sha256": "fff40a3ce1faa623c6f7191cacd905a70818318884758cfd9e4411fe873d0c91",
+      "exact": true
+    },
+    {
+      "label": "new-trim",
+      "phases": [
+        {
+          "phase": "before_operation",
+          "requested_live": 17279713,
+          "phase_peak_requested": 23032140,
+          "output_capacity": 0,
+          "vmrss": 26402816,
+          "vmhwm": 26402816
+        },
+        {
+          "phase": "after_operation",
+          "requested_live": 22330593,
+          "phase_peak_requested": 36410345,
+          "output_capacity": 0,
+          "vmrss": 40116224,
+          "vmhwm": 40116224
+        },
+        {
+          "phase": "before_decode",
+          "requested_live": 22330593,
+          "phase_peak_requested": 22330593,
+          "output_capacity": 5050880,
+          "vmrss": 40116224,
+          "vmhwm": 40116224
+        },
+        {
+          "phase": "after_diagnostic_malloc_trim",
+          "requested_live": 22330593,
+          "phase_peak_requested": 22330594,
+          "output_capacity": 0,
+          "vmrss": 26726400,
+          "vmhwm": 38739968
+        },
+        {
+          "phase": "after_decode",
+          "requested_live": 28084833,
+          "phase_peak_requested": 35757685,
+          "output_capacity": 5050880,
+          "vmrss": 45289472,
+          "vmhwm": 45289472
+        },
+        {
+          "phase": "after_raw_samples",
+          "requested_live": 39593313,
+          "phase_peak_requested": 39593313,
+          "output_capacity": 5050880,
+          "vmrss": 56799232,
+          "vmhwm": 56799232
+        },
+        {
+          "phase": "after_decoded_drop",
+          "requested_live": 33839073,
+          "phase_peak_requested": 39593313,
+          "output_capacity": 5050880,
+          "vmrss": 56799232,
+          "vmhwm": 56799232
+        },
+        {
+          "phase": "after_verify",
+          "requested_live": 28788193,
+          "phase_peak_requested": 33839073,
+          "output_capacity": 0,
+          "vmrss": 56799232,
+          "vmhwm": 56799232
+        },
+        {
+          "phase": "after_metrics",
+          "requested_live": 28788193,
+          "phase_peak_requested": 28788193,
+          "output_capacity": 0,
+          "vmrss": 56799232,
+          "vmhwm": 56799232
+        }
+      ],
+      "response_sha256": "29886099b0c4c103def9511bb67890019466362274cf7dd8538a452dcd069ade",
+      "phases_sha256": "d28bfed7b5510922678a8493180e43e7211d8021b5faf9e5fd9e93cfb2ea56b4",
+      "exact": true
+    }
+  ],
+  "findings": {
+    "held_before_operation_requested_bytes": 17279707,
+    "old_encoder_absolute_peak_requested_bytes": 39565806,
+    "new_encoder_absolute_peak_requested_bytes": 36410339,
+    "old_incremental_encoder_peak_including_output_bytes": 22286099,
+    "new_incremental_encoder_peak_including_output_bytes": 19130632,
+    "encoder_peak_reduction_bytes": 3155467,
+    "old_returned_output_capacity_bytes": 2689386,
+    "new_returned_output_capacity_bytes": 5050880,
+    "output_length_both_bytes": 2689386,
+    "retained_capacity_increase_bytes": 2361494,
+    "after_raw_samples_old_requested_live_bytes": 37231813,
+    "after_raw_samples_new_requested_live_bytes": 39593307,
+    "after_verify_requested_live_both_bytes": 28788187,
+    "whole_journey_old_peak_requested_bytes": 39565806,
+    "whole_journey_new_peak_requested_bytes": 39593307,
+    "whole_journey_peak_requested_increase_bytes": 27501,
+    "new_rss_peak_phase": "verification conversion of decoded U16 bytes into Vec<i32>",
+    "interpretation": "The new encoder reduces peak requested encoder allocations. Its returned Vec retains 2361494 more capacity bytes. Verification live-byte difference equals that capacity difference; once stream/decoded temporaries drop, requested live bytes are identical. RSS remains higher and the verification i32 conversion requires newly resident pages in the new pipeline while the old pipeline reuses resident allocation space. This supports allocator retention/reuse as the amplification of the retained-capacity difference, rather than excess live allocations remaining after verification.",
+    "trim_result": "Trimming after encode releases additional resident memory without changing requested live bytes; the later verification RSS difference remains. The outcome therefore depends on allocation reuse during the complete verification journey, not solely on releasable pages immediately after encode.",
+    "limits": "Three paired fresh-process instrumented repeats and one paired trim control on one Linux host. No attribution of every RSS byte, no exact additional-only peak, no claim of universal allocator behaviour, no claim that a production trim would fix the regression, and no instrumented timing conclusion."
+  }
+}
