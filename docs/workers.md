@@ -42,7 +42,7 @@ runtime manifests, binaries and provenance. Do not commit build snapshots or
 runtime result inputs. Use separate target directories for concurrent builds.
 
 The default Emuella source is revision
-`68c850906fc0592b257b47d83edbd8c966e8de98`. Its public facade owns headline operations;
+`1c1a7fbc583d69c6d57bfd1da4248aa6fae071cc`. Its public facade owns headline operations;
 the same pinned codestream crate exposes opt-in diagnostic instrumentation.
 `parallel` is enabled and each batch uses a local Rayon pool with the requested
 thread budget. This bounds available workers, without claiming that every codec

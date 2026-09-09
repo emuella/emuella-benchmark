@@ -13,8 +13,8 @@ openjpeg = []
 
 [dependencies]
 emuella-benchmark = { path = ".." }
-emuella-j2k = { git = "https://github.com/emuella/emuella-j2k", rev = "68c850906fc0592b257b47d83edbd8c966e8de98", features = ["parallel"], optional = true }
-emuella-j2k-codestream = { git = "https://github.com/emuella/emuella-j2k", rev = "68c850906fc0592b257b47d83edbd8c966e8de98", features = ["parallel"], optional = true }
+emuella-j2k = { git = "https://github.com/emuella/emuella-j2k", rev = "1c1a7fbc583d69c6d57bfd1da4248aa6fae071cc", features = ["parallel"], optional = true }
+emuella-j2k-codestream = { git = "https://github.com/emuella/emuella-j2k", rev = "1c1a7fbc583d69c6d57bfd1da4248aa6fae071cc", features = ["parallel"], optional = true }
 rayon = { version = "1", optional = true }
 serde_json = "1"
 sha2 = "0.10"

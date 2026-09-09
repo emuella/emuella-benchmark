@@ -8,8 +8,10 @@ completes **80 exact decode batches**, including 20 MSI batches. No case is
 unsupported, cropped, resized or precision-reduced.
 
 These are measurements of committed candidates, not observations of future
-merged revisions. Final qualification against merged owners belongs to the
-workspace integration receipt. Earlier calibration and scalable-lossless
+merged revisions. Codec PR 100 landed as `1c1a7fbc583d69c6d57bfd1da4248aa6fae071cc`,
+with the same reviewed tree; worker dependencies now pin that merged revision.
+Final qualification against merged owners belongs to the workspace integration
+receipt. Earlier calibration and scalable-lossless
 records remain unchanged historical evidence.
 
 ## Identities and scope
