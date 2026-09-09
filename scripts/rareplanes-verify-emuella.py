@@ -27,6 +27,25 @@ def decode_experiment(assets, prepared_digest, streams):
     return experiment
 
 
+def validate_export_response(request, response):
+    case = request["case"]
+    profile = {
+        "coding": "classic", "decomposition_levels": 2, "tiles": 1,
+        "progression_order": "lrcp", "quality_layers": 1,
+        "multiple_component_transform": (
+            "reversible_colour_transform" if case["image"]["components"] == 3 else "none"),
+    }
+    if (response.get("schema_version") != request["schema_version"]
+            or response.get("request_id") != request["request_id"]
+            or response.get("applied_case") != case
+            or response.get("boundary") != "codec_operation"
+            or response.get("diagnostics", {}).get("encode_profile") != profile
+            or response.get("status") != "ok"
+            or response.get("correctness", {}).get("exact") is not True
+            or len(response.get("samples_ns", [])) != 1):
+        raise RuntimeError("export response differs from requested identity, profile or exact semantics")
+
+
 def export_streams(assets, prepared_digest, executable, output):
     streams = {}
     sources = {asset["id"]: asset["source_sha256"] for asset in assets}
@@ -46,6 +65,7 @@ def export_streams(assets, prepared_digest, executable, output):
         if result.returncode:
             raise RuntimeError(f"Emuella export failed for {asset_id}; retained export log")
         response = json.loads(response_path.read_text())
+        validate_export_response(request, response)
         if (response.get("status") != "ok" or not response.get("correctness", {}).get("exact")
                 or stream.is_symlink() or not stream.is_file() or stream.stat().st_size == 0
                 or response.get("output_bytes") != stream.stat().st_size):
@@ -58,7 +78,10 @@ def export_streams(assets, prepared_digest, executable, output):
             "image": case["image"],
             "profile": response["diagnostics"]["encode_profile"],
             "export_response_sha256": calibration.digest_file(response_path),
-            "verification_journey_observations": response,
+            "verification_journey_observations": {
+                key: response[key] for key in ("samples_ns", "peak_rss_bytes", "correctness", "output_bytes")
+                if key in response
+            },
         }
     return streams
 

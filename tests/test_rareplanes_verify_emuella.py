@@ -37,14 +37,30 @@ class IndependentVerificationTests(unittest.TestCase):
                                  {"coding": "classic", "decomposition_levels": 2})
                 Path(command[4]).write_bytes(b"authored codestream placeholder")
                 Path(command[3]).write_text(json.dumps({
-                    "status": "ok", "correctness": {"exact": True},
+                    "schema_version": 1, "request_id": request["request_id"],
+                    "applied_case": request["case"], "boundary": "codec_operation",
+                    "samples_ns": [123], "status": "ok", "correctness": {"exact": True},
                     "output_bytes": Path(command[4]).stat().st_size,
-                    "diagnostics": {"encode_profile": {"tiles": 1, "decomposition_levels": 2}},
+                    "diagnostics": {"encode_profile": {
+                        "tiles": 1, "decomposition_levels": 2, "coding": "classic",
+                        "progression_order": "lrcp", "quality_layers": 1,
+                        "multiple_component_transform": (
+                            "none" if request["case"]["image"]["components"] == 1
+                            else "reversible_colour_transform"),
+                    }},
                 }))
                 return type("Result", (), {"returncode": 0, "stderr": ""})()
 
             with patch.object(module.subprocess, "run", side_effect=export):
                 streams = module.export_streams(assets, digest, executable, root)
+            self.assertNotIn(str(root), json.dumps([
+                value["verification_journey_observations"] for value in streams.values()]))
+            response_path = next((root / "inputs").glob("*-response.json"))
+            response = json.loads(response_path.read_text())
+            request = next(c for c in calls if c["request_id"] == response["request_id"])
+            response["applied_case"]["threads"] = 2
+            with self.assertRaisesRegex(RuntimeError, "differs from requested"):
+                module.validate_export_response(request, response)
             experiment = module.decode_experiment(assets, digest, streams)
             self.assertEqual(len(calls), 6)
             self.assertEqual(len(experiment["cases"]), 6)
