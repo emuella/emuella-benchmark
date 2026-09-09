@@ -109,6 +109,8 @@ per admitted asset and verifies each full image using both native decode workers
 It shares the timed worker's public encode path and classic lossless single-tile
 D2 profile, including reversible colour transform for RGB. It leaves the
 five-round 120-batch calibration protocol and its OpenJPEG common streams intact.
+The separate decode verification uses five rounds, the existing protocol minimum,
+for 60 additional batches; they are excluded from the headline matrix.
 Both MS16 exclusions and the earlier calibration record remain unchanged.
 
 ```sh

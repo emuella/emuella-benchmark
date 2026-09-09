@@ -21,7 +21,6 @@ spec.loader.exec_module(calibration)
 def decode_experiment(assets, prepared_digest, streams):
     experiment = calibration.build_decode_experiment(assets, prepared_digest, streams)
     experiment["name"] = "rareplanes-independent-emuella-stream-verification"
-    experiment["protocol"]["rounds"] = 1
     experiment["environment_tags"] = {"journey": "independent-verification-not-headline-timing"}
     for case in experiment["cases"]:
         case["input"]["provenance"]["generator"] = "Emuella public lossless encoder"
@@ -32,7 +31,6 @@ def export_streams(assets, prepared_digest, executable, output):
     streams = {}
     sources = {asset["id"]: asset["source_sha256"] for asset in assets}
     encode = calibration.build_encode_experiment(assets, prepared_digest)
-    encode["protocol"]["rounds"] = 1
     for case in encode["cases"]:
         asset_id = case["id"].removesuffix("-encode")
         request = {"schema_version": 1, "request_id": asset_id,

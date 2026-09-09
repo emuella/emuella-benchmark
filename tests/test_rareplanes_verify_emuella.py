@@ -32,7 +32,7 @@ class IndependentVerificationTests(unittest.TestCase):
                 self.assertEqual(command[1], "--export-lossless")
                 request = json.loads(Path(command[2]).read_text())
                 calls.append(request)
-                self.assertEqual(request["protocol"]["rounds"], 1)
+                self.assertEqual(request["protocol"]["rounds"], 5)
                 self.assertEqual(request["case"]["settings"],
                                  {"coding": "classic", "decomposition_levels": 2})
                 Path(command[4]).write_bytes(b"authored codestream placeholder")
