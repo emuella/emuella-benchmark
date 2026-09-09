@@ -1,0 +1,1816 @@
+{
+  "build_provenance": {
+    "build_environment": {
+      "CARGO_BUILD_TARGET": "",
+      "CARGO_ENCODED_RUSTFLAGS": "",
+      "CC": "",
+      "CFLAGS": "",
+      "LDFLAGS": "",
+      "RUSTFLAGS": ""
+    },
+    "cargo": "cargo 1.97.1 (c980f4866 2026-06-30)",
+    "cc": "cc (GCC) 16.1.1 20260625\nCopyright (C) 2026 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
+    "dependencies": [
+      {
+        "checksum": "b588b76d00fde79687d7646a9b5bdf3cc0f655e0bbd080335a95d7e96f3587da",
+        "name": "bitflags",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "2.13.1"
+      },
+      {
+        "checksum": "3078c7629b62d3f0439517fa394996acacc5cbc91c5a20d8c658e77abd503a71",
+        "name": "block-buffer",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "0.10.4"
+      },
+      {
+        "checksum": "005ec2760ca554fae18df7a11195552ec576cd665632a881bc011d5bb2fd4d80",
+        "name": "cc",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "1.4.5"
+      },
+      {
+        "checksum": "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801",
+        "name": "cfg-if",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "1.0.4"
+      },
+      {
+        "checksum": "59ed5838eebb26a2bb2e58f6d5b5316989ae9d08bab10e0e6d103e656d1b0280",
+        "name": "cpufeatures",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "0.2.17"
+      },
+      {
+        "checksum": "622f3fc73690be383c7214310406f28a90e6edeadc3cea882f9d71e495b9711a",
+        "name": "crossbeam-deque",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "0.8.8"
+      },
+      {
+        "checksum": "dc74980687109a3b14c72fd458107bf0baa1da1a1a805e178d15501ba9b86d9d",
+        "name": "crossbeam-epoch",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "0.9.21"
+      },
+      {
+        "checksum": "a31eee39dddec8330830986fcd7625edb5a24ec90ea038215273bbc3adb08ac6",
+        "name": "crossbeam-utils",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "0.8.23"
+      },
+      {
+        "checksum": "78c8292055d1c1df0cce5d180393dc8cce0abec0a7102adb6c7b1eef6016d60a",
+        "name": "crypto-common",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "0.1.7"
+      },
+      {
+        "checksum": "9ed9a281f7bc9b7576e61468ba615a66a5c8cfdff42420a70aa82701a3b1e292",
+        "name": "digest",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "0.10.7"
+      },
+      {
+        "checksum": "252afb9ae5eaa683babdc6a068b3f5726eb19e05070c731f9b2a23a7c3e8ed34",
+        "name": "either",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "1.18.0"
+      },
+      {
+        "name": "emuella-benchmark",
+        "version": "0.1.0"
+      },
+      {
+        "name": "emuella-benchmark-workers",
+        "version": "0.1.0"
+      },
+      {
+        "name": "emuella-j2k",
+        "version": "0.1.0"
+      },
+      {
+        "name": "emuella-j2k-accel",
+        "version": "0.1.0"
+      },
+      {
+        "name": "emuella-j2k-codestream",
+        "version": "0.1.0"
+      },
+      {
+        "name": "emuella-j2k-container",
+        "version": "0.1.0"
+      },
+      {
+        "name": "emuella-j2k-core",
+        "version": "0.1.0"
+      },
+      {
+        "name": "emuella-j2k-ht",
+        "version": "0.1.0"
+      },
+      {
+        "name": "emuella-j2k-tier1",
+        "version": "0.1.0"
+      },
+      {
+        "name": "emuella-j2k-transform",
+        "version": "0.1.0"
+      },
+      {
+        "checksum": "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb",
+        "name": "errno",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "0.3.14"
+      },
+      {
+        "checksum": "da7c62ceae207dd37ea5b845da6a0696c799f85e97da1ab5b7910be3c1c80223",
+        "name": "fastrand",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "2.5.0"
+      },
+      {
+        "checksum": "3e0f1c7c3a72c66fd80abe965175f7523475c0489a87d3ff9d6e8c87d87a9d2d",
+        "name": "find-msvc-tools",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "0.1.12"
+      },
+      {
+        "checksum": "85649ca51fd72272d7821adaf274ad91c288277713d9c18820d8499a7ff69e9a",
+        "name": "generic-array",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "0.14.7"
+      },
+      {
+        "checksum": "300e883d756b2e4ec94e02791f39b04b522276138852cfc41d9fb7e904106099",
+        "name": "getrandom",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "0.4.3"
+      },
+      {
+        "checksum": "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682",
+        "name": "itoa",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "1.0.18"
+      },
+      {
+        "checksum": "3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2",
+        "name": "libc",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "0.2.189"
+      },
+      {
+        "checksum": "32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53",
+        "name": "linux-raw-sys",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "0.12.1"
+      },
+      {
+        "checksum": "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98",
+        "name": "memchr",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "2.8.3"
+      },
+      {
+        "checksum": "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50",
+        "name": "once_cell",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "1.21.4"
+      },
+      {
+        "checksum": "f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548",
+        "name": "pkg-config",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "0.3.34"
+      },
+      {
+        "checksum": "985e7ec9bb745e6ce6535b544d84d6cd6f7ad8bd711c398938ae983b91a766d9",
+        "name": "proc-macro2",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "1.0.107"
+      },
+      {
+        "checksum": "1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001",
+        "name": "quote",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "1.0.47"
+      },
+      {
+        "checksum": "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf",
+        "name": "r-efi",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "6.0.0"
+      },
+      {
+        "checksum": "fb39b166781f92d482534ef4b4b1b2568f42613b53e5b6c160e24cfbfa30926d",
+        "name": "rayon",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "1.12.0"
+      },
+      {
+        "checksum": "22e18b0f0062d30d4230b2e85ff77fdfe4326feb054b9783a3460d8435c8ab91",
+        "name": "rayon-core",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "1.13.0"
+      },
+      {
+        "checksum": "b6fe4565b9518b83ef4f91bb47ce29620ca828bd32cb7e408f0062e9930ba190",
+        "name": "rustix",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "1.1.4"
+      },
+      {
+        "checksum": "4148590afebada386688f18773da617792bf2ef03ffc1e4cbd2b1d45b023e0ba",
+        "name": "serde",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "1.0.229"
+      },
+      {
+        "checksum": "67dca2c9c51e58a4791a4b1ed58308b39c64224d349a935ab5039aa360942a48",
+        "name": "serde_core",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "1.0.229"
+      },
+      {
+        "checksum": "e7a5d71263a5a7d47b41f6b3f06ba276f10cc18b0931f1799f710578e2309348",
+        "name": "serde_derive",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "1.0.229"
+      },
+      {
+        "checksum": "c841b55ecdae098c80dcae9cf767f6f8a0c2cdb3416bbef72181df4d0fe73f14",
+        "name": "serde_json",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "1.0.151"
+      },
+      {
+        "checksum": "a7507d819769d01a365ab707794a4084392c824f54a7a6a7862f8c3d0892b283",
+        "name": "sha2",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "0.10.9"
+      },
+      {
+        "checksum": "f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba",
+        "name": "shlex",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "2.0.1"
+      },
+      {
+        "checksum": "12df2e0110f65b775f769bb17ef989067a1d931b2eb822bd4346631eeada89f9",
+        "name": "syn",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "3.0.5"
+      },
+      {
+        "checksum": "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd",
+        "name": "tempfile",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "3.27.0"
+      },
+      {
+        "checksum": "b6f5e870be6c3b371b77fe0ee0bafb859fa4964b4404c27de1d380043c4dda20",
+        "name": "typenum",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "1.20.1"
+      },
+      {
+        "checksum": "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75",
+        "name": "unicode-ident",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "1.0.24"
+      },
+      {
+        "checksum": "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a",
+        "name": "version_check",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "0.9.5"
+      },
+      {
+        "checksum": "f0805222e57f7521d6a62e36fa9163bc891acd422f971defe97d64e70d0a4fe5",
+        "name": "windows-link",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "0.2.1"
+      },
+      {
+        "checksum": "ae137229bcbd6cdf0f7b80a31df61766145077ddf49416a728b02cb3921ff3fc",
+        "name": "windows-sys",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "0.61.2"
+      },
+      {
+        "checksum": "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b",
+        "name": "zmij",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "version": "1.0.23"
+      }
+    ],
+    "emuella_revision": "183c52a5ec2e69074f8d603b97e6bbe8ed7ef2b4",
+    "emuella_tree": "ff45f9f9fd0e4df983313ce807f2fb0dc6ab11e5",
+    "features": [
+      "emuella",
+      "openjpeg",
+      "emuella-j2k/parallel"
+    ],
+    "openjpeg_pkg_config": "2.5.4",
+    "profile": "release",
+    "record_sha256": "5335199ef8e189121df22342e88792d5b763e53388e2248356f37f0cac9b46a5",
+    "resolved_worker_lock_sha256": "d7921013f1e6c008f2088e683ea6428bdc3115b73633a2f4dc7c6955e8cff1b1",
+    "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.97.1\nLLVM version: 22.1.6",
+    "source_sha256": {
+      "Cargo.lock": "dc1283b4af49d39d6cae3a658e4641bc4a5fb71c669cb059e1c15b04f38f6047",
+      "Cargo.toml": "14112077470f39f4864646be0aac561dd5f56e7e8285989a667e6c9cde710baa",
+      "scripts/build-workers.py": "a678e6b0ed240cdb37e7dc0b0ce34687e9fd10d4565f0a46e576595247c34d5c",
+      "src/bin/protocol-test-worker.rs": "6da2b23b816c3200d925f52f080ce95b8e1995f977471902bd326ec13581e528",
+      "src/compare.rs": "12fafbd13bd6a17a1aba1ae86c2cf474ad0b86b87b3b5078e4bd40109be653d2",
+      "src/contract.rs": "9a66e59b8c9ea72740827fa7de066e9804eb2f93e2e765e2f743ab805a2b9b03",
+      "src/journey.rs": "be8623234bb4828a1d290ddd9397bc6c06968e8b0d0267bf1901a47161acf50f",
+      "src/lib.rs": "38bd3ba96a37090a2041ff97e6e22c966dd01e2196a2fd379d492e881b95ec05",
+      "src/main.rs": "03608f7c766a8411ce04b7264f39bd4d37fc6cf3421cbc32596b584bdbf52c54",
+      "src/metrics.rs": "66592dab6b4273680a1f7181335d8a295a28eabf4d92d92c68b7de6e0eaee6b4",
+      "src/report.rs": "cd6bce420564d91199f4e5d446a95774f3ce3e72a43c61be36412f03b84cdeaa",
+      "src/runner.rs": "fc70c9fffee4dd90a3ea4d70ab8e7d3944ab52d8a855f6ae3aa0dfa85ba22eb4",
+      "src/series.rs": "8d0ed82f7c8a23934f2cff59303b3e96a184e03d1ee31566d0d0d41ba6ffc209",
+      "workers/Cargo.lock": "1bed9a597e2e205d4975bb6a2c22fe29407437cafb9773e4a8e56efd4c7a01c9",
+      "workers/Cargo.toml": "192b17d4fbdd40f551d9dfb70a9da0e70c110901801aafce275b2761bd8b4380",
+      "workers/build.rs": "35971b4b83f5454795cba00a32b0bea8970fd604b2048fae0c9f74a5ed89b6d9",
+      "workers/native/openjpeg.c": "7b62b32e24d9a775b9908da5bfdfd9fb031508ba18ea0fe12b03ef94737769f1",
+      "workers/src/bin/emuella.rs": "d6069443f5d859c93b4e708e59b5bf241e3bf199b3e405e89dafaf429b4e8e24",
+      "workers/src/bin/openjpeg.rs": "2ace1dacecb3317fe64ef4dd15b3ab054d2a6c0466094003fe6824f76d2dfa69",
+      "workers/src/bin/openjph.rs": "1d6a936c77ff86ec23f8fc9e21adbd96e5cc9a56604b6bcff2a4d4b81de19e52",
+      "workers/src/lib.rs": "92ccd214e47031efa8cd54d54d1a34a01a66ee5227d50120ff7f25c8c3e080d9",
+      "workers/src/msi.rs": "e8e1c205e2b239249bcf7f6f5721d833c12c31122c3c7025b498e4e44090d804",
+      "workers/tests/encoding_profile.rs": "3bd2e8105c8a959f52ef5e6750d8d5571a259644ef43a96d0353ed11c3ee26e1",
+      "workers/tests/native.rs": "71d0d964ed9b8368f4ffe8f8aed1ed8d74ff872228a77d4133d80e80337299d8"
+    }
+  },
+  "calibration_script_sha256": "09b01c6ca6ad5f561cc7594806cd633f2936824e973c77879771d0de618b120e",
+  "complete": true,
+  "failures": [],
+  "interpretation": "All time and process RSS here are verification-journey observations, excluded from headline matrix and codec working-allocation measurements.",
+  "method": "One separately exported public Emuella lossless D2 stream per admitted asset; full-reference Emuella and independent OpenJPEG verification.",
+  "orchestration_revision": "0c10522bd9e42d54c736942b0023dbc8f0e1b6dd",
+  "orchestration_sha256": "c5a067f0ddf44110dc7c6c791f0c62ff27f9fbe70fc2fd569fdd5136ff52f246",
+  "prepared_manifest_sha256": "dca8c0f74d100d41a6241ff62fec5861811ebbe24620759cd7416c104693a7f9",
+  "runs": [
+    {
+      "harness_sha256": "af0685cdba760f1a56db162fcfd087a1e32781c1a784690d733d1ba4c8f98ab7",
+      "harness_version": "0.1.0",
+      "machine": {
+        "affinity": "Cpus_allowed_list:\t0-31",
+        "architecture": "x86_64",
+        "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor",
+        "environment_sha256": "2eca90e998e6fd717d4ab29eea15379b42ce5e5c4d7ed956f1cfd4123b08dd10",
+        "governors": {
+          "cpu0": "powersave",
+          "cpu1": "powersave",
+          "cpu10": "powersave",
+          "cpu11": "powersave",
+          "cpu12": "powersave",
+          "cpu13": "powersave",
+          "cpu14": "powersave",
+          "cpu15": "powersave",
+          "cpu16": "powersave",
+          "cpu17": "powersave",
+          "cpu18": "powersave",
+          "cpu19": "powersave",
+          "cpu2": "powersave",
+          "cpu20": "powersave",
+          "cpu21": "powersave",
+          "cpu22": "powersave",
+          "cpu23": "powersave",
+          "cpu24": "powersave",
+          "cpu25": "powersave",
+          "cpu26": "powersave",
+          "cpu27": "powersave",
+          "cpu28": "powersave",
+          "cpu29": "powersave",
+          "cpu3": "powersave",
+          "cpu30": "powersave",
+          "cpu31": "powersave",
+          "cpu4": "powersave",
+          "cpu5": "powersave",
+          "cpu6": "powersave",
+          "cpu7": "powersave",
+          "cpu8": "powersave",
+          "cpu9": "powersave"
+        },
+        "kernel": "7.1.3-arch1-1",
+        "logical_cpus": 32,
+        "os": "linux"
+      },
+      "machine_identity_sha256": "46defe224b7f0f52171ad916b03a3ca2b910d70bf25458c90811e908a437ebf5",
+      "measurement_units": {
+        "component_sample": "one scalar band value",
+        "peak_rss": "bytes",
+        "rss_scope": "whole worker process including setup and verification",
+        "sample_values_per_second": "alias of component_samples_per_second",
+        "size": "bytes",
+        "spatial_pixel": "one image position across all bands",
+        "time": "nanoseconds"
+      },
+      "observations": [
+        {
+          "bits_per_component_sample": 8.292265262607176,
+          "bits_per_spatial_pixel": 8.292265262607176,
+          "case_id": "30_104001002394E000-PAN16-decode",
+          "component_samples_per_second": 8332317.637473987,
+          "compression_ratio_raw_over_encoded": 1.9295089451792855,
+          "disposition": "completed_exact",
+          "encode_profiles": [],
+          "encoded_bytes": 15897166,
+          "exact": true,
+          "image": {
+            "components": 1,
+            "height": 2878,
+            "precision": 16,
+            "signed": false,
+            "width": 5329
+          },
+          "input_sha256": "e2eceb86e42d0dbbc610d4f667c03d1b964b9e87c2d59e798d3a4318181f26c4",
+          "measured_output_bytes": {
+            "maximum": 30673724,
+            "mean": 30673724.0,
+            "minimum": 30673724
+          },
+          "measured_time_ns": {
+            "maximum": 1862922742.0,
+            "mean": 1840647784.6,
+            "minimum": 1808721047.0
+          },
+          "non_success": [],
+          "operation": "decode",
+          "operations_per_second": 0.5432869929633577,
+          "peak_rss_bytes": 174039040,
+          "raw_storage_bytes": 30673724,
+          "reference_sha256": "a563aee05eaf8b5be9772da6003068c0d8c7f8cac9cb95751dfebb2734c3dd6b",
+          "rss_observed_batches": 5,
+          "sample_values_per_second": 8332317.637473987,
+          "settings": {
+            "coding": "classic"
+          },
+          "spatial_pixels_per_second": 8332317.637473987,
+          "statuses": {
+            "ok": 5
+          },
+          "threads": 1
+        },
+        {
+          "bits_per_component_sample": 2.02872791057258,
+          "bits_per_spatial_pixel": 6.08618373171774,
+          "case_id": "30_104001002394E000-RGB8-decode",
+          "component_samples_per_second": 23165391.081802685,
+          "compression_ratio_raw_over_encoded": 3.9433577850970227,
+          "disposition": "completed_exact",
+          "encode_profiles": [],
+          "encoded_bytes": 11667870,
+          "exact": true,
+          "image": {
+            "components": 3,
+            "height": 2878,
+            "precision": 8,
+            "signed": false,
+            "width": 5329
+          },
+          "input_sha256": "a2b77ec95fa978f32110aa02c49e1874fed170b57b9a0ffa21b1b5bd49def4f6",
+          "measured_output_bytes": {
+            "maximum": 46010586,
+            "mean": 46010586.0,
+            "minimum": 46010586
+          },
+          "measured_time_ns": {
+            "maximum": 2004414109.0,
+            "mean": 1986177821.8,
+            "minimum": 1971837036.0
+          },
+          "non_success": [],
+          "operation": "decode",
+          "operations_per_second": 0.503479592322573,
+          "peak_rss_bytes": 431218688,
+          "raw_storage_bytes": 46010586,
+          "reference_sha256": "80cd029af329d13a1d06189c1a039511b36d305c9e804e0e6aa971246847e436",
+          "rss_observed_batches": 5,
+          "sample_values_per_second": 23165391.081802685,
+          "settings": {
+            "coding": "classic"
+          },
+          "spatial_pixels_per_second": 7721797.027267561,
+          "statuses": {
+            "ok": 5
+          },
+          "threads": 1
+        },
+        {
+          "bits_per_component_sample": 8.1804752669336,
+          "bits_per_spatial_pixel": 65.4438021354688,
+          "case_id": "30_104001002394E000-MS16-decode",
+          "component_samples_per_second": 8189464.509871513,
+          "compression_ratio_raw_over_encoded": 1.9558765814834496,
+          "disposition": "completed_exact",
+          "encode_profiles": [],
+          "encoded_bytes": 7845403,
+          "exact": true,
+          "image": {
+            "components": 8,
+            "height": 720,
+            "precision": 16,
+            "signed": false,
+            "width": 1332
+          },
+          "input_sha256": "ea53071a75d0c3c8a02885bfb4856976450c0fc950da97d9baecda3f842f25d7",
+          "measured_output_bytes": {
+            "maximum": 15344640,
+            "mean": 15344640.0,
+            "minimum": 15344640
+          },
+          "measured_time_ns": {
+            "maximum": 943403882.0,
+            "mean": 936852463.4,
+            "minimum": 928382297.0
+          },
+          "non_success": [],
+          "operation": "decode",
+          "operations_per_second": 1.0674039286515047,
+          "peak_rss_bytes": 105779200,
+          "raw_storage_bytes": 15344640,
+          "reference_sha256": "3e9492968a14f6a5b67d572f8b11b31cf1c5723ff59285fbac8f3b3dba108a60",
+          "rss_observed_batches": 5,
+          "sample_values_per_second": 8189464.509871513,
+          "settings": {
+            "coding": "classic"
+          },
+          "spatial_pixels_per_second": 1023683.0637339391,
+          "statuses": {
+            "ok": 5
+          },
+          "threads": 1
+        },
+        {
+          "bits_per_component_sample": 7.477994661327995,
+          "bits_per_spatial_pixel": 22.433983983983985,
+          "case_id": "30_104001002394E000-RGB16-decode",
+          "component_samples_per_second": 8815102.751026122,
+          "compression_ratio_raw_over_encoded": 2.1396110487672653,
+          "disposition": "completed_exact",
+          "encode_profiles": [],
+          "encoded_bytes": 2689386,
+          "exact": true,
+          "image": {
+            "components": 3,
+            "height": 720,
+            "precision": 16,
+            "signed": false,
+            "width": 1332
+          },
+          "input_sha256": "8db4c6b29c1a0b9405a3bebf07c8bf312c3dc3d51c328c7e4cabc47eba8f0933",
+          "measured_output_bytes": {
+            "maximum": 5754240,
+            "mean": 5754240.0,
+            "minimum": 5754240
+          },
+          "measured_time_ns": {
+            "maximum": 332297300.0,
+            "mean": 326385305.0,
+            "minimum": 322828678.0
+          },
+          "non_success": [],
+          "operation": "decode",
+          "operations_per_second": 3.063863429758273,
+          "peak_rss_bytes": 38580224,
+          "raw_storage_bytes": 5754240,
+          "reference_sha256": "3faf0be9dffeb0f3b5fab3675704a3b8f292755ef2ce7d6bfeb22beadd74a15c",
+          "rss_observed_batches": 5,
+          "sample_values_per_second": 8815102.751026122,
+          "settings": {
+            "coding": "classic"
+          },
+          "spatial_pixels_per_second": 2938367.5836753743,
+          "statuses": {
+            "ok": 5
+          },
+          "threads": 1
+        },
+        {
+          "bits_per_component_sample": 8.562362185588723,
+          "bits_per_spatial_pixel": 8.562362185588723,
+          "case_id": "47_104001001D2C7A00-PAN16-decode",
+          "component_samples_per_second": 8193534.412960567,
+          "compression_ratio_raw_over_encoded": 1.8686432147111849,
+          "disposition": "completed_exact",
+          "encode_profiles": [],
+          "encoded_bytes": 50206588,
+          "exact": true,
+          "image": {
+            "components": 1,
+            "height": 7054,
+            "precision": 16,
+            "signed": false,
+            "width": 6650
+          },
+          "input_sha256": "f4a215c9d7fcc5075e80d370b7db8e47b8485e1c90aab4bb5a8e7cf3c9b06adc",
+          "measured_output_bytes": {
+            "maximum": 93818200,
+            "mean": 93818200.0,
+            "minimum": 93818200
+          },
+          "measured_time_ns": {
+            "maximum": 5825358404.0,
+            "mean": 5725136142.2,
+            "minimum": 5683562345.0
+          },
+          "non_success": [],
+          "operation": "decode",
+          "operations_per_second": 0.17466833541808663,
+          "peak_rss_bytes": 524730368,
+          "raw_storage_bytes": 93818200,
+          "reference_sha256": "6affa15b8d178c78ec44e0360a619bac307a2f91a3d05011927f2a048adf0cef",
+          "rss_observed_batches": 5,
+          "sample_values_per_second": 8193534.412960567,
+          "settings": {
+            "coding": "classic"
+          },
+          "spatial_pixels_per_second": 8193534.412960567,
+          "statuses": {
+            "ok": 5
+          },
+          "threads": 1
+        },
+        {
+          "bits_per_component_sample": 2.9372147692736235,
+          "bits_per_spatial_pixel": 8.81164430782087,
+          "case_id": "47_104001001D2C7A00-RGB8-decode",
+          "component_samples_per_second": 17343373.546681628,
+          "compression_ratio_raw_over_encoded": 2.7236687230666514,
+          "disposition": "completed_exact",
+          "encode_profiles": [],
+          "encoded_bytes": 51668288,
+          "exact": true,
+          "image": {
+            "components": 3,
+            "height": 7054,
+            "precision": 8,
+            "signed": false,
+            "width": 6650
+          },
+          "input_sha256": "e510788f175b0690078914a1f91fe3ece6b5110301b74718868deb52fe68152a",
+          "measured_output_bytes": {
+            "maximum": 140727300,
+            "mean": 140727300.0,
+            "minimum": 140727300
+          },
+          "measured_time_ns": {
+            "maximum": 8728795539.0,
+            "mean": 8114182608.2,
+            "minimum": 7914213479.0
+          },
+          "non_success": [],
+          "operation": "decode",
+          "operations_per_second": 0.12324100261059244,
+          "peak_rss_bytes": 1325084672,
+          "raw_storage_bytes": 140727300,
+          "reference_sha256": "3e4b6b0ebbde9ed997a4dbc7141f917e7b3bebb78192a49ac45a946e44a747e1",
+          "rss_observed_batches": 5,
+          "sample_values_per_second": 17343373.546681628,
+          "settings": {
+            "coding": "classic"
+          },
+          "spatial_pixels_per_second": 5781124.515560542,
+          "statuses": {
+            "ok": 5
+          },
+          "threads": 1
+        },
+        {
+          "bits_per_component_sample": 9.31357847161657,
+          "bits_per_spatial_pixel": 74.50862777293256,
+          "case_id": "47_104001001D2C7A00-MS16-decode",
+          "component_samples_per_second": 7487623.414730958,
+          "compression_ratio_raw_over_encoded": 1.7179218545009864,
+          "disposition": "completed_exact",
+          "encode_profiles": [],
+          "encoded_bytes": 27306192,
+          "exact": true,
+          "image": {
+            "components": 8,
+            "height": 1763,
+            "precision": 16,
+            "signed": false,
+            "width": 1663
+          },
+          "input_sha256": "021b0c260dfcd0d525cc3d258c81ca970fed0859062cfdfb8474eddbdcbda93d",
+          "measured_output_bytes": {
+            "maximum": 46909904,
+            "mean": 46909904.0,
+            "minimum": 46909904
+          },
+          "measured_time_ns": {
+            "maximum": 3159978389.0,
+            "mean": 3132496214.2,
+            "minimum": 3082546421.0
+          },
+          "non_success": [],
+          "operation": "decode",
+          "operations_per_second": 0.3192342245991788,
+          "peak_rss_bytes": 267165696,
+          "raw_storage_bytes": 46909904,
+          "reference_sha256": "70fadf84efa21905593d5385f5e9917a6005fbe8ca56e07edc89ca1dd63cf539",
+          "rss_observed_batches": 5,
+          "sample_values_per_second": 7487623.414730958,
+          "settings": {
+            "coding": "classic"
+          },
+          "spatial_pixels_per_second": 935952.9268413697,
+          "statuses": {
+            "ok": 5
+          },
+          "threads": 1
+        },
+        {
+          "bits_per_component_sample": 8.634293915132861,
+          "bits_per_spatial_pixel": 25.902881745398584,
+          "case_id": "47_104001001D2C7A00-RGB16-decode",
+          "component_samples_per_second": 8014196.321998304,
+          "compression_ratio_raw_over_encoded": 1.8530756721123036,
+          "disposition": "completed_exact",
+          "encode_profiles": [],
+          "encoded_bytes": 9492982,
+          "exact": true,
+          "image": {
+            "components": 3,
+            "height": 1763,
+            "precision": 16,
+            "signed": false,
+            "width": 1663
+          },
+          "input_sha256": "c1ebd83c37d70974e50979493e6e9c336cbaccea9bfa8d1d5a1aa9a0619430bb",
+          "measured_output_bytes": {
+            "maximum": 17591214,
+            "mean": 17591214.0,
+            "minimum": 17591214
+          },
+          "measured_time_ns": {
+            "maximum": 1111604683.0,
+            "mean": 1097503311.2,
+            "minimum": 1074807302.0
+          },
+          "non_success": [],
+          "operation": "decode",
+          "operations_per_second": 0.9111589822053558,
+          "peak_rss_bytes": 108814336,
+          "raw_storage_bytes": 17591214,
+          "reference_sha256": "4325b30f121cd290995a7ce85830055d83f695bab8046366191716df4d47b748",
+          "rss_observed_batches": 5,
+          "sample_values_per_second": 8014196.321998304,
+          "settings": {
+            "coding": "classic"
+          },
+          "spatial_pixels_per_second": 2671398.7739994344,
+          "statuses": {
+            "ok": 5
+          },
+          "threads": 1
+        }
+      ],
+      "protocol": {
+        "boundary": "codec_operation",
+        "cache_policy": "warm_input",
+        "context_policy": "fresh_process_per_batch",
+        "practical_relative_threshold": 0.05,
+        "rounds": 5,
+        "samples_per_batch": 1,
+        "timeout_ms": 120000,
+        "warmup": 0
+      },
+      "run_id": "1788937632269-2661010-0",
+      "run_sha256": "2743b2238f2e870c82e324dfc2e6d6e2bd68c88d66e9ac9a8597170752dcc149",
+      "worker": {
+        "artefacts": [
+          {
+            "name": "libgcc_s.so.1",
+            "sha256": "e1e904051f77f9569c2ea53c83bb4083c26575e0fbd4010e46f1cb8b21037ad1"
+          },
+          {
+            "name": "build-provenance.json",
+            "sha256": "5335199ef8e189121df22342e88792d5b763e53388e2248356f37f0cac9b46a5"
+          },
+          {
+            "name": "ld-linux-x86-64.so.2",
+            "sha256": "d52fe2ff87fff536ed5c5eae8e954cb50655884e4709fedd24cf57f9ec98ad80"
+          },
+          {
+            "name": "libc.so.6",
+            "sha256": "9bf40a540836d90c7d46c95eeb222a217597834eea29ab9e537428317c021c3a"
+          },
+          {
+            "name": "libm.so.6",
+            "sha256": "8f85ea3a02885cda4ecff8758e6e758c69ccaa25b6580cb97b5713ac512f0a1b"
+          }
+        ],
+        "executable_sha256": "6de478513a56b9ee469fc9e789a4e192a86fcd7f8035ec26aec558ecda1222d7",
+        "implementation": "emuella",
+        "source_identity": "emuella-j2k@183c52a5ec2e69074f8d603b97e6bbe8ed7ef2b4"
+      }
+    },
+    {
+      "harness_sha256": "af0685cdba760f1a56db162fcfd087a1e32781c1a784690d733d1ba4c8f98ab7",
+      "harness_version": "0.1.0",
+      "machine": {
+        "affinity": "Cpus_allowed_list:\t0-31",
+        "architecture": "x86_64",
+        "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor",
+        "environment_sha256": "2eca90e998e6fd717d4ab29eea15379b42ce5e5c4d7ed956f1cfd4123b08dd10",
+        "governors": {
+          "cpu0": "powersave",
+          "cpu1": "powersave",
+          "cpu10": "powersave",
+          "cpu11": "powersave",
+          "cpu12": "powersave",
+          "cpu13": "powersave",
+          "cpu14": "powersave",
+          "cpu15": "powersave",
+          "cpu16": "powersave",
+          "cpu17": "powersave",
+          "cpu18": "powersave",
+          "cpu19": "powersave",
+          "cpu2": "powersave",
+          "cpu20": "powersave",
+          "cpu21": "powersave",
+          "cpu22": "powersave",
+          "cpu23": "powersave",
+          "cpu24": "powersave",
+          "cpu25": "powersave",
+          "cpu26": "powersave",
+          "cpu27": "powersave",
+          "cpu28": "powersave",
+          "cpu29": "powersave",
+          "cpu3": "powersave",
+          "cpu30": "powersave",
+          "cpu31": "powersave",
+          "cpu4": "powersave",
+          "cpu5": "powersave",
+          "cpu6": "powersave",
+          "cpu7": "powersave",
+          "cpu8": "powersave",
+          "cpu9": "powersave"
+        },
+        "kernel": "7.1.3-arch1-1",
+        "logical_cpus": 32,
+        "os": "linux"
+      },
+      "machine_identity_sha256": "46defe224b7f0f52171ad916b03a3ca2b910d70bf25458c90811e908a437ebf5",
+      "measurement_units": {
+        "component_sample": "one scalar band value",
+        "peak_rss": "bytes",
+        "rss_scope": "whole worker process including setup and verification",
+        "sample_values_per_second": "alias of component_samples_per_second",
+        "size": "bytes",
+        "spatial_pixel": "one image position across all bands",
+        "time": "nanoseconds"
+      },
+      "observations": [
+        {
+          "bits_per_component_sample": 8.292265262607176,
+          "bits_per_spatial_pixel": 8.292265262607176,
+          "case_id": "30_104001002394E000-PAN16-decode",
+          "component_samples_per_second": 10924642.973607117,
+          "compression_ratio_raw_over_encoded": 1.9295089451792855,
+          "disposition": "completed_exact",
+          "encode_profiles": [],
+          "encoded_bytes": 15897166,
+          "exact": true,
+          "image": {
+            "components": 1,
+            "height": 2878,
+            "precision": 16,
+            "signed": false,
+            "width": 5329
+          },
+          "input_sha256": "e2eceb86e42d0dbbc610d4f667c03d1b964b9e87c2d59e798d3a4318181f26c4",
+          "measured_output_bytes": {
+            "maximum": 30673724,
+            "mean": 30673724.0,
+            "minimum": 30673724
+          },
+          "measured_time_ns": {
+            "maximum": 1420156147.0,
+            "mean": 1403877640.4,
+            "minimum": 1391262151.0
+          },
+          "non_success": [],
+          "operation": "decode",
+          "operations_per_second": 0.7123127908177773,
+          "peak_rss_bytes": 220610560,
+          "raw_storage_bytes": 30673724,
+          "reference_sha256": "a563aee05eaf8b5be9772da6003068c0d8c7f8cac9cb95751dfebb2734c3dd6b",
+          "rss_observed_batches": 5,
+          "sample_values_per_second": 10924642.973607117,
+          "settings": {
+            "coding": "classic"
+          },
+          "spatial_pixels_per_second": 10924642.973607117,
+          "statuses": {
+            "ok": 5
+          },
+          "threads": 1
+        },
+        {
+          "bits_per_component_sample": 2.02872791057258,
+          "bits_per_spatial_pixel": 6.08618373171774,
+          "case_id": "30_104001002394E000-RGB8-decode",
+          "component_samples_per_second": 37656722.4612154,
+          "compression_ratio_raw_over_encoded": 3.9433577850970227,
+          "disposition": "completed_exact",
+          "encode_profiles": [],
+          "encoded_bytes": 11667870,
+          "exact": true,
+          "image": {
+            "components": 3,
+            "height": 2878,
+            "precision": 8,
+            "signed": false,
+            "width": 5329
+          },
+          "input_sha256": "a2b77ec95fa978f32110aa02c49e1874fed170b57b9a0ffa21b1b5bd49def4f6",
+          "measured_output_bytes": {
+            "maximum": 46010586,
+            "mean": 46010586.0,
+            "minimum": 46010586
+          },
+          "measured_time_ns": {
+            "maximum": 1232646816.0,
+            "mean": 1221842555.4,
+            "minimum": 1211847561.0
+          },
+          "non_success": [],
+          "operation": "decode",
+          "operations_per_second": 0.8184360542857549,
+          "peak_rss_bytes": 584007680,
+          "raw_storage_bytes": 46010586,
+          "reference_sha256": "80cd029af329d13a1d06189c1a039511b36d305c9e804e0e6aa971246847e436",
+          "rss_observed_batches": 5,
+          "sample_values_per_second": 37656722.4612154,
+          "settings": {
+            "coding": "classic"
+          },
+          "spatial_pixels_per_second": 12552240.820405131,
+          "statuses": {
+            "ok": 5
+          },
+          "threads": 1
+        },
+        {
+          "bits_per_component_sample": 8.1804752669336,
+          "bits_per_spatial_pixel": 65.4438021354688,
+          "case_id": "30_104001002394E000-MS16-decode",
+          "component_samples_per_second": 10896070.218587471,
+          "compression_ratio_raw_over_encoded": 1.9558765814834496,
+          "disposition": "completed_exact",
+          "encode_profiles": [],
+          "encoded_bytes": 7845403,
+          "exact": true,
+          "image": {
+            "components": 8,
+            "height": 720,
+            "precision": 16,
+            "signed": false,
+            "width": 1332
+          },
+          "input_sha256": "ea53071a75d0c3c8a02885bfb4856976450c0fc950da97d9baecda3f842f25d7",
+          "measured_output_bytes": {
+            "maximum": 15344640,
+            "mean": 15344640.0,
+            "minimum": 15344640
+          },
+          "measured_time_ns": {
+            "maximum": 713242563.0,
+            "mean": 704136431.4,
+            "minimum": 697756118.0
+          },
+          "non_success": [],
+          "operation": "decode",
+          "operations_per_second": 1.4201793223676114,
+          "peak_rss_bytes": 112676864,
+          "raw_storage_bytes": 15344640,
+          "reference_sha256": "3e9492968a14f6a5b67d572f8b11b31cf1c5723ff59285fbac8f3b3dba108a60",
+          "rss_observed_batches": 5,
+          "sample_values_per_second": 10896070.218587471,
+          "settings": {
+            "coding": "classic"
+          },
+          "spatial_pixels_per_second": 1362008.777323434,
+          "statuses": {
+            "ok": 5
+          },
+          "threads": 1
+        },
+        {
+          "bits_per_component_sample": 7.477994661327995,
+          "bits_per_spatial_pixel": 22.433983983983985,
+          "case_id": "30_104001002394E000-RGB16-decode",
+          "component_samples_per_second": 11378970.889150677,
+          "compression_ratio_raw_over_encoded": 2.1396110487672653,
+          "disposition": "completed_exact",
+          "encode_profiles": [],
+          "encoded_bytes": 2689386,
+          "exact": true,
+          "image": {
+            "components": 3,
+            "height": 720,
+            "precision": 16,
+            "signed": false,
+            "width": 1332
+          },
+          "input_sha256": "8db4c6b29c1a0b9405a3bebf07c8bf312c3dc3d51c328c7e4cabc47eba8f0933",
+          "measured_output_bytes": {
+            "maximum": 5754240,
+            "mean": 5754240.0,
+            "minimum": 5754240
+          },
+          "measured_time_ns": {
+            "maximum": 261526205.0,
+            "mean": 252845360.8,
+            "minimum": 247159291.0
+          },
+          "non_success": [],
+          "operation": "decode",
+          "operations_per_second": 3.9549865452781523,
+          "peak_rss_bytes": 44220416,
+          "raw_storage_bytes": 5754240,
+          "reference_sha256": "3faf0be9dffeb0f3b5fab3675704a3b8f292755ef2ce7d6bfeb22beadd74a15c",
+          "rss_observed_batches": 5,
+          "sample_values_per_second": 11378970.889150677,
+          "settings": {
+            "coding": "classic"
+          },
+          "spatial_pixels_per_second": 3792990.2963835592,
+          "statuses": {
+            "ok": 5
+          },
+          "threads": 1
+        },
+        {
+          "bits_per_component_sample": 8.562362185588723,
+          "bits_per_spatial_pixel": 8.562362185588723,
+          "case_id": "47_104001001D2C7A00-PAN16-decode",
+          "component_samples_per_second": 10729294.31569714,
+          "compression_ratio_raw_over_encoded": 1.8686432147111849,
+          "disposition": "completed_exact",
+          "encode_profiles": [],
+          "encoded_bytes": 50206588,
+          "exact": true,
+          "image": {
+            "components": 1,
+            "height": 7054,
+            "precision": 16,
+            "signed": false,
+            "width": 6650
+          },
+          "input_sha256": "f4a215c9d7fcc5075e80d370b7db8e47b8485e1c90aab4bb5a8e7cf3c9b06adc",
+          "measured_output_bytes": {
+            "maximum": 93818200,
+            "mean": 93818200.0,
+            "minimum": 93818200
+          },
+          "measured_time_ns": {
+            "maximum": 4392952976.0,
+            "mean": 4372058275.2,
+            "minimum": 4343969063.0
+          },
+          "non_success": [],
+          "operation": "decode",
+          "operations_per_second": 0.22872522209330684,
+          "peak_rss_bytes": 671055872,
+          "raw_storage_bytes": 93818200,
+          "reference_sha256": "6affa15b8d178c78ec44e0360a619bac307a2f91a3d05011927f2a048adf0cef",
+          "rss_observed_batches": 5,
+          "sample_values_per_second": 10729294.31569714,
+          "settings": {
+            "coding": "classic"
+          },
+          "spatial_pixels_per_second": 10729294.31569714,
+          "statuses": {
+            "ok": 5
+          },
+          "threads": 1
+        },
+        {
+          "bits_per_component_sample": 2.9372147692736235,
+          "bits_per_spatial_pixel": 8.81164430782087,
+          "case_id": "47_104001001D2C7A00-RGB8-decode",
+          "component_samples_per_second": 26613808.321288083,
+          "compression_ratio_raw_over_encoded": 2.7236687230666514,
+          "disposition": "completed_exact",
+          "encode_profiles": [],
+          "encoded_bytes": 51668288,
+          "exact": true,
+          "image": {
+            "components": 3,
+            "height": 7054,
+            "precision": 8,
+            "signed": false,
+            "width": 6650
+          },
+          "input_sha256": "e510788f175b0690078914a1f91fe3ece6b5110301b74718868deb52fe68152a",
+          "measured_output_bytes": {
+            "maximum": 140727300,
+            "mean": 140727300.0,
+            "minimum": 140727300
+          },
+          "measured_time_ns": {
+            "maximum": 5334189768.0,
+            "mean": 5287755074.4,
+            "minimum": 5261428865.0
+          },
+          "non_success": [],
+          "operation": "decode",
+          "operations_per_second": 0.1891161723509801,
+          "peak_rss_bytes": 1809510400,
+          "raw_storage_bytes": 140727300,
+          "reference_sha256": "3e4b6b0ebbde9ed997a4dbc7141f917e7b3bebb78192a49ac45a946e44a747e1",
+          "rss_observed_batches": 5,
+          "sample_values_per_second": 26613808.321288083,
+          "settings": {
+            "coding": "classic"
+          },
+          "spatial_pixels_per_second": 8871269.440429362,
+          "statuses": {
+            "ok": 5
+          },
+          "threads": 1
+        },
+        {
+          "bits_per_component_sample": 9.31357847161657,
+          "bits_per_spatial_pixel": 74.50862777293256,
+          "case_id": "47_104001001D2C7A00-MS16-decode",
+          "component_samples_per_second": 10075445.455960564,
+          "compression_ratio_raw_over_encoded": 1.7179218545009864,
+          "disposition": "completed_exact",
+          "encode_profiles": [],
+          "encoded_bytes": 27306192,
+          "exact": true,
+          "image": {
+            "components": 8,
+            "height": 1763,
+            "precision": 16,
+            "signed": false,
+            "width": 1663
+          },
+          "input_sha256": "021b0c260dfcd0d525cc3d258c81ca970fed0859062cfdfb8474eddbdcbda93d",
+          "measured_output_bytes": {
+            "maximum": 46909904,
+            "mean": 46909904.0,
+            "minimum": 46909904
+          },
+          "measured_time_ns": {
+            "maximum": 2346656759.0,
+            "mean": 2327932010.8,
+            "minimum": 2315314840.0
+          },
+          "non_success": [],
+          "operation": "decode",
+          "operations_per_second": 0.42956581006691313,
+          "peak_rss_bytes": 341970944,
+          "raw_storage_bytes": 46909904,
+          "reference_sha256": "70fadf84efa21905593d5385f5e9917a6005fbe8ca56e07edc89ca1dd63cf539",
+          "rss_observed_batches": 5,
+          "sample_values_per_second": 10075445.455960564,
+          "settings": {
+            "coding": "classic"
+          },
+          "spatial_pixels_per_second": 1259430.6819950705,
+          "statuses": {
+            "ok": 5
+          },
+          "threads": 1
+        },
+        {
+          "bits_per_component_sample": 8.634293915132861,
+          "bits_per_spatial_pixel": 25.902881745398584,
+          "case_id": "47_104001001D2C7A00-RGB16-decode",
+          "component_samples_per_second": 10815116.873378456,
+          "compression_ratio_raw_over_encoded": 1.8530756721123036,
+          "disposition": "completed_exact",
+          "encode_profiles": [],
+          "encoded_bytes": 9492982,
+          "exact": true,
+          "image": {
+            "components": 3,
+            "height": 1763,
+            "precision": 16,
+            "signed": false,
+            "width": 1663
+          },
+          "input_sha256": "c1ebd83c37d70974e50979493e6e9c336cbaccea9bfa8d1d5a1aa9a0619430bb",
+          "measured_output_bytes": {
+            "maximum": 17591214,
+            "mean": 17591214.0,
+            "minimum": 17591214
+          },
+          "measured_time_ns": {
+            "maximum": 826646817.0,
+            "mean": 813269713.4,
+            "minimum": 803086733.0
+          },
+          "non_success": [],
+          "operation": "decode",
+          "operations_per_second": 1.2296043778875585,
+          "peak_rss_bytes": 129335296,
+          "raw_storage_bytes": 17591214,
+          "reference_sha256": "4325b30f121cd290995a7ce85830055d83f695bab8046366191716df4d47b748",
+          "rss_observed_batches": 5,
+          "sample_values_per_second": 10815116.873378456,
+          "settings": {
+            "coding": "classic"
+          },
+          "spatial_pixels_per_second": 3605038.9577928185,
+          "statuses": {
+            "ok": 5
+          },
+          "threads": 1
+        }
+      ],
+      "protocol": {
+        "boundary": "codec_operation",
+        "cache_policy": "warm_input",
+        "context_policy": "fresh_process_per_batch",
+        "practical_relative_threshold": 0.05,
+        "rounds": 5,
+        "samples_per_batch": 1,
+        "timeout_ms": 120000,
+        "warmup": 0
+      },
+      "run_id": "1788937756594-2698878-0",
+      "run_sha256": "d2fc0443e17c93a13e7a55459de858248bcdfb7ba2887021cffcf45ba28659e6",
+      "worker": {
+        "artefacts": [
+          {
+            "name": "libgcc_s.so.1",
+            "sha256": "e1e904051f77f9569c2ea53c83bb4083c26575e0fbd4010e46f1cb8b21037ad1"
+          },
+          {
+            "name": "libopenjp2.so.2.5.4",
+            "sha256": "37c756f2fef023a265ba8419105ee2ab6ad08fc5e29e855235fbd583b39122a4"
+          },
+          {
+            "name": "build-provenance.json",
+            "sha256": "5335199ef8e189121df22342e88792d5b763e53388e2248356f37f0cac9b46a5"
+          },
+          {
+            "name": "ld-linux-x86-64.so.2",
+            "sha256": "d52fe2ff87fff536ed5c5eae8e954cb50655884e4709fedd24cf57f9ec98ad80"
+          },
+          {
+            "name": "libc.so.6",
+            "sha256": "9bf40a540836d90c7d46c95eeb222a217597834eea29ab9e537428317c021c3a"
+          },
+          {
+            "name": "libm.so.6",
+            "sha256": "8f85ea3a02885cda4ecff8758e6e758c69ccaa25b6580cb97b5713ac512f0a1b"
+          },
+          {
+            "name": "libpthread.so.0",
+            "sha256": "efd89a5cf95482cd92f1230320e95c3ab5f1f27bbf099fd166db36e2122a2882"
+          }
+        ],
+        "executable_sha256": "c8949b590da8e0ebec5d62ba4a1c57b9a8b38cabb04520cb0ce44042a8baef3f",
+        "implementation": "openjpeg",
+        "source_identity": "openjpeg:build-provenance:5335199ef8e189121df22342e88792d5b763e53388e2248356f37f0cac9b46a5"
+      }
+    }
+  ],
+  "schema_version": 1,
+  "streams": [
+    {
+      "arguments_sha256": "8dac515f827db6831185ffbb30c4ef285443e1163a75a86b82893933740c230a",
+      "asset_id": "30_104001002394E000-PAN16",
+      "bytes": 15897166,
+      "export_response_sha256": "cac9c7f8bae6fb6f30e0f89dd803268d5861f4d87c32830551315f7a53851452",
+      "generator_sha256": "6de478513a56b9ee469fc9e789a4e192a86fcd7f8035ec26aec558ecda1222d7",
+      "image": {
+        "components": 1,
+        "height": 2878,
+        "precision": 16,
+        "signed": false,
+        "width": 5329
+      },
+      "input_sha256": "a563aee05eaf8b5be9772da6003068c0d8c7f8cac9cb95751dfebb2734c3dd6b",
+      "profile": {
+        "coding": "classic",
+        "decomposition_levels": 2,
+        "multiple_component_transform": "none",
+        "progression_order": "lrcp",
+        "quality_layers": 1,
+        "tiles": 1
+      },
+      "sha256": "e2eceb86e42d0dbbc610d4f667c03d1b964b9e87c2d59e798d3a4318181f26c4",
+      "source_sha256": "c6339a41b6e4569627996f02c3381b4f7e55bd473037cf10607a3d7959432fc0",
+      "verification_journey_observations": {
+        "correctness": {
+          "exact": true,
+          "maximum_absolute_error": 0.0,
+          "mse": 0.0,
+          "peak": 65535.0,
+          "psnr_db": null,
+          "sample_count": 15336862
+        },
+        "output_bytes": 15897166,
+        "peak_rss_bytes": 205410304,
+        "samples_ns": [
+          2493417801
+        ]
+      }
+    },
+    {
+      "arguments_sha256": "8cdbd06d3ec818ebbf8390f860d0733694ba0c99076ffc4818bc1cff0b8ac879",
+      "asset_id": "30_104001002394E000-RGB8",
+      "bytes": 11667870,
+      "export_response_sha256": "cce089102e440d4a6819b6619580c4336140a00392b77de097e3ecf3c97e424c",
+      "generator_sha256": "6de478513a56b9ee469fc9e789a4e192a86fcd7f8035ec26aec558ecda1222d7",
+      "image": {
+        "components": 3,
+        "height": 2878,
+        "precision": 8,
+        "signed": false,
+        "width": 5329
+      },
+      "input_sha256": "80cd029af329d13a1d06189c1a039511b36d305c9e804e0e6aa971246847e436",
+      "profile": {
+        "coding": "classic",
+        "decomposition_levels": 2,
+        "multiple_component_transform": "reversible_colour_transform",
+        "progression_order": "lrcp",
+        "quality_layers": 1,
+        "tiles": 1
+      },
+      "sha256": "a2b77ec95fa978f32110aa02c49e1874fed170b57b9a0ffa21b1b5bd49def4f6",
+      "source_sha256": "1afb38115b6146679b7a79513b38f3457f8a18a827fd00dafb2c8a0f381d5127",
+      "verification_journey_observations": {
+        "correctness": {
+          "exact": true,
+          "maximum_absolute_error": 0.0,
+          "mse": 0.0,
+          "peak": 255.0,
+          "psnr_db": null,
+          "sample_count": 46010586
+        },
+        "output_bytes": 11667870,
+        "peak_rss_bytes": 476909568,
+        "samples_ns": [
+          2712587961
+        ]
+      }
+    },
+    {
+      "arguments_sha256": "a99b5f0f8b1df6f0c80e4f7311d7445e54b59e531e44560afea833c3ef151df4",
+      "asset_id": "30_104001002394E000-MS16",
+      "bytes": 7845403,
+      "export_response_sha256": "9acebf6b3211cb074dd284b20f5cd0cab27be14c4b42e7366c65d1148db09bd0",
+      "generator_sha256": "6de478513a56b9ee469fc9e789a4e192a86fcd7f8035ec26aec558ecda1222d7",
+      "image": {
+        "components": 8,
+        "height": 720,
+        "precision": 16,
+        "signed": false,
+        "width": 1332
+      },
+      "independent_inspection": {
+        "codestream_sha256": "ea53071a75d0c3c8a02885bfb4856976450c0fc950da97d9baecda3f842f25d7",
+        "observed": {
+          "components": [
+            {
+              "decomposition_levels": 2,
+              "dx": 1,
+              "dy": 1,
+              "height": 720,
+              "index": 0,
+              "precision": 16,
+              "reversible": true,
+              "signed": false,
+              "width": 1332
+            },
+            {
+              "decomposition_levels": 2,
+              "dx": 1,
+              "dy": 1,
+              "height": 720,
+              "index": 1,
+              "precision": 16,
+              "reversible": true,
+              "signed": false,
+              "width": 1332
+            },
+            {
+              "decomposition_levels": 2,
+              "dx": 1,
+              "dy": 1,
+              "height": 720,
+              "index": 2,
+              "precision": 16,
+              "reversible": true,
+              "signed": false,
+              "width": 1332
+            },
+            {
+              "decomposition_levels": 2,
+              "dx": 1,
+              "dy": 1,
+              "height": 720,
+              "index": 3,
+              "precision": 16,
+              "reversible": true,
+              "signed": false,
+              "width": 1332
+            },
+            {
+              "decomposition_levels": 2,
+              "dx": 1,
+              "dy": 1,
+              "height": 720,
+              "index": 4,
+              "precision": 16,
+              "reversible": true,
+              "signed": false,
+              "width": 1332
+            },
+            {
+              "decomposition_levels": 2,
+              "dx": 1,
+              "dy": 1,
+              "height": 720,
+              "index": 5,
+              "precision": 16,
+              "reversible": true,
+              "signed": false,
+              "width": 1332
+            },
+            {
+              "decomposition_levels": 2,
+              "dx": 1,
+              "dy": 1,
+              "height": 720,
+              "index": 6,
+              "precision": 16,
+              "reversible": true,
+              "signed": false,
+              "width": 1332
+            },
+            {
+              "decomposition_levels": 2,
+              "dx": 1,
+              "dy": 1,
+              "height": 720,
+              "index": 7,
+              "precision": 16,
+              "reversible": true,
+              "signed": false,
+              "width": 1332
+            }
+          ],
+          "geometry_basis": "zero image origin and unit component sampling",
+          "layers": 1,
+          "mct": false,
+          "progression": "LRCP",
+          "scope": "independent main-header observation; worker admission separately excludes overrides",
+          "tiles": 1
+        },
+        "openjp2_version": "2.5.4",
+        "raw_dump_sha256": "27aee62c20b7e122103cf75fe19102a5002dbed78115d4648049d5d70c46e5b6",
+        "tool": "OpenJPEG opj_dump",
+        "tool_help_sha256": "ba6f2a5a5d806b13c46cb42096dbbadeff20d2086599078d4927f40153ca7f55",
+        "tool_sha256": "77260e3cce95cae6e1bf8d5a9bb2d97b408073b313f5824bd86c16d8b5a41701"
+      },
+      "input_sha256": "3e9492968a14f6a5b67d572f8b11b31cf1c5723ff59285fbac8f3b3dba108a60",
+      "profile": {
+        "coding": "classic",
+        "decomposition_levels": 2,
+        "multiple_component_transform": "none",
+        "progression_order": "lrcp",
+        "quality_layers": 1,
+        "tiles": 1
+      },
+      "sha256": "ea53071a75d0c3c8a02885bfb4856976450c0fc950da97d9baecda3f842f25d7",
+      "source_sha256": "bf526ed88bd0566735aecedb45b7f5f872b6f6001ccbeccce4c594cd54a0df3e",
+      "verification_journey_observations": {
+        "correctness": {
+          "exact": true,
+          "maximum_absolute_error": 0.0,
+          "mse": 0.0,
+          "peak": 65535.0,
+          "psnr_db": null,
+          "sample_count": 7672320
+        },
+        "output_bytes": 7845403,
+        "peak_rss_bytes": 125431808,
+        "samples_ns": [
+          1314870468
+        ]
+      }
+    },
+    {
+      "arguments_sha256": "9dedbdc8b46363227aa05f14a5bec910a9153bb16544ecb739738ef4b2489f6f",
+      "asset_id": "30_104001002394E000-RGB16",
+      "bytes": 2689386,
+      "export_response_sha256": "e547f17701ca20cb46976e92065f0c8567dc0488b4711a12d915c866c2105515",
+      "generator_sha256": "6de478513a56b9ee469fc9e789a4e192a86fcd7f8035ec26aec558ecda1222d7",
+      "image": {
+        "components": 3,
+        "height": 720,
+        "precision": 16,
+        "signed": false,
+        "width": 1332
+      },
+      "input_sha256": "3faf0be9dffeb0f3b5fab3675704a3b8f292755ef2ce7d6bfeb22beadd74a15c",
+      "profile": {
+        "coding": "classic",
+        "decomposition_levels": 2,
+        "multiple_component_transform": "reversible_colour_transform",
+        "progression_order": "lrcp",
+        "quality_layers": 1,
+        "tiles": 1
+      },
+      "sha256": "8db4c6b29c1a0b9405a3bebf07c8bf312c3dc3d51c328c7e4cabc47eba8f0933",
+      "source_sha256": "bf526ed88bd0566735aecedb45b7f5f872b6f6001ccbeccce4c594cd54a0df3e",
+      "verification_journey_observations": {
+        "correctness": {
+          "exact": true,
+          "maximum_absolute_error": 0.0,
+          "mse": 0.0,
+          "peak": 65535.0,
+          "psnr_db": null,
+          "sample_count": 2877120
+        },
+        "output_bytes": 2689386,
+        "peak_rss_bytes": 57786368,
+        "samples_ns": [
+          471941451
+        ]
+      }
+    },
+    {
+      "arguments_sha256": "085a6eaf4adc5966e671bd329cfb867eb74ddb9d9e7d497cd10f2794a08b7825",
+      "asset_id": "47_104001001D2C7A00-PAN16",
+      "bytes": 50206588,
+      "export_response_sha256": "dbd65753e54610acbe3c336ed9cce0ffbf35db5b3f1d5fe5b361d518e5a5922a",
+      "generator_sha256": "6de478513a56b9ee469fc9e789a4e192a86fcd7f8035ec26aec558ecda1222d7",
+      "image": {
+        "components": 1,
+        "height": 7054,
+        "precision": 16,
+        "signed": false,
+        "width": 6650
+      },
+      "input_sha256": "6affa15b8d178c78ec44e0360a619bac307a2f91a3d05011927f2a048adf0cef",
+      "profile": {
+        "coding": "classic",
+        "decomposition_levels": 2,
+        "multiple_component_transform": "none",
+        "progression_order": "lrcp",
+        "quality_layers": 1,
+        "tiles": 1
+      },
+      "sha256": "f4a215c9d7fcc5075e80d370b7db8e47b8485e1c90aab4bb5a8e7cf3c9b06adc",
+      "source_sha256": "673803c7bc5fc16fbe723ff184d066fc91c994e4bd3699f68f124011648e6c62",
+      "verification_journey_observations": {
+        "correctness": {
+          "exact": true,
+          "maximum_absolute_error": 0.0,
+          "mse": 0.0,
+          "peak": 65535.0,
+          "psnr_db": null,
+          "sample_count": 46909100
+        },
+        "output_bytes": 50206588,
+        "peak_rss_bytes": 618242048,
+        "samples_ns": [
+          7694687704
+        ]
+      }
+    },
+    {
+      "arguments_sha256": "f69c37daa064032f6a4b27111f9f138ca8adebe924f726342220ce358967038a",
+      "asset_id": "47_104001001D2C7A00-RGB8",
+      "bytes": 51668288,
+      "export_response_sha256": "1f8029a7c276c06e23e58b7bff400314927b941d4048c67f7c3bfd0d41882fdc",
+      "generator_sha256": "6de478513a56b9ee469fc9e789a4e192a86fcd7f8035ec26aec558ecda1222d7",
+      "image": {
+        "components": 3,
+        "height": 7054,
+        "precision": 8,
+        "signed": false,
+        "width": 6650
+      },
+      "input_sha256": "3e4b6b0ebbde9ed997a4dbc7141f917e7b3bebb78192a49ac45a946e44a747e1",
+      "profile": {
+        "coding": "classic",
+        "decomposition_levels": 2,
+        "multiple_component_transform": "reversible_colour_transform",
+        "progression_order": "lrcp",
+        "quality_layers": 1,
+        "tiles": 1
+      },
+      "sha256": "e510788f175b0690078914a1f91fe3ece6b5110301b74718868deb52fe68152a",
+      "source_sha256": "f071e2671f1b55f85254454f80ee4da69b38eaeeba2a658fe0d75a61592f6b48",
+      "verification_journey_observations": {
+        "correctness": {
+          "exact": true,
+          "maximum_absolute_error": 0.0,
+          "mse": 0.0,
+          "peak": 255.0,
+          "psnr_db": null,
+          "sample_count": 140727300
+        },
+        "output_bytes": 51668288,
+        "peak_rss_bytes": 1464356864,
+        "samples_ns": [
+          11160955716
+        ]
+      }
+    },
+    {
+      "arguments_sha256": "2fbf0026757e6545476720d037b19f11b42afb1cece48c8c635678d036e65afd",
+      "asset_id": "47_104001001D2C7A00-MS16",
+      "bytes": 27306192,
+      "export_response_sha256": "14caede24605bad72834eae5f3a6e1632869aacc0be229309af421a2d87f4d3b",
+      "generator_sha256": "6de478513a56b9ee469fc9e789a4e192a86fcd7f8035ec26aec558ecda1222d7",
+      "image": {
+        "components": 8,
+        "height": 1763,
+        "precision": 16,
+        "signed": false,
+        "width": 1663
+      },
+      "independent_inspection": {
+        "codestream_sha256": "021b0c260dfcd0d525cc3d258c81ca970fed0859062cfdfb8474eddbdcbda93d",
+        "observed": {
+          "components": [
+            {
+              "decomposition_levels": 2,
+              "dx": 1,
+              "dy": 1,
+              "height": 1763,
+              "index": 0,
+              "precision": 16,
+              "reversible": true,
+              "signed": false,
+              "width": 1663
+            },
+            {
+              "decomposition_levels": 2,
+              "dx": 1,
+              "dy": 1,
+              "height": 1763,
+              "index": 1,
+              "precision": 16,
+              "reversible": true,
+              "signed": false,
+              "width": 1663
+            },
+            {
+              "decomposition_levels": 2,
+              "dx": 1,
+              "dy": 1,
+              "height": 1763,
+              "index": 2,
+              "precision": 16,
+              "reversible": true,
+              "signed": false,
+              "width": 1663
+            },
+            {
+              "decomposition_levels": 2,
+              "dx": 1,
+              "dy": 1,
+              "height": 1763,
+              "index": 3,
+              "precision": 16,
+              "reversible": true,
+              "signed": false,
+              "width": 1663
+            },
+            {
+              "decomposition_levels": 2,
+              "dx": 1,
+              "dy": 1,
+              "height": 1763,
+              "index": 4,
+              "precision": 16,
+              "reversible": true,
+              "signed": false,
+              "width": 1663
+            },
+            {
+              "decomposition_levels": 2,
+              "dx": 1,
+              "dy": 1,
+              "height": 1763,
+              "index": 5,
+              "precision": 16,
+              "reversible": true,
+              "signed": false,
+              "width": 1663
+            },
+            {
+              "decomposition_levels": 2,
+              "dx": 1,
+              "dy": 1,
+              "height": 1763,
+              "index": 6,
+              "precision": 16,
+              "reversible": true,
+              "signed": false,
+              "width": 1663
+            },
+            {
+              "decomposition_levels": 2,
+              "dx": 1,
+              "dy": 1,
+              "height": 1763,
+              "index": 7,
+              "precision": 16,
+              "reversible": true,
+              "signed": false,
+              "width": 1663
+            }
+          ],
+          "geometry_basis": "zero image origin and unit component sampling",
+          "layers": 1,
+          "mct": false,
+          "progression": "LRCP",
+          "scope": "independent main-header observation; worker admission separately excludes overrides",
+          "tiles": 1
+        },
+        "openjp2_version": "2.5.4",
+        "raw_dump_sha256": "916b018b92f4f6360706cf7fa203adc50678d5c405f2ead890733e45700e8ffe",
+        "tool": "OpenJPEG opj_dump",
+        "tool_help_sha256": "ba6f2a5a5d806b13c46cb42096dbbadeff20d2086599078d4927f40153ca7f55",
+        "tool_sha256": "77260e3cce95cae6e1bf8d5a9bb2d97b408073b313f5824bd86c16d8b5a41701"
+      },
+      "input_sha256": "70fadf84efa21905593d5385f5e9917a6005fbe8ca56e07edc89ca1dd63cf539",
+      "profile": {
+        "coding": "classic",
+        "decomposition_levels": 2,
+        "multiple_component_transform": "none",
+        "progression_order": "lrcp",
+        "quality_layers": 1,
+        "tiles": 1
+      },
+      "sha256": "021b0c260dfcd0d525cc3d258c81ca970fed0859062cfdfb8474eddbdcbda93d",
+      "source_sha256": "73510618fd0f306f969e0a61ee3f212a7c8190d58f454c4068cc70b3afc2714a",
+      "verification_journey_observations": {
+        "correctness": {
+          "exact": true,
+          "maximum_absolute_error": 0.0,
+          "mse": 0.0,
+          "peak": 65535.0,
+          "psnr_db": null,
+          "sample_count": 23454952
+        },
+        "output_bytes": 27306192,
+        "peak_rss_bytes": 373710848,
+        "samples_ns": [
+          4074105650
+        ]
+      }
+    },
+    {
+      "arguments_sha256": "c05e89f7513c3dfcd9c11e148b1dcf7685a229e6367b8fa108c5f7e5133b4c37",
+      "asset_id": "47_104001001D2C7A00-RGB16",
+      "bytes": 9492982,
+      "export_response_sha256": "a8474fb7b7f09acc86b82931454588e30569edc792c58653c125a3b8da81cdfd",
+      "generator_sha256": "6de478513a56b9ee469fc9e789a4e192a86fcd7f8035ec26aec558ecda1222d7",
+      "image": {
+        "components": 3,
+        "height": 1763,
+        "precision": 16,
+        "signed": false,
+        "width": 1663
+      },
+      "input_sha256": "4325b30f121cd290995a7ce85830055d83f695bab8046366191716df4d47b748",
+      "profile": {
+        "coding": "classic",
+        "decomposition_levels": 2,
+        "multiple_component_transform": "reversible_colour_transform",
+        "progression_order": "lrcp",
+        "quality_layers": 1,
+        "tiles": 1
+      },
+      "sha256": "c1ebd83c37d70974e50979493e6e9c336cbaccea9bfa8d1d5a1aa9a0619430bb",
+      "source_sha256": "73510618fd0f306f969e0a61ee3f212a7c8190d58f454c4068cc70b3afc2714a",
+      "verification_journey_observations": {
+        "correctness": {
+          "exact": true,
+          "maximum_absolute_error": 0.0,
+          "mse": 0.0,
+          "peak": 65535.0,
+          "psnr_db": null,
+          "sample_count": 8795607
+        },
+        "output_bytes": 9492982,
+        "peak_rss_bytes": 133341184,
+        "samples_ns": [
+          1436302700
+        ]
+      }
+    }
+  ],
+  "unsupported": []
+}

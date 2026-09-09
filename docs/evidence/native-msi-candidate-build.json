@@ -1,0 +1,12 @@
+{
+  "benchmark_revision": "0c10522bd9e42d54c736942b0023dbc8f0e1b6dd",
+  "codec_revision": "183c52a5ec2e69074f8d603b97e6bbe8ed7ef2b4",
+  "testdata_revision": "b5ae1702dea1045e8af304458869bd6f0a763df4",
+  "build_provenance_sha256": "5335199ef8e189121df22342e88792d5b763e53388e2248356f37f0cac9b46a5",
+  "harness_sha256": "af0685cdba760f1a56db162fcfd087a1e32781c1a784690d733d1ba4c8f98ab7",
+  "workers": {
+    "emuella": "6de478513a56b9ee469fc9e789a4e192a86fcd7f8035ec26aec558ecda1222d7",
+    "openjpeg": "c8949b590da8e0ebec5d62ba4a1c57b9a8b38cabb04520cb0ce44042a8baef3f",
+    "openjph": "9bd2c8b37d8dd1e5fbb09b333260eb66a7255c5b424ebf7d4f1769f23cab45e9"
+  }
+}

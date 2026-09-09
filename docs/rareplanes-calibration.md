@@ -172,3 +172,8 @@ header inspection alone does not establish entropy validity or exactness. All
 streams and raw tool outputs stay within the approved store. The self-contained
 parser tests use authored text, and native interoperability tests use authored
 full-range, distinct-band samples.
+
+The [native eight-band candidate report](native-msi.md) records the subsequent
+160 exact matrix batches, 80 separate retained-stream decodes, independent MSI
+header observations and separate authored allocation probes. It preserves the
+historical records above and identifies the exact candidates measured.
