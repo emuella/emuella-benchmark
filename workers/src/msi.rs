@@ -68,7 +68,11 @@ fn admitted(bytes: &[u8], image: &ImageSpec) -> bool {
                     || long(body, 26) != Some(0)
                     || long(body, 30) != Some(0)
                     || word(body, 34) != Some(8)
-                    || body[36..].chunks_exact(3).any(|c| c != [15, 1, 1])
+                    || body[36..]
+                        .as_chunks::<3>()
+                        .0
+                        .iter()
+                        .any(|c| *c != [15, 1, 1])
                 {
                     return false;
                 }
