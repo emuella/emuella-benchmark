@@ -85,7 +85,19 @@ fn decode(bytes: &[u8], c: &Case) -> Result<Vec<u8>> {
     .map_err(error)?;
     pixels(image, &c.output.image)
 }
-fn run(r: &WorkerRequest) -> Result<WorkerResponse> {
+fn run(r: &WorkerRequest, export: Option<&std::path::Path>) -> Result<WorkerResponse> {
+    if export.is_some()
+        && (r.case.operation != Operation::Encode
+            || !r.case.output.lossless
+            || r.case.settings.get("coding") != Some(&serde_json::json!("classic"))
+            || r.case.settings.get("decomposition_levels") != Some(&serde_json::json!(2))
+            || r.case.threads != 1
+            || r.protocol.warmup != 0
+            || r.protocol.samples_per_batch != 1
+            || r.diagnostic)
+    {
+        return Err("export requires one classic lossless D2 single-thread encode, without warmup or diagnostics".into());
+    }
     validate(
         r,
         Boundary::CodecOperation,
@@ -216,6 +228,15 @@ fn run(r: &WorkerRequest) -> Result<WorkerResponse> {
         if c.operation == Operation::Encode {
             run_samples(r, encode, |stream| {
                 let len = stream.len() as u64;
+                if let Some(path) = export {
+                    use std::io::Write;
+                    let mut file = std::fs::OpenOptions::new()
+                        .write(true)
+                        .create_new(true)
+                        .open(path)
+                        .map_err(|e| e.to_string())?;
+                    file.write_all(&stream).map_err(|e| e.to_string())?;
+                }
                 Ok((raw(&decode(&stream, c)?, &c.output.image)?, len))
             })
         } else {
@@ -338,5 +359,33 @@ fn run(r: &WorkerRequest) -> Result<WorkerResponse> {
     Ok(result)
 }
 fn main() {
-    main_worker(run);
+    let args: Vec<_> = std::env::args_os().skip(1).collect();
+    if args.first().is_some_and(|arg| arg == "--export-lossless") {
+        let result = (|| -> Result<()> {
+            if args.len() != 4 {
+                return Err(
+                    "usage: worker --export-lossless REQUEST RESPONSE NEW_CODESTREAM".into(),
+                );
+            }
+            let request =
+                serde_json::from_slice(&std::fs::read(&args[1]).map_err(|e| e.to_string())?)
+                    .map_err(|e| e.to_string())?;
+            let response = run(&request, Some(std::path::Path::new(&args[3])))?;
+            use std::io::Write;
+            std::fs::OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .open(&args[2])
+                .map_err(|e| e.to_string())?
+                .write_all(&serde_json::to_vec_pretty(&response).map_err(|e| e.to_string())?)
+                .map_err(|e| e.to_string())?;
+            Ok(())
+        })();
+        if let Err(error) = result {
+            eprintln!("{error}");
+            std::process::exit(1);
+        }
+    } else {
+        main_worker(|request| run(request, None));
+    }
 }

@@ -273,3 +273,72 @@ fn openjpeg_reports_unsupported_diagnostics_for_encode_and_decode() {
     );
     assert_eq!(response.samples_ns.len(), 2);
 }
+
+#[test]
+fn exported_public_streams_verify_independently_and_never_overwrite() {
+    for components in [1, 3] {
+        for precision in [8, 16] {
+            let temp = tempfile::tempdir().unwrap();
+            let dir = temp.path();
+            let mut original = case(dir, components, precision);
+            original.threads = 1;
+            let request = WorkerRequest {
+                schema_version: SCHEMA_VERSION,
+                request_id: "export".into(),
+                case: original.clone(),
+                protocol: Protocol {
+                    warmup: 0,
+                    samples_per_batch: 1,
+                    ..Default::default()
+                },
+                diagnostic: false,
+            };
+            let request_path = dir.join("export-request.json");
+            let response_path = dir.join("export-response.json");
+            let stream_path = dir.join("export.j2k");
+            fs::write(&request_path, serde_json::to_vec(&request).unwrap()).unwrap();
+            let export = || {
+                Command::new(env!("CARGO_BIN_EXE_emuella-worker"))
+                    .arg("--export-lossless")
+                    .arg(&request_path)
+                    .arg(&response_path)
+                    .arg(&stream_path)
+                    .output()
+                    .unwrap()
+            };
+            assert!(export().status.success());
+            let bytes = fs::read(&stream_path).unwrap();
+            assert!(!export().status.success());
+            assert_eq!(fs::read(&stream_path).unwrap(), bytes);
+            let mut decode = original.clone();
+            decode.operation = Operation::Decode;
+            decode.reference = Some(original.input);
+            decode.input = Asset {
+                path: stream_path,
+                sha256: format!("{:x}", Sha256::digest(&bytes)),
+                provenance: BTreeMap::new(),
+            };
+            decode.settings.remove("decomposition_levels");
+            for binary in [
+                env!("CARGO_BIN_EXE_emuella-worker"),
+                env!("CARGO_BIN_EXE_openjpeg-worker"),
+            ] {
+                let response = invoke(binary, dir, decode.clone(), false);
+                assert_eq!(response.status, WorkerStatus::Ok, "{:?}", response.message);
+                assert!(response.correctness.unwrap().exact);
+            }
+            let mut invalid = request;
+            invalid.protocol.samples_per_batch = 2;
+            fs::write(&request_path, serde_json::to_vec(&invalid).unwrap()).unwrap();
+            let rejected = Command::new(env!("CARGO_BIN_EXE_emuella-worker"))
+                .arg("--export-lossless")
+                .arg(&request_path)
+                .arg(dir.join("invalid.json"))
+                .arg(dir.join("invalid.j2k"))
+                .output()
+                .unwrap();
+            assert!(!rejected.status.success());
+            assert!(!dir.join("invalid.j2k").exists());
+        }
+    }
+}

@@ -121,7 +121,7 @@ dependencies = [
 [[package]]
 name = "emuella-j2k"
 version = "0.1.0"
-source = "git+https://github.com/emuella/emuella-j2k?rev=aa7090c23cce62437cefe5b441e971b1bd4320b5#aa7090c23cce62437cefe5b441e971b1bd4320b5"
+source = "git+https://github.com/emuella/emuella-j2k?rev=68c850906fc0592b257b47d83edbd8c966e8de98#68c850906fc0592b257b47d83edbd8c966e8de98"
 dependencies = [
  "emuella-j2k-core",
 ]
@@ -129,12 +129,12 @@ dependencies = [
 [[package]]
 name = "emuella-j2k-accel"
 version = "0.1.0"
-source = "git+https://github.com/emuella/emuella-j2k?rev=aa7090c23cce62437cefe5b441e971b1bd4320b5#aa7090c23cce62437cefe5b441e971b1bd4320b5"
+source = "git+https://github.com/emuella/emuella-j2k?rev=68c850906fc0592b257b47d83edbd8c966e8de98#68c850906fc0592b257b47d83edbd8c966e8de98"
 
 [[package]]
 name = "emuella-j2k-codestream"
 version = "0.1.0"
-source = "git+https://github.com/emuella/emuella-j2k?rev=aa7090c23cce62437cefe5b441e971b1bd4320b5#aa7090c23cce62437cefe5b441e971b1bd4320b5"
+source = "git+https://github.com/emuella/emuella-j2k?rev=68c850906fc0592b257b47d83edbd8c966e8de98#68c850906fc0592b257b47d83edbd8c966e8de98"
 dependencies = [
  "emuella-j2k-accel",
  "emuella-j2k-ht",
@@ -146,12 +146,12 @@ dependencies = [
 [[package]]
 name = "emuella-j2k-container"
 version = "0.1.0"
-source = "git+https://github.com/emuella/emuella-j2k?rev=aa7090c23cce62437cefe5b441e971b1bd4320b5#aa7090c23cce62437cefe5b441e971b1bd4320b5"
+source = "git+https://github.com/emuella/emuella-j2k?rev=68c850906fc0592b257b47d83edbd8c966e8de98#68c850906fc0592b257b47d83edbd8c966e8de98"
 
 [[package]]
 name = "emuella-j2k-core"
 version = "0.1.0"
-source = "git+https://github.com/emuella/emuella-j2k?rev=aa7090c23cce62437cefe5b441e971b1bd4320b5#aa7090c23cce62437cefe5b441e971b1bd4320b5"
+source = "git+https://github.com/emuella/emuella-j2k?rev=68c850906fc0592b257b47d83edbd8c966e8de98#68c850906fc0592b257b47d83edbd8c966e8de98"
 dependencies = [
  "emuella-j2k-codestream",
  "emuella-j2k-container",
@@ -160,7 +160,7 @@ dependencies = [
 [[package]]
 name = "emuella-j2k-ht"
 version = "0.1.0"
-source = "git+https://github.com/emuella/emuella-j2k?rev=aa7090c23cce62437cefe5b441e971b1bd4320b5#aa7090c23cce62437cefe5b441e971b1bd4320b5"
+source = "git+https://github.com/emuella/emuella-j2k?rev=68c850906fc0592b257b47d83edbd8c966e8de98#68c850906fc0592b257b47d83edbd8c966e8de98"
 dependencies = [
  "emuella-j2k-accel",
 ]
@@ -168,12 +168,12 @@ dependencies = [
 [[package]]
 name = "emuella-j2k-tier1"
 version = "0.1.0"
-source = "git+https://github.com/emuella/emuella-j2k?rev=aa7090c23cce62437cefe5b441e971b1bd4320b5#aa7090c23cce62437cefe5b441e971b1bd4320b5"
+source = "git+https://github.com/emuella/emuella-j2k?rev=68c850906fc0592b257b47d83edbd8c966e8de98#68c850906fc0592b257b47d83edbd8c966e8de98"
 
 [[package]]
 name = "emuella-j2k-transform"
 version = "0.1.0"
-source = "git+https://github.com/emuella/emuella-j2k?rev=aa7090c23cce62437cefe5b441e971b1bd4320b5#aa7090c23cce62437cefe5b441e971b1bd4320b5"
+source = "git+https://github.com/emuella/emuella-j2k?rev=68c850906fc0592b257b47d83edbd8c966e8de98#68c850906fc0592b257b47d83edbd8c966e8de98"
 dependencies = [
  "emuella-j2k-accel",
  "rayon",
