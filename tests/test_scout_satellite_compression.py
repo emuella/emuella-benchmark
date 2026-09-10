@@ -1,4 +1,5 @@
 """Authored synthetic checks; no external tools or protected inputs are needed."""
+import copy
 import hashlib
 import importlib.util
 import json
@@ -38,11 +39,14 @@ def codestream(image, profile, tile_header=b"", style=None):
 
 
 class ScoutTests(unittest.TestCase):
-    def fixture(self, root):
+    def fixture(self, root, split="train"):
         prepdir = root / "prepared"
         prepdir.mkdir()
         sources = root / "sources.json"
-        sources.write_text(json.dumps({"assets": [{"path": "image.tif", "sha256": digest(b"source")}]}))
+        sources.write_text(json.dumps({"schema_version": 1,
+            "bundles": [{"id": bundle, "split": split} for bundle in (scout.DEVELOPMENT, scout.HOLDOUT)],
+            "assets": [{"path": f"real/{split}/{folder}/{bundle}.tif", "sha256": digest(f"{bundle}-{folder}".encode()), "bytes": 1}
+                       for bundle in (scout.DEVELOPMENT, scout.HOLDOUT) for folder in ("PAN", "PS-RGB", "MS")]}))
         provenance = {"source_lock": {"sha256": scout.sha(sources)}, "recipe": {"sha256": digest(b"recipe")}}
         assets = []
         for product, (components, precision) in scout.PRODUCTS.items():
@@ -53,9 +57,11 @@ class ScoutTests(unittest.TestCase):
                               for component in range(components) for pixel in range(8))
             (prepdir / f"{product}.raw").write_bytes(raw)
             (root / f"{product}.rawl").write_bytes(planar)
+            folder = {"PAN16": "PAN", "RGB8": "PS-RGB", "MS16": "MS", "RGB16": "MS"}[product]
             assets.append({"id": f"{scout.DEVELOPMENT}-{product}", "product": product,
                            "bundle_id": scout.DEVELOPMENT, "path": f"{product}.raw", "sha256": digest(raw),
-                           "bytes": len(raw), "source_path": "image.tif", "source_sha256": digest(b"source"), "image": image})
+                           "bytes": len(raw), "source_path": f"real/{split}/{folder}/{scout.DEVELOPMENT}.tif",
+                           "source_sha256": digest(f"{scout.DEVELOPMENT}-{folder}".encode()), "image": image})
         prepared = prepdir / "prepared.json"
         prepared.write_text(json.dumps({"schema_version": 1, "assets": assets, "provenance": provenance}))
         streams = {}
@@ -193,12 +199,12 @@ class ScoutTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             asset = scout.load_inputs(root, *self.fixture(root), scout.DEVELOPMENT, ["MS16"])[0]
-            def failed(command, log, timeout):
+            def failed(command, log, timeout, identity):
                 Path(command[command.index("-o") + 1]).write_bytes(b"partial")
                 return {"status": "process_failed", "wall_ns": 99, "exit_code": 1}
-            with patch.object(scout, "process", side_effect=failed):
+            with patch.object(scout, "checked_process", side_effect=failed):
                 result = scout.observe(asset, scout.profiles([3], ["baseline"])[0], 0,
-                                       {"compress": Path("compress"), "decompress": Path("decompress")}, root, 1)
+                                       {"compress": Path("compress"), "decompress": Path("decompress")}, root, 1, {"compress": {}, "decompress": {}})
             self.assertEqual(result["codestream"]["bytes"], 7)
             self.assertEqual(result["decode"]["status"], "not_attempted")
             self.assertFalse(result["exact"])
@@ -209,16 +215,134 @@ class ScoutTests(unittest.TestCase):
             root = Path(temporary)
             asset = scout.load_inputs(root, *self.fixture(root), scout.DEVELOPMENT, ["MS16"])[0]
             profile = scout.profiles([3], ["baseline"])[0]
-            def fake(command, log, timeout):
+            def fake(command, log, timeout, identity):
                 destination = Path(command[command.index("-o") + 1])
                 destination.write_bytes(codestream(asset["image"], profile, style=1) if destination.suffix == ".j2k"
                                         else Path(asset["planar_path"]).read_bytes())
                 return {"status": "ok", "wall_ns": 99, "exit_code": 0}
-            with patch.object(scout, "process", side_effect=fake):
-                result = scout.observe(asset, profile, 0, {"compress": Path("compress"), "decompress": Path("decompress")}, root, 1)
+            with patch.object(scout, "checked_process", side_effect=fake):
+                result = scout.observe(asset, profile, 0, {"compress": Path("compress"), "decompress": Path("decompress")}, root, 1, {"compress": {}, "decompress": {}})
             self.assertTrue(result["exact"])
             self.assertEqual(result["status"], "failed")
             self.assertEqual(result["profile_status"], "invalid_structure")
+            self.assertEqual(result["profile_failure_reason"], "COD differs from reversible fixed profile")
+
+    def test_product_lineage_rejects_other_locked_acquisition_folder_and_split(self):
+        for bundle, folder, split in ((scout.HOLDOUT, "MS", "train"),
+                                       (scout.DEVELOPMENT, "PAN", "train"),
+                                       (scout.DEVELOPMENT, "MS", "test")):
+            with self.subTest(bundle=bundle, folder=folder, split=split), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                prepared, common, sources = self.fixture(root)
+                document = json.loads(prepared.read_text())
+                asset = next(a for a in document["assets"] if a["product"] == "MS16")
+                asset["source_path"] = f"real/{split}/{folder}/{bundle}.tif"
+                asset["source_sha256"] = digest(f"{bundle}-{folder}".encode())
+                prepared.write_text(json.dumps(document))
+                streams = json.loads(common.read_text())
+                for entry in streams["streams"].values():
+                    entry["preparation_record"]["prepared_sha256"] = scout.sha(prepared)
+                common.write_text(json.dumps(streams))
+                with self.assertRaisesRegex(ValueError, "selected acquisition, split or product"):
+                    scout.load_inputs(root, prepared, common, sources, scout.DEVELOPMENT, ["MS16"])
+
+    def test_source_lock_schema_selection_and_declared_test_split(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            prepared, common, sources = self.fixture(root, split="test")
+            assets = scout.load_inputs(root, prepared, common, sources, scout.DEVELOPMENT, ["PAN16"])
+            self.assertIn("real/test/PAN/", assets[0]["source_path"])
+            original = json.loads(sources.read_text())
+            for mutation in ("schema", "selection", "matrix"):
+                document = copy.deepcopy(original)
+                if mutation == "schema":
+                    document["schema_version"] = 99
+                elif mutation == "selection":
+                    document["bundles"] = []
+                else:
+                    document["assets"].pop()
+                sources.write_text(json.dumps(document))
+                with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                    scout.load_inputs(root, prepared, common, sources, scout.DEVELOPMENT, ["PAN16"])
+
+    def test_runtime_dependency_symlink_switch_is_detected_with_original_retained(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            tool, first, second, loader = (root / name for name in ("tool", "lib.version1", "lib.version2", "libopenjp2.so.7"))
+            tool.write_bytes(b"synthetic tool")
+            first.write_bytes(b"original library")
+            second.write_bytes(b"changed library")
+            loader.symlink_to(first)
+            ldd = subprocess.CompletedProcess([], 0, f"libopenjp2.so.7 => {loader} (0x1234)\n".encode(), b"")
+            with patch.object(scout.subprocess, "run", return_value=ldd):
+                libraries, _ = scout.runtime_dependencies(tool)
+                identity = {"path": str(tool), "sha256": scout.sha(tool), "runtime_libraries": libraries}
+                self.assertEqual(libraries[0]["name"], "libopenjp2.so.7")
+                self.assertEqual(libraries[0]["loader_path"], str(loader))
+                self.assertEqual(libraries[0]["resolved_path"], str(first))
+                self.assertTrue(scout.tool_unchanged(tool, identity))
+                loader.unlink()
+                loader.symlink_to(second)
+                self.assertTrue(first.exists())
+                self.assertEqual(scout.sha(first), libraries[0]["sha256"])
+                self.assertFalse(scout.tool_unchanged(tool, identity))
+                with patch.object(scout, "process") as process:
+                    result = scout.checked_process([str(tool)], root / "unused.log", 1, identity)
+                    process.assert_not_called()
+                self.assertEqual(result["status"], "identity_changed")
+                self.assertIsNone(result["wall_ns"])
+
+    def development_evidence(self):
+        profile = scout.profiles([3], ["baseline"])[0]
+        asset = {"id": f"{scout.DEVELOPMENT}-MS16", "bundle_id": scout.DEVELOPMENT, "product": "MS16",
+                 "image": {"width": 128, "height": 128, "components": 8, "precision": 16, "signed": False},
+                 "bytes": 128 * 128 * 8 * 2, "sha256": digest(b"prepared"), "planar_sha256": digest(b"planar")}
+        operation = {"status": "ok", "exit_code": 0, "wall_ns": 10, "measurement_boundary": "application_journey"}
+        return {"schema_version": 2, "kind": "openjpeg_satellite_compression_scout", "cohort": "development",
+                "bundle": scout.DEVELOPMENT, "complete": True, "valid": True, "rounds": 1,
+                "identity_changes": [], "runtime_identity_changes": [], "measurement_boundary": "application_journey",
+                "profiles": [profile], "assets": [asset], "observations": [{
+                    "asset_id": asset["id"], "profile": profile, "status": "ok", "exact": True,
+                    "sequence": 0, "round": 0, "profile_status": "ok", "observed_profile": scout.expected_observation(profile),
+                    "encode": operation, "decode": operation,
+                    "decoded": {"status": "present", "exact": True, "bytes": asset["bytes"], "sha256": asset["planar_sha256"]},
+                    "codestream": {"status": "present", "bytes": 100, "sha256": digest(b"stream")}}]}
+
+    def test_holdout_accepts_complete_exact_development_profile_only(self):
+        evidence = self.development_evidence()
+        chosen = scout.profiles([3], ["baseline"])
+        scout.validate_development_evidence(evidence, ["MS16"], chosen)
+        for products, profiles in ((["PAN16"], chosen), (["MS16"], scout.profiles([4], ["baseline"]))):
+            with self.assertRaises(ValueError):
+                scout.validate_development_evidence(evidence, products, profiles)
+
+    def test_holdout_rejects_forged_labels_malformed_contract_and_incomplete_rounds(self):
+        mutations = [
+            (("schema_version",), 99), (("schema_version",), 1), (("schema_version",), True), (("kind",), "other"),
+            (("bundle",), scout.HOLDOUT), (("cohort",), "holdout"), (("complete",), 1), (("valid",), False),
+            (("identity_changes",), ["input"]), (("runtime_identity_changes",), ["compress"]),
+            (("observations", 0, "asset_id"), "MS16"),
+            (("observations", 0, "asset_id"), f"{scout.HOLDOUT}-MS16"),
+            (("assets", 0, "bundle_id"), scout.HOLDOUT), (("profiles", 0, "block"), [32, 32]),
+            (("observations", 0, "profile", "style"), 1), (("observations", 0, "exact"), False),
+            (("observations", 0, "profile_status"), "invalid_structure"),
+            (("observations", 0, "observed_profile", "mct"), True),
+            (("observations", 0, "decoded", "bytes"), 100), (("observations", 0, "decoded", "sha256"), digest(b"wrong")),
+            (("observations", 0, "decode", "status"), "timeout"),
+            (("observations", 0, "round"), 3), (("observations", 0, "sequence"), 1),
+            (("rounds",), 3), (("observations",), []), (("observations", 0), {"status": "ok"}),
+        ]
+        for path, value in mutations:
+            evidence = copy.deepcopy(self.development_evidence())
+            target = evidence
+            for key in path[:-1]:
+                target = target[key]
+            target[path[-1]] = value
+            with self.subTest(path=path, value=value), self.assertRaises(ValueError):
+                scout.validate_development_evidence(evidence, ["MS16"], scout.profiles([3], ["baseline"]))
+        for malformed in ([], None, {"cohort": "development", "complete": True, "valid": True}):
+            with self.assertRaises(ValueError):
+                scout.validate_development_evidence(malformed, ["MS16"], scout.profiles([3], ["baseline"]))
 
     def test_holdout_needs_explicit_selection_before_loading_any_pixels(self):
         args = [str(SCRIPT), "--cohort", "holdout"]

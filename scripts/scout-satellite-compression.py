@@ -2,6 +2,7 @@
 """Scout explicit OpenJPEG satellite profiles using CLI application journeys."""
 import argparse
 import hashlib
+import importlib.util
 import json
 import math
 import os
@@ -19,6 +20,10 @@ DEVELOPMENT = "94_104001000B823500"
 HOLDOUT = "105_104001002F92BB00"
 PRODUCTS = {"PAN16": (1, 16), "RGB8": (3, 8), "MS16": (8, 16), "RGB16": (3, 16)}
 TRIALS = ("baseline", "rgb-mct", "block32x32", "block32x64", "bypass")
+SELECTION_LOADER = Path(__file__).with_name("rareplanes-calibrate.py")
+_spec = importlib.util.spec_from_file_location("scout_rareplanes_selection", SELECTION_LOADER)
+_selection = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_selection)
 
 
 def sha(path):
@@ -100,13 +105,14 @@ def load_inputs(store, prepared_path, common_path, sources_path, bundle, product
     prepared_path, common_path = inside(store, prepared_path), inside(store, common_path)
     prepared = json.loads(prepared_path.read_text())
     common = json.loads(common_path.read_text())
-    sources = json.loads(sources_path.read_text())
+    bundles, locked, sources_sha, splits = _selection.load_selection(sources_path)
+    if bundle not in bundles:
+        raise ValueError("requested acquisition is absent from the source selection")
     if any(record["schema_version"] != 1 for record in (prepared, common)):
         raise ValueError("unsupported input manifest version")
-    prepared_sha, sources_sha = sha(prepared_path), sha(sources_path)
+    prepared_sha = sha(prepared_path)
     if prepared["provenance"]["source_lock"]["sha256"] != sources_sha:
         raise ValueError("prepared source lock identity differs")
-    locked = {entry["path"]: entry["sha256"] for entry in sources["assets"]}
     selected = []
     for product in products:
         matches = [a for a in prepared["assets"] if a["bundle_id"] == bundle and a["product"] == product]
@@ -114,6 +120,10 @@ def load_inputs(store, prepared_path, common_path, sources_path, bundle, product
             raise ValueError("selected product must appear exactly once")
         asset = dict(matches[0])
         image = asset["image"]
+        folder = {"PAN16": "PAN", "RGB8": "PS-RGB", "MS16": "MS", "RGB16": "MS"}[product]
+        expected_source = f"real/{splits[bundle]}/{folder}/{bundle}.tif"
+        if asset["source_path"] != expected_source or asset["source_sha256"] != locked[expected_source]:
+            raise ValueError("prepared source differs from the selected acquisition, split or product")
         if ((image["components"], image["precision"]) != PRODUCTS[product] or image["signed"]
                 or min(image["width"], image["height"]) <= 0 or asset["id"] != f"{bundle}-{product}"):
             raise ValueError("prepared product geometry differs")
@@ -146,6 +156,94 @@ def load_inputs(store, prepared_path, common_path, sources_path, bundle, product
                      preparation_record=record)
         selected.append(asset)
     return selected
+
+
+def expected_observation(profile):
+    return {"depth": profile["depth"], "block": profile["block"], "style": profile["style"],
+            "mct": bool(profile["mct"]), "reversible": True, "layers": 1,
+            "progression": "LRCP", "tiles": 1, "tile_parts": 1, "precinct_exponents": [15, 15]}
+
+
+def validate_development_evidence(evidence, products, chosen):
+    """Admit complete successful rounds with canonical identities and settings."""
+    def require(condition):
+        if not condition:
+            raise ValueError("selection evidence is not a complete supported development scout")
+
+    def digest(value):
+        return isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) is not None
+
+    def same(left, right):
+        # JSON comparison also distinguishes bool from int for schema fields.
+        return json.dumps(left, sort_keys=True) == json.dumps(right, sort_keys=True)
+
+    try:
+        require(isinstance(evidence, dict) and type(evidence["schema_version"]) is int
+                and evidence["schema_version"] == 2
+                and evidence["kind"] == "openjpeg_satellite_compression_scout"
+                and evidence["cohort"] == "development" and evidence["bundle"] == DEVELOPMENT
+                and evidence["complete"] is True and evidence["valid"] is True
+                and evidence["identity_changes"] == [] and evidence["runtime_identity_changes"] == []
+                and evidence["measurement_boundary"] == "application_journey")
+        rounds = evidence["rounds"]
+        require(type(rounds) is int and rounds in (1, 3, 5))
+        require(isinstance(evidence["profiles"], list) and bool(evidence["profiles"]))
+        declared = {}
+        for profile in evidence["profiles"]:
+            require(isinstance(profile, dict) and type(profile["depth"]) is int
+                    and isinstance(profile["trial"], str))
+            canonical = profiles([profile["depth"]], [profile["trial"]])[0]
+            require(same(profile, canonical) and profile["name"] not in declared)
+            declared[profile["name"]] = profile
+        require(isinstance(evidence["assets"], list) and bool(evidence["assets"]))
+        assets = {}
+        for asset in evidence["assets"]:
+            product = asset["product"]
+            require(product in PRODUCTS and asset["bundle_id"] == DEVELOPMENT
+                    and asset["id"] == f"{DEVELOPMENT}-{product}" and asset["id"] not in assets)
+            image = asset["image"]
+            require(type(image["components"]) is int and type(image["precision"]) is int
+                    and (image["components"], image["precision"]) == PRODUCTS[product]
+                    and image["signed"] is False and type(image["width"]) is int and image["width"] > 0
+                    and type(image["height"]) is int and image["height"] > 0
+                    and type(asset["bytes"]) is int
+                    and asset["bytes"] == image["width"] * image["height"] * image["components"] * (image["precision"] // 8)
+                    and digest(asset["sha256"]) and digest(asset["planar_sha256"]))
+            assets[asset["id"]] = asset
+        expected = {(asset_id, name, number) for asset_id, asset in assets.items()
+                    for name, profile in declared.items() for number in range(rounds)
+                    if profile["trial"] != "rgb-mct" or asset["product"] in ("RGB8", "RGB16")}
+        require(expected and isinstance(evidence["observations"], list)
+                and len(evidence["observations"]) == len(expected))
+        seen = set()
+        for sequence, observation in enumerate(evidence["observations"]):
+            require(type(observation["round"]) is int and type(observation["sequence"]) is int
+                    and observation["sequence"] == sequence)
+            key = (observation["asset_id"], observation["profile"]["name"], observation["round"])
+            require(key in expected and key not in seen)
+            seen.add(key)
+            asset, profile = assets[key[0]], declared[key[1]]
+            require(same(observation["profile"], profile) and observation["status"] == "ok"
+                    and observation["exact"] is True and observation["profile_status"] == "ok"
+                    and same(observation["observed_profile"], expected_observation(profile)))
+            for operation in ("encode", "decode"):
+                record = observation[operation]
+                require(record["status"] == "ok" and type(record["exit_code"]) is int and record["exit_code"] == 0
+                        and record["measurement_boundary"] == "application_journey"
+                        and type(record["wall_ns"]) is int and record["wall_ns"] > 0)
+            decoded, stream = observation["decoded"], observation["codestream"]
+            require(decoded["status"] == "present" and decoded["exact"] is True
+                    and type(decoded["bytes"]) is int and decoded["bytes"] == asset["bytes"]
+                    and decoded["sha256"] == asset["planar_sha256"]
+                    and stream["status"] == "present" and type(stream["bytes"]) is int and stream["bytes"] > 0
+                    and digest(stream["sha256"]))
+        require(seen == expected)
+        required = {(f"{DEVELOPMENT}-{product}", profile["name"], number)
+                    for product in products for profile in chosen for number in range(rounds)
+                    if profile["trial"] != "rgb-mct" or product in ("RGB8", "RGB16")}
+        require(required and required <= seen and all(same(declared.get(profile["name"]), profile) for profile in chosen))
+    except (KeyError, TypeError, AttributeError, IndexError) as error:
+        raise ValueError("malformed development selection evidence") from error
 
 
 def inspect_codestream(path, image, profile):
@@ -198,10 +296,7 @@ def inspect_codestream(path, image, profile):
                 expected = bytes([0, 0, 0, 1, profile["mct"], profile["depth"], *block, profile["style"], 1])
                 if body != expected:
                     raise ValueError("COD differs from reversible fixed profile")
-                observed = {"depth": profile["depth"], "block": profile["block"], "style": profile["style"],
-                            "mct": bool(profile["mct"]), "reversible": True, "layers": 1,
-                            "progression": "LRCP", "tiles": 1, "tile_parts": 1,
-                            "precinct_exponents": [15, 15]}
+                observed = expected_observation(profile)
             elif marker == b"\xff\x5c":
                 if len(body) != 2 + 3 * profile["depth"] or body[0] & 31:
                     raise ValueError("QCD differs from reversible quantisation")
@@ -234,6 +329,26 @@ def byte_result(path, expected_bytes=None, expected_sha=None):
             "exact": size == expected_bytes and digest == expected_sha if expected_sha else None}
 
 
+def runtime_dependencies(tool):
+    """Preserve the loader-facing dependency path as well as its resolved file."""
+    result = subprocess.run(["ldd", str(tool)], capture_output=True, timeout=30)
+    if result.returncode or b"not found" in result.stdout:
+        raise ValueError("could not resolve runtime library identities")
+    dependencies = []
+    for line in result.stdout.decode().splitlines():
+        match = re.fullmatch(r"\s*(?:(\S+)\s+=>\s+)?(/\S+)\s+\([^)]*\)\s*", line)
+        if match:
+            name, loader_path = match.groups()
+            target = Path(loader_path).resolve(strict=True)
+            dependencies.append({"name": name or Path(loader_path).name, "loader_path": loader_path,
+                                 "resolved_path": str(target), "sha256": sha(target)})
+        elif line.strip() and not re.fullmatch(r"\s*linux-vdso\.so\.\d+\s+\([^)]*\)\s*", line):
+            raise ValueError("unrecognised runtime dependency record")
+    if not dependencies or len({d["name"] for d in dependencies}) != len(dependencies):
+        raise ValueError("expected unique dynamically linked OpenJPEG dependencies")
+    return sorted(dependencies, key=lambda record: record["name"]), result.stdout + result.stderr
+
+
 def tool_identity(tool, output):
     tool = tool.resolve(strict=True)
     help_result = subprocess.run([str(tool), "-h"], capture_output=True, timeout=30)
@@ -243,36 +358,51 @@ def tool_identity(tool, output):
     version = re.search(rb"compiled against openjp2 library v(\d+\.\d+\.\d+)", help_data)
     if not version:
         raise ValueError("tool does not identify its OpenJPEG library version")
-    dependencies = subprocess.run(["ldd", str(tool)], capture_output=True, timeout=30)
+    libraries, raw = runtime_dependencies(tool)
     with (output / f"{tool.name}-ldd.log").open("xb") as log:
-        log.write(dependencies.stdout + dependencies.stderr)
-    if dependencies.returncode or b"not found" in dependencies.stdout:
-        raise ValueError("could not resolve runtime library identities")
-    libs = sorted({Path(p).resolve() for p in re.findall(r"(/\S+)\s+\(", dependencies.stdout.decode())})
-    if not libs:
-        raise ValueError("expected dynamically linked OpenJPEG tool")
+        log.write(raw)
     return {"path": str(tool), "sha256": sha(tool), "openjp2_version": version[1].decode(),
-            "help_sha256": hashlib.sha256(help_data).hexdigest(),
-            "runtime_libraries": {str(p): sha(p) for p in libs}}
+            "help_sha256": hashlib.sha256(help_data).hexdigest(), "runtime_libraries": libraries}
 
 
-def observe(asset, profile, number, tools, output, timeout, round_number=0):
+def tool_unchanged(tool, identity):
+    try:
+        libraries, _ = runtime_dependencies(tool)
+        return (str(tool.resolve(strict=True)) == identity["path"] and sha(tool) == identity["sha256"]
+                and libraries == identity["runtime_libraries"])
+    except (ValueError, OSError, subprocess.SubprocessError):
+        return False
+
+
+def checked_process(command, log, timeout, identity):
+    # Resolving and hashing dependencies is outside the application-journey timer.
+    if not tool_unchanged(Path(command[0]), identity):
+        return {"status": "identity_changed", "exit_code": None, "wall_ns": None,
+                "arguments": command, "measurement_boundary": "application_journey"}
+    return process(command, log, timeout)
+
+
+def observe(asset, profile, number, tools, output, timeout, identities, round_number=0):
     directory = output / f"{number:04d}-{asset['id']}-{profile['name']}"
     directory.mkdir()
     encoded, decoded = directory / "encoded.j2k", directory / "decoded.rawl"
     observation = {"asset_id": asset["id"], "profile": profile, "sequence": number,
                    "status": "failed", "exact": False, "round": round_number}
-    observation["encode"] = process(encode_args(tools["compress"], asset, profile, encoded),
-                                    directory / "encode.log", timeout)
+    observation["encode"] = checked_process(encode_args(tools["compress"], asset, profile, encoded),
+                                    directory / "encode.log", timeout, identities["compress"])
     observation["codestream"] = byte_result(encoded)
     if observation["encode"]["status"] == "ok" and encoded.is_file():
         try:
             observation["observed_profile"] = inspect_codestream(encoded, asset["image"], profile)
             observation["profile_status"] = "ok"
-        except (ValueError, OSError):
+        except ValueError as error:
             observation["profile_status"] = "invalid_structure"
-        observation["decode"] = process([str(tools["decompress"]), "-i", str(encoded), "-o", str(decoded),
-                                          "-threads", "1"], directory / "decode.log", timeout)
+            observation["profile_failure_reason"] = str(error)
+        except OSError:
+            observation["profile_status"] = "invalid_structure"
+            observation["profile_failure_reason"] = "could not read codestream structure"
+        observation["decode"] = checked_process([str(tools["decompress"]), "-i", str(encoded), "-o", str(decoded),
+                                          "-threads", "1"], directory / "decode.log", timeout, identities["decompress"])
         observation["decoded"] = byte_result(decoded, asset["bytes"], asset["planar_sha256"])
         observation["exact"] = observation["decoded"]["exact"] and observation["decode"]["status"] == "ok"
         if observation["exact"] and observation["profile_status"] == "ok":
@@ -316,14 +446,7 @@ def main():
     if args.selection_evidence:
         evidence_path = inside(store, args.selection_evidence)
         evidence = json.loads(evidence_path.read_text())
-        if evidence.get("cohort") != "development" or not evidence.get("complete") or not evidence.get("valid"):
-            parser.error("selection evidence must be a complete valid development scout")
-        measured = {(o["asset_id"].removeprefix(DEVELOPMENT + "-"), o["profile"]["name"])
-                    for o in evidence["observations"] if o["status"] == "ok"}
-        required = {(a["product"], p["name"]) for a in assets for p in chosen
-                    if p["trial"] != "rgb-mct" or a["product"] in ("RGB8", "RGB16")}
-        if not required <= measured:
-            parser.error("selected holdout profiles lack successful development observations")
+        validate_development_evidence(evidence, args.products, chosen)
         selection = {"path": str(evidence_path), "sha256": sha(evidence_path)}
     source = {"revision": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
               "tree": subprocess.check_output(["git", "rev-parse", "HEAD^{tree}"], cwd=ROOT, text=True).strip(),
@@ -331,14 +454,16 @@ def main():
     output = new_output(store, args.output)
     tools = {"compress": args.opj_compress.resolve(strict=True), "decompress": args.opj_decompress.resolve(strict=True)}
     identities = {name: tool_identity(tool, output) for name, tool in tools.items()}
-    bindings = {str(p): sha(p) for p in (args.prepared, args.common_streams, args.sources, Path(__file__).resolve())}
+    bindings = {str(p): sha(p) for p in (args.prepared, args.common_streams, args.sources, Path(__file__).resolve(), SELECTION_LOADER)}
+    if selection:
+        bindings[selection["path"]] = selection["sha256"]
     for asset in assets:
         bindings[asset["raw_path"]] = asset["sha256"]
         bindings[asset["planar_path"]] = asset["planar_sha256"]
     for identity in identities.values():
         bindings[identity["path"]] = identity["sha256"]
-        bindings.update(identity["runtime_libraries"])
-    result = {"schema_version": 1, "kind": "openjpeg_satellite_compression_scout", "cohort": args.cohort,
+        bindings.update({library["resolved_path"]: library["sha256"] for library in identity["runtime_libraries"]})
+    result = {"schema_version": 2, "kind": "openjpeg_satellite_compression_scout", "cohort": args.cohort,
               "bundle": bundle, "profiles": chosen, "assets": assets, "rounds": args.rounds,
               "measurement_boundary": "application_journey",
               "timing_scope": "CLI process launch, codec, input/output and log writes; excludes hash and structure checks",
@@ -357,13 +482,15 @@ def main():
         cases = list(scheduled)
         generator.shuffle(cases)
         for asset, profile in cases:
-            observation = observe(asset, profile, sequence, tools, output, args.timeout, round_number)
+            observation = observe(asset, profile, sequence, tools, output, args.timeout, identities, round_number)
             result["observations"].append(observation)
             sequence += 1
     result["identity_changes"] = [path for path, expected in bindings.items()
                                   if not Path(path).is_file() or sha(path) != expected]
+    result["runtime_identity_changes"] = [name for name, tool in tools.items()
+                                          if not tool_unchanged(tool, identities[name])]
     result["complete"] = True
-    result["valid"] = not result["identity_changes"] and all(o["status"] == "ok" for o in result["observations"])
+    result["valid"] = not result["identity_changes"] and not result["runtime_identity_changes"] and all(o["status"] == "ok" for o in result["observations"])
     write_json(output / "result.json", result)
     print(json.dumps({"result": str(output / "result.json"), "valid": result["valid"], "observations": sequence}))
     return 0 if result["valid"] else 1

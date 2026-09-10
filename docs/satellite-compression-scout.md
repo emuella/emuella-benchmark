@@ -71,22 +71,31 @@ invocations remain separate evidence records.
 Only after selecting from development, invoke the same command with
 `--cohort holdout`, explicit `--depths` and `--trials`, a new output name, and
 `--selection-evidence` pointing to a completed valid development `result.json`.
-Each chosen product/profile must have a successful observation in that result.
+The result must use scout schema 2, identify Mansfield exactly, and contain
+complete successful rounds with canonical profile settings, admitted asset
+identities, observed structure, exact decoded byte identities and unchanged
+runtime dependencies. Each chosen product/profile must match that evidence in
+full; a matching profile name alone does not qualify. Earlier provisional
+schema-1 results remain historical evidence and cannot select a new holdout.
 The script does not pick settings, pool development results, or launch the
 holdout automatically. If selected profiles come from separate development
 results, use separate holdout invocations bound to their respective evidence.
 
 Before timing, the script checks the prepared manifest, source-lock identity,
 common-stream argument identity, recorded planar lineage and full prepared/raw
-hashes. A bounded-memory comparison checks every prepared interleaved sample
+hashes. The existing RarePlanes selection loader validates the versioned source
+lock and complete selected TIFF matrix. Each prepared asset must name the locked
+TIFF for its acquisition and declared train/test split: PAN16 uses PAN, RGB8 uses
+PS-RGB, and MS16/RGB16 use MS. A bounded-memory comparison checks every prepared interleaved sample
 against its planar derivative. It reuses the authorised planar file without
 writing a new input conversion. Source TIFF digests remain catalogue provenance;
 this script verifies the existing prepared samples and their reviewed lineage,
 and does not reopen the TIFFs or assert a new preparation authority.
 
 Every encode and decode gets its own wall-clock observation, raw CLI log and
-output path. SHA-256, size, profile validation and exact reconstruction checks
-run outside those timers. The project-authored marker reader admits only the
+output path. SHA-256, size, profile validation, runtime dependency resolution and
+exact reconstruction checks run outside those timers. Structural failures retain
+the project-authored rejection reason in their local observation. The project-authored marker reader admits only the
 requested reversible raw codestream profile, checking SIZ, COD and QCD plus one
 tile-part without coding overrides and terminal EOC. It rejects unsupported
 markers conservatively. It does not parse entropy packets or constitute JPEG
@@ -106,9 +115,14 @@ and unchanged bound files. A run can be complete and invalid. Interruptions or
 unexpected orchestration errors leave incomplete evidence; use a fresh output
 directory for a retry. Nothing silently consumes an incomplete result.
 
-Executable hashes, compiled OpenJPEG library versions, resolved dynamic-library
-hashes, source script identity, input manifests, seed, CPU affinity and platform
-are retained. The current Linux implementation uses `ldd` on explicitly supplied,
+Executable hashes, compiled OpenJPEG library versions, dependency names,
+loader-facing paths, resolved targets and dynamic-library hashes, source and
+selection-loader script identities, input manifests, seed, CPU affinity and
+platform are retained. Dependency resolution and hashes are checked before every
+encode and decode and again at completion. Changed dependencies skip the affected
+operation and invalidate the run, including a symlink retargeted while its old
+file remains. These checks observe the installed environment around operations;
+they do not lock it against a concurrent mutation during a process launch. The current Linux implementation uses `ldd` on explicitly supplied,
 trusted installed executables and rejects unresolved dependencies. Do not inspect
 or copy external implementation source. Raw logs and pixel-bearing outputs stay
 in the approved store; inspect failures there and keep public reports to approved
