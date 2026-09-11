@@ -10,7 +10,10 @@ Build codec test-support examples `lossless_bypass_batch`,
 `lossless_bypass_allocation` and `classic_ht_support` using `--profile perf
 --features parallel`, without SIMD. Bind clean committed source revisions,
 compiler identity and executable digests. Set an approved external Cargo target.
-The consumer explicitly supplies `LosslessEncodeLimits` of 768 MiB working
+Preparation verifies the batch and allocation executable digests against their
+bound build provenance and resolves its original commit/tree through Git objects.
+A later checkout HEAD cannot relabel an earlier binary; final merged-owner
+confirmations remain separately identified. The consumer explicitly supplies `LosslessEncodeLimits` of 768 MiB working
 and 64 MiB output capacity for every treatment; library defaults are unchanged.
 Requirements are queried in the actual direct/global or nested-pool context.
 
@@ -25,7 +28,7 @@ The script admits only the frozen prepared-manifest digest and nine full
 products: development Mansfield PAN16/RGB16/MS16/RGB8, validation Boca Raton
 with the same products, and Tok RGB8 regression. Run `prepare` into a new child
 of the approved image store for each role, passing `--prepared`, `--output`,
-`--binary`, `--codec-source`, `--role` and exactly eight `--cpus`. Generated streams
+`--binary`, `--codec-source`, `--build-provenance`, `--role` and exactly eight `--cpus`. Generated streams
 retain the complete licence notice, attribution, modification note and lineage.
 Run `measure` against the same directory and binary. It executes 20 fixed AB/BA rounds for each of three adjacent paired contrasts:
 style0/bypass at one worker, style0/bypass at eight, and style0/one versus

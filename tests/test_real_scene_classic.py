@@ -2,6 +2,7 @@
 import importlib.util
 import json
 import os
+import subprocess
 from pathlib import Path
 import tempfile
 import unittest
@@ -12,6 +13,30 @@ spec.loader.exec_module(module)
 
 
 class ClassicTests(unittest.TestCase):
+    def test_build_identity_does_not_follow_a_later_checkout_head(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp)
+            def git(*args):
+                return subprocess.check_output(['git','-C',str(root),'-c','user.name=Authored Test','-c','user.email=test@example.invalid',*args],text=True,stderr=subprocess.DEVNULL).strip()
+            git('init','-q')
+            source=root/'source.txt';source.write_text('first')
+            git('add','source.txt');git('commit','-qm','First authored state')
+            revision=git('rev-parse','HEAD');tree=git('rev-parse','HEAD^{tree}')
+            source.write_text('second');git('commit','-qam','Second authored state')
+            self.assertNotEqual(revision,git('rev-parse','HEAD'))
+            batch=root/'batch';batch.write_bytes(b'authored batch')
+            allocation=root/'allocation';allocation.write_bytes(b'authored diagnostic')
+            provenance=root/'build.json'
+            module.write(provenance,dict(source_revision=revision,source_tree=tree,binaries={
+                'lossless_bypass_batch':dict(sha256=module.digest(batch)),
+                'lossless_bypass_allocation':dict(sha256=module.digest(allocation))}))
+            bound=module.bind_build(batch,allocation,root,provenance)
+            self.assertEqual(bound['codec_revision'],revision)
+            self.assertEqual(bound['codec_tree'],tree)
+            allocation.write_bytes(b'changed diagnostic')
+            with self.assertRaises(ValueError):
+                module.bind_build(batch,allocation,root,provenance)
+
     def test_failed_worker_is_retained_without_success_observation(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

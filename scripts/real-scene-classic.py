@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 import signal
 import resource
+import re
 import subprocess
 import time
 
@@ -39,6 +40,21 @@ def write(path, value):
     with path.open('x') as stream:
         json.dump(value, stream, indent=2)
         stream.write('\n')
+
+
+def bind_build(binary, allocation, source, provenance):
+    record = json.loads(provenance.read_text())
+    revision = record.get('source_revision', '')
+    tree = record.get('source_tree', '')
+    if not all(isinstance(value,str) and re.fullmatch('[0-9a-f]{40}',value) for value in (revision,tree)):
+        raise ValueError('build provenance needs full source and tree identities')
+    observed_tree = subprocess.check_output(['git','-C',str(source),'rev-parse','--verify',revision+'^{tree}'],text=True).strip()
+    if observed_tree != tree:
+        raise ValueError('recorded codec source tree differs from Git objects')
+    for name, path in [('lossless_bypass_batch',binary),('lossless_bypass_allocation',allocation)]:
+        if digest(path) != record['binaries'][name]['sha256']:
+            raise ValueError('executable differs from bound build provenance: '+name)
+    return dict(codec_revision=revision,codec_tree=tree,build_provenance_sha256=digest(provenance))
 
 
 def assets(prepared):
@@ -215,6 +231,7 @@ def main():
     parser.add_argument('--binary', type=Path)
     parser.add_argument('--allocation', type=Path)
     parser.add_argument('--codec-source', type=Path)
+    parser.add_argument('--build-provenance', type=Path)
     parser.add_argument('--estimator', type=Path)
     parser.add_argument('--cpus', default='0,1,2,3,4,5,6,7')
     parser.add_argument('--role', choices=ROLES.values(), default='development')
@@ -239,6 +256,9 @@ def main():
     os.sched_setaffinity(0, cpus)
     selected = [a for a in assets(args.prepared) if ROLES[a['bundle_id']] == args.role]
     if args.phase == 'prepare':
+        if args.codec_source is None or args.build_provenance is None:
+            raise ValueError('preparation requires codec Git objects and bound build provenance')
+        build_identity = bind_build(args.binary,args.allocation,args.codec_source,args.build_provenance)
         args.output.mkdir()
         (args.output / 'streams').mkdir()
         (args.output / 'preparation').mkdir()
@@ -247,7 +267,7 @@ def main():
             raise ValueError('reviewed licence notice identity differs')
         (args.output / 'LICENSE.txt').write_bytes(licence.read_bytes())
         write(args.output / 'manifest.json', dict(assets=selected, prepared_sha256=MANIFEST,
-            codec_revision=subprocess.check_output(['git','-C',str(args.codec_source),'rev-parse','HEAD'],text=True).strip(),
+            **build_identity,
             environment=dict(uname=list(os.uname()),affinity=sorted(os.sched_getaffinity(0)),cpuinfo_sha256=digest('/proc/cpuinfo'),
                 rustc=subprocess.check_output(['rustc','-Vv'],text=True),rayon_threads='explicit builder per worker'),
             binary_sha256=digest(args.binary), allocation_sha256=digest(args.allocation), cpus=cpus, role=args.role,
