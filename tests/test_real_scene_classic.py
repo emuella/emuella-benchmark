@@ -20,16 +20,22 @@ class ClassicTests(unittest.TestCase):
                 return subprocess.check_output(['git','-C',str(root),'-c','user.name=Authored Test','-c','user.email=test@example.invalid',*args],text=True,stderr=subprocess.DEVNULL).strip()
             git('init','-q')
             source=root/'source.txt';source.write_text('first')
-            git('add','source.txt');git('commit','-qm','First authored state')
+            (root/'Cargo.toml').write_text('[workspace]\n')
+            (root/'Cargo.lock').write_text('version = 4\n')
+            git('add','source.txt','Cargo.toml','Cargo.lock');git('commit','-qm','First authored state')
             revision=git('rev-parse','HEAD');tree=git('rev-parse','HEAD^{tree}')
             source.write_text('second');git('commit','-qam','Second authored state')
             self.assertNotEqual(revision,git('rev-parse','HEAD'))
             batch=root/'batch';batch.write_bytes(b'authored batch')
             allocation=root/'allocation';allocation.write_bytes(b'authored diagnostic')
             provenance=root/'build.json'
-            module.write(provenance,dict(source_revision=revision,source_tree=tree,binaries={
-                'lossless_bypass_batch':dict(sha256=module.digest(batch)),
-                'lossless_bypass_allocation':dict(sha256=module.digest(allocation))}))
+            profile=dict(opt_level='3',debug_assertions=False,test=False)
+            module.write(provenance,dict(source_revision=revision,source_tree=tree,requested_profile='perf',
+                workspace_cargo_sha256=module.digest(root/'Cargo.toml'),lock_sha256=module.digest(root/'Cargo.lock'),
+                artefacts=[dict(target=dict(name=n),features=['parallel']) for n in ('emuella_j2k_core','emuella_j2k_codestream')],
+                binaries={
+                'lossless_bypass_batch':dict(sha256=module.digest(batch),features=['parallel'],profile=profile),
+                'lossless_bypass_allocation':dict(sha256=module.digest(allocation),features=['parallel'],profile=profile)}))
             bound=module.bind_build(batch,allocation,root,provenance)
             self.assertEqual(bound['codec_revision'],revision)
             self.assertEqual(bound['codec_tree'],tree)

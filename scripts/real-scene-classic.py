@@ -51,9 +51,24 @@ def bind_build(binary, allocation, source, provenance):
     observed_tree = subprocess.check_output(['git','-C',str(source),'rev-parse','--verify',revision+'^{tree}'],text=True).strip()
     if observed_tree != tree:
         raise ValueError('recorded codec source tree differs from Git objects')
+    for path, field in [('Cargo.toml','workspace_cargo_sha256'),('Cargo.lock','lock_sha256')]:
+        original = subprocess.check_output(['git','-C',str(source),'show',revision+':'+path])
+        if hashlib.sha256(original).hexdigest() != record.get(field):
+            raise ValueError('bound source configuration differs: '+path)
+    if record.get('requested_profile') != 'perf':
+        raise ValueError('the frozen treatment requires the perf build')
+    for target in ('emuella_j2k_core','emuella_j2k_codestream'):
+        observations = [a for a in record.get('artefacts',[]) if a['target']['name']==target]
+        if not observations or any('parallel' not in a['features'] or 'simd' in a['features'] for a in observations):
+            raise ValueError('observed codec feature selection differs: '+target)
     for name, path in [('lossless_bypass_batch',binary),('lossless_bypass_allocation',allocation)]:
-        if digest(path) != record['binaries'][name]['sha256']:
+        artefact = record['binaries'][name]
+        profile = artefact['profile']
+        if digest(path) != artefact['sha256']:
             raise ValueError('executable differs from bound build provenance: '+name)
+        if ('parallel' not in artefact['features'] or 'simd' in artefact['features'] or
+                profile['opt_level']!='3' or profile['debug_assertions'] or profile['test']):
+            raise ValueError('observed executable profile or features differ: '+name)
     return dict(codec_revision=revision,codec_tree=tree,build_provenance_sha256=digest(provenance))
 
 
@@ -128,6 +143,8 @@ def execute(binary, req, directory, cpus, address_limit=BUDGET, extra_args=None)
 
 
 def verify_inputs(args, selected, manifest):
+    if 'build_provenance_sha256' in manifest and digest(args.output/'build-provenance.json') != manifest['build_provenance_sha256']:
+        raise ValueError('retained build provenance changed')
     if digest(args.allocation) != manifest['allocation_sha256']:
         raise ValueError('bound allocation diagnostic changed during experiment')
     if digest(args.binary) != manifest['binary_sha256']:
@@ -260,6 +277,8 @@ def main():
             raise ValueError('preparation requires codec Git objects and bound build provenance')
         build_identity = bind_build(args.binary,args.allocation,args.codec_source,args.build_provenance)
         args.output.mkdir()
+        with (args.output/'build-provenance.json').open('xb') as bound:
+            bound.write(args.build_provenance.read_bytes())
         (args.output / 'streams').mkdir()
         (args.output / 'preparation').mkdir()
         licence = args.prepared.parent / 'source/LICENSE.txt'
