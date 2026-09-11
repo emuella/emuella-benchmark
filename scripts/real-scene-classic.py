@@ -112,6 +112,8 @@ def execute(binary, req, directory, cpus, address_limit=BUDGET, extra_args=None)
 
 
 def verify_inputs(args, selected, manifest):
+    if digest(args.allocation) != manifest['allocation_sha256']:
+        raise ValueError('bound allocation diagnostic changed during experiment')
     if digest(args.binary) != manifest['binary_sha256']:
         raise ValueError('bound executable changed during experiment')
     if digest(args.prepared / 'prepared.json') != MANIFEST:
@@ -182,6 +184,7 @@ def analyse(output, estimator):
                     record.update(json.loads(result))
                 comparisons.append(record)
     write(output / 'comparisons.json', comparisons)
+    write(output / 'analysis-identity.json', dict(estimator_sha256=digest(estimator) if estimator.is_file() else None,batches_sha256=digest(output/'batches.json'),comparisons_sha256=digest(output/'comparisons.json')))
 
 
 def analyse_schedules(output, estimator):
@@ -201,6 +204,7 @@ def analyse_schedules(output, estimator):
                     record.update(json.loads(subprocess.check_output([str(estimator)],input=json.dumps(data),text=True)))
                 comparisons.append(record)
     write(output/'schedule-comparisons.json',comparisons)
+    write(output/'schedule-analysis-identity.json',dict(estimator_sha256=digest(estimator),schedules_sha256=digest(output/'schedules.json'),comparisons_sha256=digest(output/'schedule-comparisons.json')))
 
 
 def main():
@@ -228,6 +232,10 @@ def main():
     cpus = [int(c) for c in args.cpus.split(',')]
     if len(cpus) != 8 or len(set(cpus)) != 8 or not set(cpus) <= os.sched_getaffinity(0):
         raise ValueError('exactly eight distinct available CPUs required')
+    if args.output.parent.resolve() != args.prepared.parent.resolve() or not args.output.name.startswith('real-scene-viewing-'):
+        raise ValueError('campaign output must be a fresh real-scene-viewing child of the approved store')
+    if args.allocation is None:
+        args.allocation = args.binary.parent / 'lossless_bypass_allocation'
     os.sched_setaffinity(0, cpus)
     selected = [a for a in assets(args.prepared) if ROLES[a['bundle_id']] == args.role]
     if args.phase == 'prepare':
@@ -242,7 +250,7 @@ def main():
             codec_revision=subprocess.check_output(['git','-C',str(args.codec_source),'rev-parse','HEAD'],text=True).strip(),
             environment=dict(uname=list(os.uname()),affinity=sorted(os.sched_getaffinity(0)),cpuinfo_sha256=digest('/proc/cpuinfo'),
                 rustc=subprocess.check_output(['rustc','-Vv'],text=True),rayon_threads='explicit builder per worker'),
-            binary_sha256=digest(args.binary), cpus=cpus, role=args.role,
+            binary_sha256=digest(args.binary), allocation_sha256=digest(args.allocation), cpus=cpus, role=args.role,
             limits=dict(max_working_bytes=WORKING,max_output_bytes=OUTPUT,aggregate_bytes=BUDGET),
             protocol=dict(rounds=20,warmups=0,samples=1,timeout_seconds=120,order='AB/BA',threshold=0.05),
             source_revision=subprocess.check_output(['git','-C',str(Path(__file__).resolve().parents[1]),'rev-parse','HEAD'],text=True).strip()))
