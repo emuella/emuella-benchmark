@@ -122,3 +122,11 @@ the 128 MiB reserve before dispatch and after each cohort. A pre-dispatch failur
 rejects the cohort; a post-cohort controller or conservative aggregate-RSS failure
 retains observations with failed status. Process-lifetime high-water is not
 assumed to describe only the current Python image.
+
+Analysis admits coverage from the bound role manifest, never from the observed
+case subset. Before invoking the estimator it requires exactly one observation
+for every declared case, operation, arm and round 0–19; missing, duplicate or
+unexpected identities fail admission. `analyse-schedules` defaults to all three
+development schedules. Pass the exact declared `--schedule` for a fixed run
+(required for reserved roles); undeclared pairwise contrasts remain explicitly
+`not_measured`, while every declared fixed-schedule observation is still required.

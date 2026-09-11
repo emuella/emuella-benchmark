@@ -15,6 +15,65 @@ spec.loader.exec_module(module)
 
 
 class ClassicTests(unittest.TestCase):
+    def analysis_fixture(self, root, phase, schedule='all'):
+        bundle=next(iter(module.ROLES))
+        assets=[dict(id=bundle+'-'+p,bundle_id=bundle,product=p) for p in module.PRODUCTS]
+        module.write(root/'manifest.json',dict(role='development',prepared_sha256=module.MANIFEST,
+                     protocol=dict(rounds=20),assets=assets))
+        if phase=='headline':
+            return [dict(case=a['id'],operation=op,contrast=contrast,style=style,workers=workers,round=round_id,
+                         result=dict(status=0,observation=dict(samples_ns=[100])))
+                    for a in assets for op in ('encode','decode') for contrast,left,right in module.CONTRASTS
+                    for style,workers in (left,right) for round_id in range(20)]
+        arms=[(1,8),(2,4),(8,1)] if schedule=='all' else [tuple(map(int,schedule.split('x')))]
+        return [dict(case=a['id'],operation=op,concurrent=concurrent,workers=workers,round=round_id,
+                     status='ok',application_wall_ns=100)
+                for a in assets if a['product'] in ('PAN16','RGB8') for op in ('encode','decode')
+                for concurrent,workers in arms for round_id in range(20)]
+
+    def test_analysis_rejects_omissions_duplicates_and_unexpected_identities(self):
+        for phase in ('headline','schedule'):
+            for damage in ('whole_product','duplicate_round','unexpected_case','unexpected_round','boolean_round'):
+                with self.subTest(phase=phase,damage=damage), tempfile.TemporaryDirectory() as temp:
+                    root=Path(temp);rows=self.analysis_fixture(root,phase)
+                    if damage=='whole_product':
+                        missing=rows[0]['case'];rows=[r for r in rows if r['case']!=missing]
+                    elif damage=='duplicate_round':
+                        for row in rows:row['round']=0
+                    elif damage=='unexpected_case':rows[0]['case']='unexpected'
+                    elif damage=='unexpected_round':rows[0]['round']=20
+                    else:rows[0]['round']=False
+                    module.write(root/('batches.json' if phase=='headline' else 'schedules.json'),rows)
+                    with mock.patch.object(module.subprocess,'check_output') as estimate, self.assertRaises(ValueError):
+                        (module.analyse if phase=='headline' else module.analyse_schedules)(root,Path('/unused'))
+                    estimate.assert_not_called()
+                    self.assertFalse((root/('comparisons.json' if phase=='headline' else 'schedule-comparisons.json')).exists())
+
+    def test_analysis_requires_the_complete_manifest_role(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);rows=self.analysis_fixture(root,'headline')
+            manifest=json.loads((root/'manifest.json').read_text());manifest['assets'].pop()
+            (root/'manifest.json').write_text(json.dumps(manifest));module.write(root/'batches.json',rows)
+            with mock.patch.object(module.subprocess,'check_output') as estimate, self.assertRaises(ValueError):
+                module.analyse(root,Path('/unused'))
+            estimate.assert_not_called()
+
+    def test_fixed_schedule_preserves_unmeasured_contrasts_but_requires_all_declared_rows(self):
+        for missing in (False,True):
+            with self.subTest(missing=missing), tempfile.TemporaryDirectory() as temp:
+                root=Path(temp);rows=self.analysis_fixture(root,'schedule','8x1')
+                if missing:rows.pop()
+                module.write(root/'schedules.json',rows)
+                with mock.patch.object(module.subprocess,'check_output') as estimate:
+                    if missing:
+                        with self.assertRaises(ValueError):module.analyse_schedules(root,Path('/unused'),'8x1')
+                    else:
+                        module.analyse_schedules(root,Path('/unused'),'8x1')
+                        comparisons=json.loads((root/'schedule-comparisons.json').read_text())
+                        self.assertEqual(len(comparisons),8)
+                        self.assertTrue(all(r['verdict']=='not_measured' for r in comparisons))
+                estimate.assert_not_called()
+
     def test_controller_reserve_failure_prevents_dispatch(self):
         with mock.patch.object(module.resource,'getrusage',return_value=SimpleNamespace(ru_maxrss=module.CONTROLLER//1024+1)), mock.patch.object(module,'execute') as execute:
             row=module.schedule_cohort(Path('/unused'),{},Path('/unused'),0,list(range(8)),8)
@@ -117,9 +176,8 @@ class ClassicTests(unittest.TestCase):
 
     def test_incomplete_coverage_never_invokes_estimator(self):
         with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            module.write(root/'batches.json', [dict(case='authored',operation='encode',contrast='bypass_at1',style=0,workers=1,result=dict(status=0))])
-            module.analyse(root, Path('/nonexistent-estimator'))
-            rows = json.loads((root/'comparisons.json').read_text())
-            self.assertEqual(len(rows), 6)
-            self.assertTrue(all(r['verdict']=='invalid' for r in rows))
+            root=Path(temp);rows=self.analysis_fixture(root,'headline')
+            module.write(root/'batches.json',rows[:1])
+            with mock.patch.object(module.subprocess,'check_output') as estimate, self.assertRaises(ValueError):
+                module.analyse(root,Path('/nonexistent-estimator'))
+            estimate.assert_not_called()

@@ -343,16 +343,54 @@ fn main() -> Result<()> {
                     '--target-dir', str(directory / 'target')], check=True)
 
 
+def analysis_cases(output):
+    manifest = json.loads((output/'manifest.json').read_text())
+    role = manifest.get('role')
+    if manifest.get('prepared_sha256') != MANIFEST or role not in ROLES.values() or manifest.get('protocol',{}).get('rounds') != 20:
+        raise ValueError('analysis requires the bound frozen manifest and twenty-round protocol')
+    bundle = next(bundle for bundle,value in ROLES.items() if value == role)
+    products = ('RGB8',) if role == 'regression' else PRODUCTS
+    expected = {bundle+'-'+product for product in products}
+    assets = manifest.get('assets',[])
+    if (len(assets) != len(expected) or {a.get('id') for a in assets} != expected or
+            any(a.get('bundle_id') != bundle or a.get('id') != bundle+'-'+a.get('product','') for a in assets)):
+        raise ValueError('bound manifest does not contain the complete declared role')
+    return manifest, sorted(expected)
+
+
+def index_observations(rows, expected, fields):
+    """Reject favourable subsets and repeated batches before any estimation."""
+    if not isinstance(rows,list):
+        raise ValueError('observations must be a list')
+    types = tuple(type(value) for value in next(iter(expected)))
+    indexed = {}
+    for row in rows:
+        if not isinstance(row,dict):
+            raise ValueError('observation must be an object')
+        key = tuple(row.get(field) for field in fields)
+        if any(type(value) is not kind for value,kind in zip(key,types)) or key not in expected:
+            raise ValueError('unexpected or malformed observation identity')
+        if key in indexed:
+            raise ValueError('duplicate observation identity')
+        indexed[key] = row
+    if indexed.keys() != expected:
+        raise ValueError('missing expected observations')
+    return indexed
+
+
 def analyse(output, estimator):
-    rows = json.loads((output / 'batches.json').read_text())
+    manifest, cases = analysis_cases(output)
+    expected = {(case,operation,contrast,*arm,round_id) for case in cases for operation in ('encode','decode')
+                for contrast,left,right in CONTRASTS for arm in (left,right) for round_id in range(20)}
+    indexed = index_observations(json.loads((output/'batches.json').read_text()),expected,
+                                 ('case','operation','contrast','style','workers','round'))
     comparisons = []
-    for case in sorted({r['case'] for r in rows}):
+    for case in cases:
         for operation in ('encode', 'decode'):
             for contrast, left, right in CONTRASTS:
-                sides = [[r for r in rows if (r['case'],r['operation'],r['contrast'],r['style'],r['workers']) ==
-                          (case,operation,contrast,*side)] for side in (left,right)]
+                sides = [[indexed[(case,operation,contrast,*side,round_id)] for round_id in range(20)] for side in (left,right)]
                 record = dict(case=case,operation=operation,contrast=contrast,baseline=left,candidate=right)
-                if any(len(s) != 20 or any(r['result']['status'] != 0 for r in s) for s in sides):
+                if any(r['result']['status'] != 0 for side in sides for r in side):
                     record['verdict'] = 'invalid'
                 else:
                     data = {name:[r['result']['observation']['samples_ns'][0] for r in side]
@@ -361,27 +399,42 @@ def analyse(output, estimator):
                     record.update(json.loads(result))
                 comparisons.append(record)
     write(output / 'comparisons.json', comparisons)
-    write(output / 'analysis-identity.json', dict(estimator_sha256=digest(estimator) if estimator.is_file() else None,batches_sha256=digest(output/'batches.json'),comparisons_sha256=digest(output/'comparisons.json')))
+    write(output / 'analysis-identity.json', dict(estimator_sha256=digest(estimator) if estimator.is_file() else None,
+        manifest_sha256=digest(output/'manifest.json'),declared_phase='measure',role=manifest['role'],
+        batches_sha256=digest(output/'batches.json'),comparisons_sha256=digest(output/'comparisons.json')))
 
 
-def analyse_schedules(output, estimator):
-    rows = json.loads((output/'schedules.json').read_text())
+def analyse_schedules(output, estimator, schedule='all'):
+    manifest, cases = analysis_cases(output)
+    cases = [case for case in cases if case.rsplit('-',1)[1] in ('PAN16','RGB8')]
+    choices = {'all':[(1,8),(2,4),(8,1)],'1x8':[(1,8)],'2x4':[(2,4)],'8x1':[(8,1)]}
+    if schedule not in choices or (manifest['role'] != 'development' and schedule == 'all'):
+        raise ValueError('analysis requires an explicit fixed schedule for reserved roles')
+    declared = choices[schedule]
+    expected = {(case,operation,*arm,round_id) for case in cases for operation in ('encode','decode')
+                for arm in declared for round_id in range(20)}
+    indexed = index_observations(json.loads((output/'schedules.json').read_text()),expected,
+                                 ('case','operation','concurrent','workers','round'))
     comparisons = []
-    for case in sorted({r['case'] for r in rows}):
+    for case in cases:
         for operation in ('encode','decode'):
             for candidate in ((2,4),(8,1)):
-                sides = [[r for r in rows if (r['case'],r['operation'],r['concurrent'],r['workers']) ==
-                          (case,operation,*schedule)] for schedule in ((1,8),candidate)]
                 record = dict(case=case,operation=operation,baseline=[1,8],candidate=candidate,
                               boundary='eight_request_application_cohort_including_process_io_and_verification')
-                if any(len(side)!=20 or any(r['status']!='ok' for r in side) for side in sides):
-                    record['verdict'] = 'invalid_or_not_measured'
+                if (1,8) not in declared or candidate not in declared:
+                    record['verdict'] = 'not_measured'
                 else:
-                    data = {name:[r['application_wall_ns'] for r in side] for name,side in zip(('baseline','candidate'),sides)}
-                    record.update(json.loads(subprocess.check_output([str(estimator)],input=json.dumps(data),text=True)))
+                    sides = [[indexed[(case,operation,*arm,round_id)] for round_id in range(20)] for arm in ((1,8),candidate)]
+                    if any(r['status']!='ok' for side in sides for r in side):
+                        record['verdict'] = 'invalid'
+                    else:
+                        data = {name:[r['application_wall_ns'] for r in side] for name,side in zip(('baseline','candidate'),sides)}
+                        record.update(json.loads(subprocess.check_output([str(estimator)],input=json.dumps(data),text=True)))
                 comparisons.append(record)
     write(output/'schedule-comparisons.json',comparisons)
-    write(output/'schedule-analysis-identity.json',dict(estimator_sha256=digest(estimator),schedules_sha256=digest(output/'schedules.json'),comparisons_sha256=digest(output/'schedule-comparisons.json')))
+    write(output/'schedule-analysis-identity.json',dict(estimator_sha256=digest(estimator) if estimator.is_file() else None,
+        manifest_sha256=digest(output/'manifest.json'),declared_phase='schedule',declared_schedule=schedule,
+        schedules_sha256=digest(output/'schedules.json'),comparisons_sha256=digest(output/'schedule-comparisons.json')))
 
 
 def main():
@@ -407,7 +460,7 @@ def main():
         estimator_build(Path(__file__).resolve().parents[1], args.output)
         return
     if args.phase == 'analyse-schedules':
-        analyse_schedules(args.output,args.estimator)
+        analyse_schedules(args.output,args.estimator,args.schedule)
         return
     if args.phase == 'analyse':
         analyse(args.output, args.estimator)
