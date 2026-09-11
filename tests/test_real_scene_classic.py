@@ -13,6 +13,27 @@ spec.loader.exec_module(module)
 
 
 class ClassicTests(unittest.TestCase):
+    def test_clean_build_rejects_hidden_source_changes_and_existing_output(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp)
+            source=root/'source';source.mkdir()
+            def git(*args):
+                return subprocess.check_output(['git','-C',str(source),'-c','user.name=Authored Test','-c','user.email=test@example.invalid',*args],text=True,stderr=subprocess.DEVNULL).strip()
+            git('init','-q')
+            tracked=source/'authored.txt';tracked.write_text('committed bytes')
+            git('add','authored.txt');git('commit','-qm','Authored source')
+            self.assertEqual(module.clean_source(source)['source_revision'],git('rev-parse','HEAD'))
+            destination=root/'existing';destination.mkdir()
+            with self.assertRaises(FileExistsError):
+                module.build_consumer(source,destination)
+            with self.assertRaises(ValueError):
+                module.build_consumer(source,source/'target')
+            git('update-index','--assume-unchanged','authored.txt')
+            tracked.write_text('hidden changed bytes')
+            self.assertEqual(git('status','--porcelain'),'')
+            with self.assertRaises(ValueError):
+                module.clean_source(source)
+
     def test_build_identity_does_not_follow_a_later_checkout_head(self):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp)

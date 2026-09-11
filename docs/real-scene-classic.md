@@ -6,10 +6,27 @@ including decode packing. Benchmark owns fresh-process execution, conservative
 resource admission, treatment identities and statistics. No protected image
 payload belongs in this source tree.
 
-Build codec test-support examples `lossless_bypass_batch`,
+Create the bound consumers from a clean codec checkout and a fresh approved
+scratch child, using the public orchestration phase:
+
+```sh
+python3 scripts/real-scene-classic.py build \
+  --codec-source /path/to/committed/emuella-j2k \
+  --output /approved/scratch/new-classic-build
+```
+
+This builds test-support examples `lossless_bypass_batch`,
 `lossless_bypass_allocation` and `classic_ht_support` using `--profile perf
---features parallel`, without SIMD. Bind clean committed source revisions,
-compiler identity and executable digests. Set an approved external Cargo target.
+--features parallel`, without SIMD. Existing destinations and dirty source are
+refused. Every tracked source file is checked against committed Git bytes/modes
+before and after building, including files hidden from status by index flags.
+The receipt binds source/tree, compiler, configuration, environment, resolved
+lock, runtime libraries and Cargo's observed executable paths, profiles and
+features. Cargo-vv commands remain available for interpreting overrides; wrapper
+internals are not observed. Use the executable paths from `build-provenance.json`
+for subsequent phases; do not infer paths when Cargo selects a target-specific
+output directory.
+
 Preparation verifies the batch and allocation executable digests against their
 bound build provenance and resolves its original commit/tree through Git objects.
 A later checkout HEAD cannot relabel an earlier binary; final merged-owner

@@ -8,6 +8,7 @@ Inputs and generated streams must stay in an independently authorised store.
 import argparse
 import concurrent.futures
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -70,6 +71,84 @@ def bind_build(binary, allocation, source, provenance):
                 profile['opt_level']!='3' or profile['debug_assertions'] or profile['test']):
             raise ValueError('observed executable profile or features differ: '+name)
     return dict(codec_revision=revision,codec_tree=tree,build_provenance_sha256=digest(provenance))
+
+
+def clean_source(source):
+    git = lambda *args: subprocess.check_output(['git','-C',str(source),*args])
+    if git('status','--porcelain'):
+        raise ValueError('codec build requires a clean committed checkout')
+    revision = git('rev-parse','HEAD').decode().strip()
+    tree = git('rev-parse','HEAD^{tree}').decode().strip()
+    files = {}
+    for entry in git('ls-tree','-rz','--full-tree',revision).split(b'\0'):
+        if not entry:
+            continue
+        metadata, relative = entry.split(b'\t',1)
+        mode, kind, expected = metadata.split()
+        path = source / relative.decode()
+        if kind != b'blob' or mode not in (b'100644',b'100755') or path.is_symlink() or not path.is_file():
+            raise ValueError('codec source requires ordinary tracked files')
+        data = path.read_bytes()
+        observed = hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest().encode()
+        if observed != expected or bool(path.stat().st_mode & 0o111) != (mode == b'100755'):
+            raise ValueError('working source differs from committed Git bytes or mode: '+str(relative))
+        files[relative.decode()] = hashlib.sha256(data).hexdigest()
+    return dict(source_revision=revision,source_tree=tree,source_files_sha256=files)
+
+
+def build_consumer(source, output):
+    source = source.resolve()
+    output = output.resolve()
+    harness = Path(__file__).resolve().parents[1]
+    if any(output == root or root in output.parents for root in (source,harness)):
+        raise ValueError('consumer build output must be outside source checkouts')
+    before = clean_source(source)
+    output.mkdir(parents=True)
+    # Reuse the owner helper's Cargo configuration/environment inventory.
+    spec = importlib.util.spec_from_file_location('build_workers',Path(__file__).with_name('build-workers.py'))
+    helper = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(helper)
+    environment = dict(os.environ,CARGO_TARGET_DIR=str(output/'target'))
+    configs = helper.cargo_config_files(source,environment)
+    command = ['cargo','build','--locked','--profile','perf','-p','emuella-j2k-test-support',
+               '--features','parallel','--example','lossless_bypass_batch','--example','lossless_bypass_allocation',
+               '--example','classic_ht_support','--message-format=json-render-diagnostics','-vv']
+    with (output/'cargo-build.jsonl').open('x') as stdout,(output/'cargo-build.stderr').open('x') as stderr:
+        subprocess.run(command,cwd=source,env=environment,stdout=stdout,stderr=stderr,check=True)
+    if clean_source(source) != before or helper.cargo_config_files(source,environment) != configs:
+        raise ValueError('codec source or Cargo configuration changed during build')
+    events = []
+    for line in (output/'cargo-build.jsonl').read_text().splitlines():
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(event,dict):
+            events.append(event)
+    if not any(e.get('reason')=='build-finished' and e.get('success') is True for e in events):
+        raise ValueError('Cargo did not report a completed build')
+    artefacts = [e for e in events if e.get('reason')=='compiler-artifact']
+    binaries = {}
+    for name in ('lossless_bypass_batch','lossless_bypass_allocation','classic_ht_support'):
+        matches = [a for a in artefacts if a['target']['name']==name and a.get('executable')]
+        if len(matches)!=1:
+            raise ValueError('expected one observed consumer executable: '+name)
+        a = matches[0]
+        binaries[name] = dict(path=a['executable'],sha256=digest(a['executable']),profile=a['profile'],features=a['features'],
+                             libraries=[dict(path=str(p),sha256=digest(p)) for p in helper.libraries(Path(a['executable']))])
+    record = dict(**before,command=command,cwd=str(source),requested_profile='perf',requested_features=['parallel'],
+        harness_revision=subprocess.check_output(['git','-C',str(harness),'rev-parse','HEAD'],text=True).strip(),
+        harness_script_sha256=digest(Path(__file__)),build_helper_sha256=digest(Path(__file__).with_name('build-workers.py')),
+        compiler=subprocess.check_output(['rustc','-Vv'],cwd=source,env=environment,text=True),
+        cargo=subprocess.check_output(['cargo','-Vv'],cwd=source,env=environment,text=True),
+        build_environment=helper.build_environment(environment),cargo_configs=configs,
+        lock_sha256=digest(source/'Cargo.lock'),workspace_cargo_sha256=digest(source/'Cargo.toml'),
+        artefacts=artefacts,binaries=binaries,build_jsonl_sha256=digest(output/'cargo-build.jsonl'),
+        build_stderr_sha256=digest(output/'cargo-build.stderr'),
+        compiler_observation='Cargo-vv dispatched commands retained; artefact profiles can be overridden by ordered rustflags; wrapper internals are not observed')
+    write(output/'build-provenance.json',record)
+    bind_build(Path(binaries['lossless_bypass_batch']['path']),Path(binaries['lossless_bypass_allocation']['path']),source,output/'build-provenance.json')
+    print(json.dumps(dict(source_revision=before['source_revision'],provenance_sha256=digest(output/'build-provenance.json'),binaries=binaries)),flush=True)
 
 
 def assets(prepared):
@@ -242,7 +321,7 @@ def analyse_schedules(output, estimator):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('phase', choices=['estimator','prepare','measure','diagnose','schedule','analyse','analyse-schedules'])
+    parser.add_argument('phase', choices=['build','estimator','prepare','measure','diagnose','schedule','analyse','analyse-schedules'])
     parser.add_argument('--prepared', type=Path)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--binary', type=Path)
@@ -254,6 +333,11 @@ def main():
     parser.add_argument('--role', choices=ROLES.values(), default='development')
     parser.add_argument('--schedule', choices=['all','1x8','2x4','8x1'], default='all')
     args = parser.parse_args()
+    if args.phase == 'build':
+        if args.codec_source is None:
+            raise ValueError('build requires --codec-source')
+        build_consumer(args.codec_source,args.output)
+        return
     if args.phase == 'estimator':
         estimator_build(Path(__file__).resolve().parents[1], args.output)
         return
