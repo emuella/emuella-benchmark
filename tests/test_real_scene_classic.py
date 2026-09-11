@@ -6,6 +6,8 @@ import subprocess
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
+from types import SimpleNamespace
 
 spec = importlib.util.spec_from_file_location('classic', Path(__file__).resolve().parents[1] / 'scripts/real-scene-classic.py')
 module = importlib.util.module_from_spec(spec)
@@ -13,6 +15,20 @@ spec.loader.exec_module(module)
 
 
 class ClassicTests(unittest.TestCase):
+    def test_selected_reprofile_rejects_over_budget_without_dispatch(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp)
+            (root/'streams').mkdir()
+            (root/'streams/authored-style1.j2k').write_bytes(b'authored stream')
+            asset=dict(id='authored',product='PAN16',bytes=module.BUDGET,path='authored.raw',sha256='0'*64,
+                       image=dict(width=4,height=4,components=1,precision=16))
+            args=SimpleNamespace(schedule='8x1',prepared=root,output=root,binary=Path('/unused'))
+            with mock.patch.object(module,'execute',return_value=dict(status=0,observation=dict(requirements_working_bytes=module.WORKING))) as execute:
+                rows=module.reprofile_schedule(args,[asset],[0,1,2,3,4,5,6,7],root/'probe')
+            self.assertEqual(execute.call_count,1)
+            self.assertEqual(len(rows),2)
+            self.assertTrue(all(r['status']=='rejected' and 'invocations' not in r for r in rows))
+
     def test_clean_build_rejects_hidden_source_changes_and_existing_output(self):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp)

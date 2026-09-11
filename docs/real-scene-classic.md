@@ -87,6 +87,18 @@ including process lifecycle, input reads and full verification, separately from
 the inner warm-input facade latency. There is no claim of a persistent-service
 latency or warm decoded-content cache.
 
+After selection, `reprofile --schedule 8x1` uses the same role, input, output,
+binary and CPU arguments to observe eight concurrent single-worker processes
+on each PAN16/RGB8 product. It repeats actual same-context admission, applies
+the same process address-space ceilings, and retains one separate encoder-profile
+and ordinary decoder-activity cohort per product. The invocation envelopes,
+per-process CPU/RSS, native encoder counters and ordinary decoder task CPU ticks
+describe the selected configuration under concurrency. These instrumented records
+never enter headline statistics. Direct one-worker decode can execute on the
+application thread with no active Rayon worker; inspect all task deltas.
+The existing nested-pool allocation observation remains supplementary and does
+not provide direct/global decode allocation.
+
 The aggregate CPU affinity contains eight distinct CPUs. Before dispatch, query
 actual encoder requirements at each pool width and add three source-sized buffers,
 the output cap and a 64 MiB runtime margin. Reject the whole schedule when the

@@ -240,6 +240,45 @@ def verify_inputs(args, selected, manifest):
                 raise ValueError('prepared stream identity changed')
 
 
+def reprofile_schedule(args, selected, cpus, folder):
+    """Observe the selected concurrent configuration without headline clocks."""
+    if args.schedule != '8x1':
+        raise ValueError('selected reprofile requires explicit --schedule 8x1')
+    rows = []
+    for asset in selected:
+        if asset['product'] not in ('PAN16','RGB8'):
+            continue
+        req = request(asset,args.prepared,args.output,1,1,'requirements')
+        admission = execute(args.binary,req,folder/('admission-'+asset['id']),cpus)
+        if admission['status'] != 0:
+            raise RuntimeError('selected reprofile requirements failed; retained evidence')
+        allowance = admission['observation']['requirements_working_bytes'] + asset['bytes']*3 + OUTPUT + 64*1024**2
+        for operation in ('profile','decode_diagnostic'):
+            row = dict(case=asset['id'],operation=operation,concurrent=8,workers=1,requests=8,
+                       boundary='instrumented_selected_schedule; excluded from headline statistics',
+                       per_process_allowance=allowance,aggregate_allowance=8*allowance+CONTROLLER)
+            if row['aggregate_allowance'] > BUDGET:
+                row.update(status='rejected',reason='conservative aggregate admission exceeds8GiB')
+            else:
+                req = request(asset,args.prepared,args.output,1,1,operation)
+                def one(index):
+                    started = time.monotonic_ns()
+                    result = execute(args.binary,req,folder/(asset['id']+'-'+operation+'-'+str(index)),
+                                     cpus,address_limit=(BUDGET-CONTROLLER)//8)
+                    return dict(invocation_started_ns=started,invocation_finished_ns=time.monotonic_ns(),result=result)
+                with concurrent_module(8) as pool:
+                    invocations = list(pool.map(one,range(8)))
+                results = [r['result'] for r in invocations]
+                controller = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024
+                peak_bound = sum(r.get('process_peak_rss_bytes',0) for r in results)+controller
+                row.update(status='ok' if all(r['status']==0 for r in results) and controller<=CONTROLLER and peak_bound<=BUDGET else 'failed',
+                           invocations=invocations,controller_peak_rss_bytes=controller,
+                           sum_process_peak_rss_plus_controller_upper_bound=peak_bound)
+            rows.append(row)
+            print(json.dumps(dict(reprofile_case=asset['id'],operation=operation,status=row['status'])),flush=True)
+    return rows
+
+
 def estimator_build(repo, directory):
     """Use the historical exact owner module and classification-block wrapper."""
     directory.mkdir()
@@ -321,7 +360,7 @@ def analyse_schedules(output, estimator):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('phase', choices=['build','estimator','prepare','measure','diagnose','schedule','analyse','analyse-schedules'])
+    parser.add_argument('phase', choices=['build','estimator','prepare','measure','diagnose','schedule','reprofile','analyse','analyse-schedules'])
     parser.add_argument('--prepared', type=Path)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--binary', type=Path)
@@ -392,7 +431,14 @@ def main():
     folder = args.output / args.phase
     folder.mkdir()
     rows = []
-    if args.phase == 'measure':
+    if args.phase == 'reprofile':
+        rows = reprofile_schedule(args,selected,cpus,folder)
+        verify_inputs(args,selected,manifest)
+        write(args.output/'selected-reprofile.json',dict(rows=rows,
+            source_revision=subprocess.check_output(['git','-C',str(Path(__file__).resolve().parents[1]),'rev-parse','HEAD'],text=True).strip(),
+            script_sha256=digest(Path(__file__)),binary_sha256=digest(args.binary),
+            allocation_limitation='Existing allocation-only probe uses nested_pool; direct/global decode allocation is not observed.'))
+    elif args.phase == 'measure':
         for round_id in range(20):
             for asset in selected:
                 for operation in ('encode','decode'):
