@@ -259,6 +259,8 @@ def reprofile_schedule(args, selected, cpus, folder):
                        per_process_allowance=allowance,aggregate_allowance=8*allowance+CONTROLLER)
             if row['aggregate_allowance'] > BUDGET:
                 row.update(status='rejected',reason='conservative aggregate admission exceeds8GiB')
+            elif resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024 > CONTROLLER:
+                row.update(status='rejected',reason='controller high-water exceeds reserved128MiB before diagnostic dispatch')
             else:
                 req = request(asset,args.prepared,args.output,1,1,operation)
                 def one(index):

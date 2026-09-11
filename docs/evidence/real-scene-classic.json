@@ -1,0 +1,3792 @@
+{
+  "schema_version": 1,
+  "status": "selected configuration confirmed; original development resource qualification partial; four style-only comparisons inconclusive",
+  "codec_revision": "022a0bbd8e4782d59ecaf781fe819c4638e5991e",
+  "codec_tree": "d54c974b8824045b2c86fc0321fd8b9d8ad3664f",
+  "measurement_runner_revisions": {
+    "development_headline_and_initial_diagnostics": "5804b0ab84304811c98d16b5778b0012d4534115",
+    "development_schedules_and_reserved_measurements": "010ef7e73cd34293339a632334da87c3b266d4a2",
+    "selected_reprofile": "3e43d5e200e4ee123e9c7f828b0065552e53ea45"
+  },
+  "source_manifest_sha256": "6c37b54bf75af0c17c1b67c5ad7bd2d56b5d34d45de9737ddb50d0fc1fe10e7b",
+  "build": {
+    "profile": "perf",
+    "parallel": true,
+    "simd": false,
+    "rustc": "1.97.1 (8bab26f4f 2026-07-14)",
+    "opt_level": 3,
+    "lto": "thin",
+    "codegen_units": 1,
+    "debug_info": "line-tables-only",
+    "bound_provenance_sha256": "8d4b9758bbb2be62798478f2ca6aa68516f59d50a2a1c986383e0a5fc11043f6"
+  },
+  "machine": {
+    "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor",
+    "selected_logical_cpus": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "kernel": "7.1.3-arch1-1",
+    "governor": "powersave"
+  },
+  "limits": {
+    "max_working_bytes": 805306368,
+    "max_output_bytes": 67108864,
+    "aggregate_bytes": 8589934592,
+    "controller_reserve_bytes": 134217728
+  },
+  "protocol": {
+    "rounds": 20,
+    "warmups": 0,
+    "calls_per_fresh_process": 1,
+    "timeout_seconds": 120,
+    "order": "AB/BA",
+    "estimator": "unchanged historical compare.rs interval and classification; separately named treatments",
+    "relative_practical_gate": 0.05,
+    "per_comparison_confidence": 0.99,
+    "outliers_removed": 0,
+    "retries": 0,
+    "family_wide_confidence_claim": false
+  },
+  "roles": {
+    "development": {
+      "evidence_directory": "real-scene-viewing-classic-development-v1",
+      "identities": {
+        "manifest.json": "3dc0da9b99f7569010f2c258722aeaf61524410445f0f1d076985d301c0c9aa3",
+        "batches.json": "2d567864cc554ac67ba181cfd7b4b8fcb5677c1670894b0eba03bd3e4c28f46f",
+        "comparisons.json": "c70327f1970586f7b74a8424c58befdeb45fc0c5e419959db399916bee4ec905",
+        "diagnostics.json": "5f0a200ebe95cfd4ff649809ab1ae10f7455036752a1a7c9c127a45b71b9ae32",
+        "schedules.json": "67cd28c0f10551b10c1fbd18803b30c62405576237b1190fc87b8060062a4e7a",
+        "selected-reprofile.json": "3142fcac63b5c8b21826776fd04aa09248552ae3c63b4c3d94289af6b9f737c7",
+        "independent-reuse.json": "cbfd4fdb80cd3b9740a3abfa3ba13f7c9a4b235704d3c6349702f4c0da8a6ffb",
+        "allocation-context-correction.json": "e99f600fb0a3290fe6693d04e4705df0352bde153067de21ff5c3c0d4959e24a",
+        "selected-schedule.json": "26f0fb895bd77adc6fae04f52a93e956ada4b893ef2995d649c104ebbeee552f",
+        "schedule-selection-protocol.json": "99fee9fdbf2373c5d0eb3253d23ad3b71b76df14b652a135604a05202de1f7d5",
+        "schedule-selection-clarification.json": "260f883d70d6b205dbb5815ab3bf95f682deddbd89ebf4e70da625cb4e660b33",
+        "schedule-comparisons.json": "893316a4a774fae2ad66d90190b56c2282bd2e7a1997f76bcadec620d72c60b6",
+        "fresh-independent.json": "197ee418fd1e7e0389d94754ae0e6b126be40d07827df4b9e920c9f173e5b967",
+        "classic-ht-support.json": "6537fba786155125266c399ef19cbef31b3239e8c7bf8be76b5958e8a300bb29",
+        "resource-reconciliation-and-confirmation-protocol.json": "c74c1f1e2bd67dbc3e2211a137bb4466f1bc4825cdc5421b685e34a8a96d5902"
+      },
+      "headline_invocations": 960,
+      "diagnostic_invocations": 64,
+      "schedule_cohorts": 240,
+      "schedule_child_invocations": 1920,
+      "reprofile_cohorts": 4,
+      "reprofile_child_invocations": 32,
+      "products": [
+        {
+          "case_id": "94_104001000B823500-PAN16",
+          "product": "PAN16",
+          "image": {
+            "components": 1,
+            "height": 2752,
+            "precision": 16,
+            "signed": false,
+            "width": 4851
+          },
+          "source_bytes": 26699904,
+          "raw_sha256": "6d2a3d930510b887641bff4c7aec491181828e5eabe950447088cb481f13e90c",
+          "stream_bytes": {
+            "0": 13860814,
+            "1": 13801207
+          }
+        },
+        {
+          "case_id": "94_104001000B823500-RGB16",
+          "product": "RGB16",
+          "image": {
+            "components": 3,
+            "height": 688,
+            "precision": 16,
+            "signed": false,
+            "width": 1213
+          },
+          "source_bytes": 5007264,
+          "raw_sha256": "11b98f162a80c8d45a50f2ca3f1bc4e8b6d763aa4cc4af6401f340244b074573",
+          "stream_bytes": {
+            "0": 2480209,
+            "1": 2467937
+          }
+        },
+        {
+          "case_id": "94_104001000B823500-MS16",
+          "product": "MS16",
+          "image": {
+            "components": 8,
+            "height": 688,
+            "precision": 16,
+            "signed": false,
+            "width": 1213
+          },
+          "source_bytes": 13352704,
+          "raw_sha256": "aa82d48ac75adc0424759a8522f94ae93a58559917a66ea0d2d63bb93d5aa687",
+          "stream_bytes": {
+            "0": 7414382,
+            "1": 7399817
+          }
+        },
+        {
+          "case_id": "94_104001000B823500-RGB8",
+          "product": "RGB8",
+          "image": {
+            "components": 3,
+            "height": 2752,
+            "precision": 8,
+            "signed": false,
+            "width": 4851
+          },
+          "source_bytes": 40049856,
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "stream_bytes": {
+            "0": 12399691,
+            "1": 12445920
+          }
+        }
+      ],
+      "original_resource_verdict": "FAIL controller reserve in all240 original schedule cohorts; timing/selection retained with partial resource qualification"
+    },
+    "validation": {
+      "evidence_directory": "real-scene-viewing-classic-validation-v1",
+      "identities": {
+        "manifest.json": "59dda9a17a4f2a9f39daafa1be882f3cbee62fffea305db713d912ff45520774",
+        "batches.json": "9d113e9d5d149c8c2e9d58d4d7ddb69bdad2c497347cf5d7c6adb688c3a65028",
+        "comparisons.json": "79b43310cf2a75f3646082e845fe635aeacf6240159e6d15b1b55547226fcb39",
+        "diagnostics.json": "8547613a30082f179633b0ffad384496a5d2f2e324611f7da331118d128ef526",
+        "schedules.json": "955bd4a527229cd90ccaa24c7a06657b06d7d27f39ad14b6ab01293a3b9e096c",
+        "selected-reprofile.json": "5661e65b91ef3884b846c5aedf3b12e6e34d76b2368e49b3a6ae2eb11f21edc3",
+        "independent-reuse.json": "117d793c39bc8ad1659e0bf30f77dbb0de4f3878c17e2d2b68e37694a6406364"
+      },
+      "headline_invocations": 960,
+      "diagnostic_invocations": 64,
+      "schedule_cohorts": 80,
+      "schedule_child_invocations": 640,
+      "reprofile_cohorts": 4,
+      "reprofile_child_invocations": 32,
+      "products": [
+        {
+          "case_id": "106_10400100413CDF00-PAN16",
+          "product": "PAN16",
+          "image": {
+            "components": 1,
+            "height": 5036,
+            "precision": 16,
+            "signed": false,
+            "width": 5577
+          },
+          "source_bytes": 56171544,
+          "raw_sha256": "ac13dcf64d6212543092e4692b2f350a23b87ac6213c141c4c3eb467775e8449",
+          "stream_bytes": {
+            "0": 16469500,
+            "1": 17734505
+          }
+        },
+        {
+          "case_id": "106_10400100413CDF00-RGB16",
+          "product": "RGB16",
+          "image": {
+            "components": 3,
+            "height": 1259,
+            "precision": 16,
+            "signed": false,
+            "width": 1394
+          },
+          "source_bytes": 10530276,
+          "raw_sha256": "a70ec4af7f3752bd4b073da81b582a521b2eeb2d1e95a81c62ec636bae9ca3bb",
+          "stream_bytes": {
+            "0": 3054801,
+            "1": 3122192
+          }
+        },
+        {
+          "case_id": "106_10400100413CDF00-MS16",
+          "product": "MS16",
+          "image": {
+            "components": 8,
+            "height": 1259,
+            "precision": 16,
+            "signed": false,
+            "width": 1394
+          },
+          "source_bytes": 28080736,
+          "raw_sha256": "327740d5fa5bb014530eb0fa407b572277a91c3e89f012d5eee3331946d91dea",
+          "stream_bytes": {
+            "0": 9103938,
+            "1": 9721574
+          }
+        },
+        {
+          "case_id": "106_10400100413CDF00-RGB8",
+          "product": "RGB8",
+          "image": {
+            "components": 3,
+            "height": 5036,
+            "precision": 8,
+            "signed": false,
+            "width": 5577
+          },
+          "source_bytes": 84257316,
+          "raw_sha256": "aaf064a2d6b302d839e7f3c13b99e1344ba749fed53be6daf64f8a6c4c67bfe7",
+          "stream_bytes": {
+            "0": 14339292,
+            "1": 14937382
+          }
+        }
+      ]
+    },
+    "regression": {
+      "evidence_directory": "real-scene-viewing-classic-regression-v1",
+      "identities": {
+        "manifest.json": "c3df9e3bbbc403983ce79a62ea93733a6468ce44eb5bac3e0b3793050dbe0be4",
+        "batches.json": "82dd5a7aa818cc5a4816787d7f0541001d82cdc548526d708418a5e80da531f3",
+        "comparisons.json": "518c0c7968c9b7046a8f45dfdbe56c6eba4a72ca21938108248eea9783035062",
+        "diagnostics.json": "fae76000eca6ea675748d9c37b3610cf5ab028e222184a7bcaef4bad235345c5",
+        "schedules.json": "fa5621d188f615b1d2d5709e8e36fe1e8338934dd175698bfa1049fe2729817d",
+        "selected-reprofile.json": "6c534ab132117543852f299b41a52e01cb53fa5295298aac632bd69b2c08f85b",
+        "independent-reuse.json": "4b321b1609753184639c7c025686caf7898e4e747d243337394beaea170f0acf"
+      },
+      "headline_invocations": 240,
+      "diagnostic_invocations": 16,
+      "schedule_cohorts": 40,
+      "schedule_child_invocations": 320,
+      "reprofile_cohorts": 2,
+      "reprofile_child_invocations": 16,
+      "products": [
+        {
+          "case_id": "105_104001002F92BB00-RGB8",
+          "product": "RGB8",
+          "image": {
+            "components": 3,
+            "height": 1581,
+            "precision": 8,
+            "signed": false,
+            "width": 10651
+          },
+          "source_bytes": 50517693,
+          "raw_sha256": "b9e235b021ae5780242804fa52df39522dda9560836f31407a178bf5145b248c",
+          "stream_bytes": {
+            "0": 15267665,
+            "1": 15321890
+          }
+        }
+      ]
+    }
+  },
+  "headline_comparisons": [
+    {
+      "role": "development",
+      "case": "94_104001000B823500-MS16",
+      "operation": "encode",
+      "contrast": "bypass_at1",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        1
+      ],
+      "baseline_mean_ns": 1135435547.4,
+      "candidate_mean_ns": 652016752.6,
+      "relative_change": -0.42575626234969155,
+      "relative_interval_99": [
+        -0.4309702263106554,
+        -0.4205076076973986
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-MS16",
+      "operation": "encode",
+      "contrast": "bypass_at8",
+      "baseline": [
+        0,
+        8
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 198884297.3,
+      "candidate_mean_ns": 125371562.9,
+      "relative_change": -0.3696256335869107,
+      "relative_interval_99": [
+        -0.4152477853131632,
+        -0.3235353303547984
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-MS16",
+      "operation": "encode",
+      "contrast": "combined",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 1138839470.1,
+      "candidate_mean_ns": 126291586.0,
+      "relative_change": -0.8891050149597375,
+      "relative_interval_99": [
+        -0.8954056623320168,
+        -0.8827583279195375
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-MS16",
+      "operation": "decode",
+      "contrast": "bypass_at1",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        1
+      ],
+      "baseline_mean_ns": 709298476.55,
+      "candidate_mean_ns": 331693589.55,
+      "relative_change": -0.5323638771038327,
+      "relative_interval_99": [
+        -0.5362507888608438,
+        -0.5284450495587977
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-MS16",
+      "operation": "decode",
+      "contrast": "bypass_at8",
+      "baseline": [
+        0,
+        8
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 104099254.35,
+      "candidate_mean_ns": 58357761.1,
+      "relative_change": -0.43940269827686806,
+      "relative_interval_99": [
+        -0.46295219623280415,
+        -0.41550042509276397
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-MS16",
+      "operation": "decode",
+      "contrast": "combined",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 714502080.4,
+      "candidate_mean_ns": 57044530.35,
+      "relative_change": -0.9201618414909797,
+      "relative_interval_99": [
+        -0.9217443193432729,
+        -0.9185652108118108
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-PAN16",
+      "operation": "encode",
+      "contrast": "bypass_at1",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        1
+      ],
+      "baseline_mean_ns": 2115693688.65,
+      "candidate_mean_ns": 1285731967.6,
+      "relative_change": -0.3922882246624223,
+      "relative_interval_99": [
+        -0.39668190490300625,
+        -0.38787142140188835
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-PAN16",
+      "operation": "encode",
+      "contrast": "bypass_at8",
+      "baseline": [
+        0,
+        8
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 345081136.55,
+      "candidate_mean_ns": 229049595.9,
+      "relative_change": -0.33624422885018457,
+      "relative_interval_99": [
+        -0.37620181756996296,
+        -0.2955336281168929
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-PAN16",
+      "operation": "encode",
+      "contrast": "combined",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 2126156309.8,
+      "candidate_mean_ns": 230541854.05,
+      "relative_change": -0.8915687181664991,
+      "relative_interval_99": [
+        -0.8963540552826231,
+        -0.8867570371960682
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-PAN16",
+      "operation": "decode",
+      "contrast": "bypass_at1",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        1
+      ],
+      "baseline_mean_ns": 1329668436.7,
+      "candidate_mean_ns": 683474754.35,
+      "relative_change": -0.48598106453796674,
+      "relative_interval_99": [
+        -0.49251822340500195,
+        -0.4793873761403683
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-PAN16",
+      "operation": "decode",
+      "contrast": "bypass_at8",
+      "baseline": [
+        0,
+        8
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 208253810.4,
+      "candidate_mean_ns": 125256687.6,
+      "relative_change": -0.3985383155323049,
+      "relative_interval_99": [
+        -0.4374391417768172,
+        -0.35740949375674724
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-PAN16",
+      "operation": "decode",
+      "contrast": "combined",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 1332641201.85,
+      "candidate_mean_ns": 126011764.75,
+      "relative_change": -0.905442091558427,
+      "relative_interval_99": [
+        -0.9100274953760161,
+        -0.900825900790386
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB16",
+      "operation": "encode",
+      "contrast": "bypass_at1",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        1
+      ],
+      "baseline_mean_ns": 401752415.75,
+      "candidate_mean_ns": 239830501.05,
+      "relative_change": -0.4030390567726163,
+      "relative_interval_99": [
+        -0.4063259252269521,
+        -0.39973646272475893
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB16",
+      "operation": "encode",
+      "contrast": "bypass_at8",
+      "baseline": [
+        0,
+        8
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 76382442.4,
+      "candidate_mean_ns": 47075642.9,
+      "relative_change": -0.38368502733293075,
+      "relative_interval_99": [
+        -0.46610228447163904,
+        -0.27908103090441405
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB16",
+      "operation": "encode",
+      "contrast": "combined",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 404039173.85,
+      "candidate_mean_ns": 45992374.8,
+      "relative_change": -0.8861685257848916,
+      "relative_interval_99": [
+        -0.888052757925871,
+        -0.884255352094923
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB16",
+      "operation": "decode",
+      "contrast": "bypass_at1",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        1
+      ],
+      "baseline_mean_ns": 248817170.2,
+      "candidate_mean_ns": 121968152.75,
+      "relative_change": -0.5098081348165738,
+      "relative_interval_99": [
+        -0.5185822701242468,
+        -0.5009114886173804
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB16",
+      "operation": "decode",
+      "contrast": "bypass_at8",
+      "baseline": [
+        0,
+        8
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 35044310.15,
+      "candidate_mean_ns": 18954670.4,
+      "relative_change": -0.45912274149873655,
+      "relative_interval_99": [
+        -0.4840356950217438,
+        -0.43348470478478485
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB16",
+      "operation": "decode",
+      "contrast": "combined",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 248579431.25,
+      "candidate_mean_ns": 18820787.45,
+      "relative_change": -0.9242866259876842,
+      "relative_interval_99": [
+        -0.9256401969419109,
+        -0.9229248958768779
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB8",
+      "operation": "encode",
+      "contrast": "bypass_at1",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        1
+      ],
+      "baseline_mean_ns": 2641238376.8,
+      "candidate_mean_ns": 2422539143.35,
+      "relative_change": -0.08280177789744447,
+      "relative_interval_99": [
+        -0.0905410321708,
+        -0.07498634001821747
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB8",
+      "operation": "encode",
+      "contrast": "bypass_at8",
+      "baseline": [
+        0,
+        8
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 582662015.0,
+      "candidate_mean_ns": 539470692.95,
+      "relative_change": -0.07412757471413334,
+      "relative_interval_99": [
+        -0.1431600558512237,
+        0.00036933687781437463
+      ],
+      "verdict": "inconclusive"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB8",
+      "operation": "encode",
+      "contrast": "combined",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 2644271223.25,
+      "candidate_mean_ns": 536856146.6,
+      "relative_change": -0.7969738724682844,
+      "relative_interval_99": [
+        -0.8041031715159452,
+        -0.7897925497198757
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB8",
+      "operation": "decode",
+      "contrast": "bypass_at1",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        1
+      ],
+      "baseline_mean_ns": 1738431186.9,
+      "candidate_mean_ns": 1549737391.6,
+      "relative_change": -0.10854257374229592,
+      "relative_interval_99": [
+        -0.12238972729562803,
+        -0.09450018918243841
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB8",
+      "operation": "decode",
+      "contrast": "bypass_at8",
+      "baseline": [
+        0,
+        8
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 277026353.1,
+      "candidate_mean_ns": 255338678.45,
+      "relative_change": -0.07828740626048414,
+      "relative_interval_99": [
+        -0.122150554237346,
+        -0.032252925780170916
+      ],
+      "verdict": "inconclusive"
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB8",
+      "operation": "decode",
+      "contrast": "combined",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 1739471108.25,
+      "candidate_mean_ns": 258251154.55,
+      "relative_change": -0.8515346685983107,
+      "relative_interval_99": [
+        -0.8581336840944742,
+        -0.8448501575825342
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-MS16",
+      "operation": "encode",
+      "contrast": "bypass_at1",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        1
+      ],
+      "baseline_mean_ns": 1473844403.95,
+      "candidate_mean_ns": 881106188.2,
+      "relative_change": -0.40217150071026664,
+      "relative_interval_99": [
+        -0.40960948207399417,
+        -0.39467437011783413
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-MS16",
+      "operation": "encode",
+      "contrast": "bypass_at8",
+      "baseline": [
+        0,
+        8
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 293802792.2,
+      "candidate_mean_ns": 191655218.15,
+      "relative_change": -0.3476739389885213,
+      "relative_interval_99": [
+        -0.40969948591832317,
+        -0.27889166539893484
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-MS16",
+      "operation": "encode",
+      "contrast": "combined",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 1478015175.45,
+      "candidate_mean_ns": 189056050.65,
+      "relative_change": -0.8720878825940068,
+      "relative_interval_99": [
+        -0.8742383611084393,
+        -0.8699112319492155
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-MS16",
+      "operation": "decode",
+      "contrast": "bypass_at1",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        1
+      ],
+      "baseline_mean_ns": 923630765.9,
+      "candidate_mean_ns": 447148710.8,
+      "relative_change": -0.5158793672661051,
+      "relative_interval_99": [
+        -0.5226641307104094,
+        -0.5090234952008914
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-MS16",
+      "operation": "decode",
+      "contrast": "bypass_at8",
+      "baseline": [
+        0,
+        8
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 147429405.1,
+      "candidate_mean_ns": 87957990.3,
+      "relative_change": -0.403389098393642,
+      "relative_interval_99": [
+        -0.4992146066469295,
+        -0.2962656801286776
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-MS16",
+      "operation": "decode",
+      "contrast": "combined",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 923500284.05,
+      "candidate_mean_ns": 83925913.45,
+      "relative_change": -0.9091219408380213,
+      "relative_interval_99": [
+        -0.9109938228027727,
+        -0.9072318273635054
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-PAN16",
+      "operation": "encode",
+      "contrast": "bypass_at1",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        1
+      ],
+      "baseline_mean_ns": 2650156468.65,
+      "candidate_mean_ns": 1563528511.5,
+      "relative_change": -0.4100240759382531,
+      "relative_interval_99": [
+        -0.4161846095987405,
+        -0.40381534996284363
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-PAN16",
+      "operation": "encode",
+      "contrast": "bypass_at8",
+      "baseline": [
+        0,
+        8
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 487091086.95,
+      "candidate_mean_ns": 321249572.15,
+      "relative_change": -0.34047331031746775,
+      "relative_interval_99": [
+        -0.3918296208397727,
+        -0.2850965288876305
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-PAN16",
+      "operation": "encode",
+      "contrast": "combined",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 2651445534.9,
+      "candidate_mean_ns": 325592130.5,
+      "relative_change": -0.8772020295290434,
+      "relative_interval_99": [
+        -0.8840335662352199,
+        -0.8703277002359824
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-PAN16",
+      "operation": "decode",
+      "contrast": "bypass_at1",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        1
+      ],
+      "baseline_mean_ns": 1630893231.5,
+      "candidate_mean_ns": 768079531.15,
+      "relative_change": -0.5290436453381038,
+      "relative_interval_99": [
+        -0.5348889794333199,
+        -0.5231592560692998
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-PAN16",
+      "operation": "decode",
+      "contrast": "bypass_at8",
+      "baseline": [
+        0,
+        8
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 289411367.45,
+      "candidate_mean_ns": 177140572.1,
+      "relative_change": -0.3879280773910735,
+      "relative_interval_99": [
+        -0.420308346591727,
+        -0.354014896923323
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-PAN16",
+      "operation": "decode",
+      "contrast": "combined",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 1629880887.0,
+      "candidate_mean_ns": 177188118.4,
+      "relative_change": -0.891287688681265,
+      "relative_interval_99": [
+        -0.8957997322931183,
+        -0.8867501517869565
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB16",
+      "operation": "encode",
+      "contrast": "bypass_at1",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        1
+      ],
+      "baseline_mean_ns": 520785915.9,
+      "candidate_mean_ns": 316723086.5,
+      "relative_change": -0.3918363058020632,
+      "relative_interval_99": [
+        -0.40115890183740044,
+        -0.3824094656026388
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB16",
+      "operation": "encode",
+      "contrast": "bypass_at8",
+      "baseline": [
+        0,
+        8
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 102321782.2,
+      "candidate_mean_ns": 68161146.0,
+      "relative_change": -0.33385497657995256,
+      "relative_interval_99": [
+        -0.37783605944293486,
+        -0.2874606004958461
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB16",
+      "operation": "encode",
+      "contrast": "combined",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 522797978.3,
+      "candidate_mean_ns": 69402774.6,
+      "relative_change": -0.867247431167046,
+      "relative_interval_99": [
+        -0.8778286344823824,
+        -0.8565071969939988
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB16",
+      "operation": "decode",
+      "contrast": "bypass_at1",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        1
+      ],
+      "baseline_mean_ns": 315966951.05,
+      "candidate_mean_ns": 150151900.35,
+      "relative_change": -0.5247860580006063,
+      "relative_interval_99": [
+        -0.5336022939848931,
+        -0.5158491454485377
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB16",
+      "operation": "decode",
+      "contrast": "bypass_at8",
+      "baseline": [
+        0,
+        8
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 46533114.7,
+      "candidate_mean_ns": 25721280.15,
+      "relative_change": -0.4472478295118294,
+      "relative_interval_99": [
+        -0.4891241384599597,
+        -0.4028943783016977
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB16",
+      "operation": "decode",
+      "contrast": "combined",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 316969273.15,
+      "candidate_mean_ns": 25560402.4,
+      "relative_change": -0.9193599993274301,
+      "relative_interval_99": [
+        -0.9215004717503764,
+        -0.9171895972471017
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB8",
+      "operation": "encode",
+      "contrast": "bypass_at1",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        1
+      ],
+      "baseline_mean_ns": 3523893214.85,
+      "candidate_mean_ns": 3017352849.15,
+      "relative_change": -0.14374452766201695,
+      "relative_interval_99": [
+        -0.1509254280671769,
+        -0.1365101684906912
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB8",
+      "operation": "encode",
+      "contrast": "bypass_at8",
+      "baseline": [
+        0,
+        8
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 863337657.25,
+      "candidate_mean_ns": 759852759.05,
+      "relative_change": -0.11986607711475461,
+      "relative_interval_99": [
+        -0.1601113379923863,
+        -0.07756550289367514
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB8",
+      "operation": "encode",
+      "contrast": "combined",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 3519992855.2,
+      "candidate_mean_ns": 762335384.4,
+      "relative_change": -0.7834270080196838,
+      "relative_interval_99": [
+        -0.7901901006409247,
+        -0.776596210182678
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB8",
+      "operation": "decode",
+      "contrast": "bypass_at1",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        1
+      ],
+      "baseline_mean_ns": 2179258402.35,
+      "candidate_mean_ns": 1733380465.0,
+      "relative_change": -0.20460076550315842,
+      "relative_interval_99": [
+        -0.21431911117147728,
+        -0.1947721568801699
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB8",
+      "operation": "decode",
+      "contrast": "bypass_at8",
+      "baseline": [
+        0,
+        8
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 394409876.75,
+      "candidate_mean_ns": 340435337.55,
+      "relative_change": -0.13684885288562942,
+      "relative_interval_99": [
+        -0.17790548960667107,
+        -0.09392458321134733
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB8",
+      "operation": "decode",
+      "contrast": "combined",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 2181231734.2,
+      "candidate_mean_ns": 337643429.35,
+      "relative_change": -0.8452051544748702,
+      "relative_interval_99": [
+        -0.8479653307465573,
+        -0.8424291626602418
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "regression",
+      "case": "105_104001002F92BB00-RGB8",
+      "operation": "encode",
+      "contrast": "bypass_at1",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        1
+      ],
+      "baseline_mean_ns": 3220362582.5,
+      "candidate_mean_ns": 2975443999.05,
+      "relative_change": -0.07605310805091614,
+      "relative_interval_99": [
+        -0.08212339954019277,
+        -0.0699363507583074
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "regression",
+      "case": "105_104001002F92BB00-RGB8",
+      "operation": "encode",
+      "contrast": "bypass_at8",
+      "baseline": [
+        0,
+        8
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 711116507.4,
+      "candidate_mean_ns": 671956839.15,
+      "relative_change": -0.05506786559234356,
+      "relative_interval_99": [
+        -0.1041915083220929,
+        -0.0035346017222955828
+      ],
+      "verdict": "inconclusive"
+    },
+    {
+      "role": "regression",
+      "case": "105_104001002F92BB00-RGB8",
+      "operation": "encode",
+      "contrast": "combined",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 3223894350.05,
+      "candidate_mean_ns": 651434551.75,
+      "relative_change": -0.7979355149340124,
+      "relative_interval_99": [
+        -0.8008390746334157,
+        -0.7950148469824896
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "regression",
+      "case": "105_104001002F92BB00-RGB8",
+      "operation": "decode",
+      "contrast": "bypass_at1",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        1
+      ],
+      "baseline_mean_ns": 2159841006.15,
+      "candidate_mean_ns": 1959641847.7,
+      "relative_change": -0.0926916184478147,
+      "relative_interval_99": [
+        -0.09740682061261552,
+        -0.08794593834701292
+      ],
+      "verdict": "improved"
+    },
+    {
+      "role": "regression",
+      "case": "105_104001002F92BB00-RGB8",
+      "operation": "decode",
+      "contrast": "bypass_at8",
+      "baseline": [
+        0,
+        8
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 347443633.55,
+      "candidate_mean_ns": 324545709.15,
+      "relative_change": -0.06590399762413501,
+      "relative_interval_99": [
+        -0.09714872195776947,
+        -0.03388252787480961
+      ],
+      "verdict": "inconclusive"
+    },
+    {
+      "role": "regression",
+      "case": "105_104001002F92BB00-RGB8",
+      "operation": "decode",
+      "contrast": "combined",
+      "baseline": [
+        0,
+        1
+      ],
+      "candidate": [
+        1,
+        8
+      ],
+      "baseline_mean_ns": 2161897940.1,
+      "candidate_mean_ns": 322300824.8,
+      "relative_change": -0.8509176502637809,
+      "relative_interval_99": [
+        -0.853419210447471,
+        -0.8484035857305957
+      ],
+      "verdict": "improved"
+    }
+  ],
+  "diagnostics": [
+    {
+      "role": "development",
+      "case": "94_104001000B823500-PAN16",
+      "style": 0,
+      "workers": 1,
+      "encoder": {
+        "assembly_ns": 2983228,
+        "block_preparation_ns": 2766682,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 3344,
+        "conversion_level_shift_rct_ns": 13392194,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 1,
+        "forward_dwt_ns": 29544718,
+        "max_batch_blocks": 1,
+        "packet_headers_ns": 444649,
+        "participating_workers": 1,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 13847267,
+        "tier1_coding_passes": 93653,
+        "tier1_coefficients": 13349952,
+        "tier1_ns": 2087821332,
+        "total_ns": 2139384567
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 0,
+        "active_tasks_lower_bound": 1,
+        "process_cpu_seconds": 1.36,
+        "process_peak_rss_bytes": 124219392
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 88237176,
+        "decode_peak_requested_bytes": 80100188
+      }
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-PAN16",
+      "style": 0,
+      "workers": 8,
+      "encoder": {
+        "assembly_ns": 3713026,
+        "block_preparation_ns": 3554634,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 3344,
+        "conversion_level_shift_rct_ns": 12404524,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 8,
+        "forward_dwt_ns": 30091982,
+        "max_batch_blocks": 8,
+        "packet_headers_ns": 452597,
+        "participating_workers": 8,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 13847267,
+        "tier1_coding_passes": 93653,
+        "tier1_coefficients": 13349952,
+        "tier1_ns": 365560989,
+        "total_ns": 418087937
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 8,
+        "active_tasks_lower_bound": 9,
+        "process_cpu_seconds": 1.41,
+        "process_peak_rss_bytes": 163975168
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 88539928,
+        "decode_peak_requested_bytes": 80100188
+      }
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-PAN16",
+      "style": 1,
+      "workers": 1,
+      "encoder": {
+        "assembly_ns": 238041,
+        "block_preparation_ns": 3534183,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 3344,
+        "conversion_level_shift_rct_ns": 12688225,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 1,
+        "forward_dwt_ns": 30508049,
+        "max_batch_blocks": 1,
+        "packet_headers_ns": 1592555,
+        "participating_workers": 1,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": true,
+        "tier1_codeword_bytes": 13740284,
+        "tier1_coding_passes": 93653,
+        "tier1_coefficients": 13349952,
+        "tier1_ns": 1239617747,
+        "total_ns": 1289979893
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 0,
+        "active_tasks_lower_bound": 1,
+        "process_cpu_seconds": 0.72,
+        "process_peak_rss_bytes": 124915712
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 90190528,
+        "decode_peak_requested_bytes": 80100188
+      }
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-PAN16",
+      "style": 1,
+      "workers": 8,
+      "encoder": {
+        "assembly_ns": 3388880,
+        "block_preparation_ns": 3596386,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 3344,
+        "conversion_level_shift_rct_ns": 12736428,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 8,
+        "forward_dwt_ns": 30261789,
+        "max_batch_blocks": 8,
+        "packet_headers_ns": 1631376,
+        "participating_workers": 8,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 13740284,
+        "tier1_coding_passes": 93653,
+        "tier1_coefficients": 13349952,
+        "tier1_ns": 177134484,
+        "total_ns": 230541017
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 8,
+        "active_tasks_lower_bound": 9,
+        "process_cpu_seconds": 0.76,
+        "process_peak_rss_bytes": 157941760
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 90495072,
+        "decode_peak_requested_bytes": 80100188
+      }
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB16",
+      "style": 0,
+      "workers": 1,
+      "encoder": {
+        "assembly_ns": 412793,
+        "block_preparation_ns": 546784,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 720,
+        "conversion_level_shift_rct_ns": 1799343,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 1,
+        "forward_dwt_ns": 3842237,
+        "max_batch_blocks": 1,
+        "packet_headers_ns": 121747,
+        "participating_workers": 1,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 2477278,
+        "tier1_coding_passes": 19845,
+        "tier1_coefficients": 2503632,
+        "tier1_ns": 394167257,
+        "total_ns": 401052747
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 0,
+        "active_tasks_lower_bound": 1,
+        "process_cpu_seconds": 0.25,
+        "process_peak_rss_bytes": 32841728
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 14268424,
+        "decode_peak_requested_bytes": 11684148
+      }
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB16",
+      "style": 0,
+      "workers": 8,
+      "encoder": {
+        "assembly_ns": 454159,
+        "block_preparation_ns": 522301,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 720,
+        "conversion_level_shift_rct_ns": 1680749,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 8,
+        "forward_dwt_ns": 3929849,
+        "max_batch_blocks": 8,
+        "packet_headers_ns": 126955,
+        "participating_workers": 8,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 2477278,
+        "tier1_coding_passes": 19845,
+        "tier1_coefficients": 2503632,
+        "tier1_ns": 64194009,
+        "total_ns": 71040907
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 8,
+        "active_tasks_lower_bound": 8,
+        "process_cpu_seconds": 0.26,
+        "process_peak_rss_bytes": 33497088
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 14593224,
+        "decode_peak_requested_bytes": 11684148
+      }
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB16",
+      "style": 1,
+      "workers": 1,
+      "encoder": {
+        "assembly_ns": 32931,
+        "block_preparation_ns": 530321,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 720,
+        "conversion_level_shift_rct_ns": 2026732,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 1,
+        "forward_dwt_ns": 3878998,
+        "max_batch_blocks": 1,
+        "packet_headers_ns": 417318,
+        "participating_workers": 1,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": true,
+        "tier1_codeword_bytes": 2455434,
+        "tier1_coding_passes": 19845,
+        "tier1_coefficients": 2503632,
+        "tier1_ns": 233366064,
+        "total_ns": 240464803
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 0,
+        "active_tasks_lower_bound": 1,
+        "process_cpu_seconds": 0.12,
+        "process_peak_rss_bytes": 32714752
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 14771280,
+        "decode_peak_requested_bytes": 11684148
+      }
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB16",
+      "style": 1,
+      "workers": 8,
+      "encoder": {
+        "assembly_ns": 442545,
+        "block_preparation_ns": 524831,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 720,
+        "conversion_level_shift_rct_ns": 1828615,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 8,
+        "forward_dwt_ns": 4345167,
+        "max_batch_blocks": 8,
+        "packet_headers_ns": 436438,
+        "participating_workers": 8,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 2455434,
+        "tier1_coding_passes": 19845,
+        "tier1_coefficients": 2503632,
+        "tier1_ns": 39088642,
+        "total_ns": 46856505
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 8,
+        "active_tasks_lower_bound": 8,
+        "process_cpu_seconds": 0.13,
+        "process_peak_rss_bytes": 33869824
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 15093776,
+        "decode_peak_requested_bytes": 11684148
+      }
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-MS16",
+      "style": 0,
+      "workers": 1,
+      "encoder": {
+        "assembly_ns": 1451411,
+        "block_preparation_ns": 1470997,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 1920,
+        "conversion_level_shift_rct_ns": 6774255,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 1,
+        "forward_dwt_ns": 10585220,
+        "max_batch_blocks": 1,
+        "packet_headers_ns": 310914,
+        "participating_workers": 1,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 7406530,
+        "tier1_coding_passes": 59925,
+        "tier1_coefficients": 6676352,
+        "tier1_ns": 1110490940,
+        "total_ns": 1131977502
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 0,
+        "active_tasks_lower_bound": 1,
+        "process_cpu_seconds": 0.72,
+        "process_peak_rss_bytes": 53542912
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 42856080,
+        "decode_peak_requested_bytes": 41728240
+      }
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-MS16",
+      "style": 0,
+      "workers": 8,
+      "encoder": {
+        "assembly_ns": 1520037,
+        "block_preparation_ns": 1405488,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 1920,
+        "conversion_level_shift_rct_ns": 5425270,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 8,
+        "forward_dwt_ns": 10450635,
+        "max_batch_blocks": 8,
+        "packet_headers_ns": 329753,
+        "participating_workers": 8,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 7406530,
+        "tier1_coding_passes": 59925,
+        "tier1_coefficients": 6676352,
+        "tier1_ns": 180186271,
+        "total_ns": 199916938
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 8,
+        "active_tasks_lower_bound": 9,
+        "process_cpu_seconds": 0.74,
+        "process_peak_rss_bytes": 54444032
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 43176784,
+        "decode_peak_requested_bytes": 41728240
+      }
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-MS16",
+      "style": 1,
+      "workers": 1,
+      "encoder": {
+        "assembly_ns": 74101,
+        "block_preparation_ns": 1391536,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 1920,
+        "conversion_level_shift_rct_ns": 6501795,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 1,
+        "forward_dwt_ns": 10533378,
+        "max_batch_blocks": 1,
+        "packet_headers_ns": 1253894,
+        "participating_workers": 1,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": true,
+        "tier1_codeword_bytes": 7361244,
+        "tier1_coding_passes": 59925,
+        "tier1_coefficients": 6676352,
+        "tier1_ns": 631227779,
+        "total_ns": 651620739
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 0,
+        "active_tasks_lower_bound": 1,
+        "process_cpu_seconds": 0.35000000000000003,
+        "process_peak_rss_bytes": 53448704
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 46475224,
+        "decode_peak_requested_bytes": 41728240
+      }
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-MS16",
+      "style": 1,
+      "workers": 8,
+      "encoder": {
+        "assembly_ns": 1575881,
+        "block_preparation_ns": 1444519,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 1920,
+        "conversion_level_shift_rct_ns": 5693641,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 8,
+        "forward_dwt_ns": 10448965,
+        "max_batch_blocks": 8,
+        "packet_headers_ns": 1285110,
+        "participating_workers": 8,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 7361244,
+        "tier1_coding_passes": 59925,
+        "tier1_coefficients": 6676352,
+        "tier1_ns": 101417542,
+        "total_ns": 122474961
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 8,
+        "active_tasks_lower_bound": 9,
+        "process_cpu_seconds": 0.36,
+        "process_peak_rss_bytes": 55005184
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 46797720,
+        "decode_peak_requested_bytes": 41728240
+      }
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB8",
+      "style": 0,
+      "workers": 1,
+      "encoder": {
+        "assembly_ns": 3128359,
+        "block_preparation_ns": 16002608,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 10032,
+        "conversion_level_shift_rct_ns": 46432259,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 1,
+        "forward_dwt_ns": 100965476,
+        "max_batch_blocks": 1,
+        "packet_headers_ns": 1304833,
+        "participating_workers": 1,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 12364038,
+        "tier1_coding_passes": 95133,
+        "tier1_coefficients": 40049856,
+        "tier1_ns": 2472553796,
+        "total_ns": 2651517668
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 0,
+        "active_tasks_lower_bound": 1,
+        "process_cpu_seconds": 1.8,
+        "process_peak_rss_bytes": 256106496
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 197316296,
+        "decode_peak_requested_bytes": 240299980
+      }
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB8",
+      "style": 0,
+      "workers": 8,
+      "encoder": {
+        "assembly_ns": 3495406,
+        "block_preparation_ns": 15202888,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 10032,
+        "conversion_level_shift_rct_ns": 45820925,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 8,
+        "forward_dwt_ns": 102655629,
+        "max_batch_blocks": 8,
+        "packet_headers_ns": 1239341,
+        "participating_workers": 8,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 12364038,
+        "tier1_coding_passes": 95133,
+        "tier1_coefficients": 40049856,
+        "tier1_ns": 410232105,
+        "total_ns": 584823666
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 8,
+        "active_tasks_lower_bound": 9,
+        "process_cpu_seconds": 1.85,
+        "process_peak_rss_bytes": 258064384
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 3
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 197592424,
+        "decode_peak_requested_bytes": 240299980
+      }
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB8",
+      "style": 1,
+      "workers": 1,
+      "encoder": {
+        "assembly_ns": 247282,
+        "block_preparation_ns": 15663398,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 10032,
+        "conversion_level_shift_rct_ns": 45815316,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 1,
+        "forward_dwt_ns": 99305693,
+        "max_batch_blocks": 1,
+        "packet_headers_ns": 1622996,
+        "participating_workers": 1,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": true,
+        "tier1_codeword_bytes": 12398331,
+        "tier1_coding_passes": 95133,
+        "tier1_coefficients": 40049856,
+        "tier1_ns": 2263141145,
+        "total_ns": 2431865247
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 0,
+        "active_tasks_lower_bound": 1,
+        "process_cpu_seconds": 1.61,
+        "process_peak_rss_bytes": 257482752
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 197616720,
+        "decode_peak_requested_bytes": 240299980
+      }
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB8",
+      "style": 1,
+      "workers": 8,
+      "encoder": {
+        "assembly_ns": 4615275,
+        "block_preparation_ns": 15291912,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 10032,
+        "conversion_level_shift_rct_ns": 46163571,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 8,
+        "forward_dwt_ns": 102516098,
+        "max_batch_blocks": 8,
+        "packet_headers_ns": 1708792,
+        "participating_workers": 8,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 12398331,
+        "tier1_coding_passes": 95133,
+        "tier1_coefficients": 40049856,
+        "tier1_ns": 429103425,
+        "total_ns": 605585216
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 8,
+        "active_tasks_lower_bound": 9,
+        "process_cpu_seconds": 1.6600000000000001,
+        "process_peak_rss_bytes": 261328896
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 3
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 197893808,
+        "decode_peak_requested_bytes": 240299980
+      }
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-PAN16",
+      "style": 0,
+      "workers": 1,
+      "encoder": {
+        "assembly_ns": 2557004,
+        "block_preparation_ns": 9331297,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 7040,
+        "conversion_level_shift_rct_ns": 15172697,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 1,
+        "forward_dwt_ns": 63411669,
+        "max_batch_blocks": 1,
+        "packet_headers_ns": 578994,
+        "participating_workers": 1,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 16452754,
+        "tier1_coding_passes": 133499,
+        "tier1_coefficients": 28085772,
+        "tier1_ns": 2541343715,
+        "total_ns": 2633667164
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 0,
+        "active_tasks_lower_bound": 1,
+        "process_cpu_seconds": 1.67,
+        "process_peak_rss_bytes": 245313536
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 137608744,
+        "decode_peak_requested_bytes": 224686892
+      }
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-PAN16",
+      "style": 0,
+      "workers": 8,
+      "encoder": {
+        "assembly_ns": 2805055,
+        "block_preparation_ns": 8366780,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 7040,
+        "conversion_level_shift_rct_ns": 15123925,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 8,
+        "forward_dwt_ns": 62343897,
+        "max_batch_blocks": 8,
+        "packet_headers_ns": 587434,
+        "participating_workers": 8,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 16452754,
+        "tier1_coding_passes": 133499,
+        "tier1_coefficients": 28085772,
+        "tier1_ns": 379501767,
+        "total_ns": 469031062
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 8,
+        "active_tasks_lower_bound": 9,
+        "process_cpu_seconds": 1.72,
+        "process_peak_rss_bytes": 291315712
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 137911496,
+        "decode_peak_requested_bytes": 224686892
+      }
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-PAN16",
+      "style": 1,
+      "workers": 1,
+      "encoder": {
+        "assembly_ns": 333953,
+        "block_preparation_ns": 13257150,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 7040,
+        "conversion_level_shift_rct_ns": 16206599,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 1,
+        "forward_dwt_ns": 68218186,
+        "max_batch_blocks": 1,
+        "packet_headers_ns": 2532724,
+        "participating_workers": 1,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": true,
+        "tier1_codeword_bytes": 17645147,
+        "tier1_coding_passes": 133499,
+        "tier1_coefficients": 28085772,
+        "tier1_ns": 1474605787,
+        "total_ns": 1575668069
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 0,
+        "active_tasks_lower_bound": 1,
+        "process_cpu_seconds": 0.81,
+        "process_peak_rss_bytes": 247275520
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 152550256,
+        "decode_peak_requested_bytes": 224686892
+      }
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-PAN16",
+      "style": 1,
+      "workers": 8,
+      "encoder": {
+        "assembly_ns": 3524627,
+        "block_preparation_ns": 9197996,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 7040,
+        "conversion_level_shift_rct_ns": 15200318,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 8,
+        "forward_dwt_ns": 63266916,
+        "max_batch_blocks": 8,
+        "packet_headers_ns": 2597986,
+        "participating_workers": 8,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 17645147,
+        "tier1_coding_passes": 133499,
+        "tier1_coefficients": 28085772,
+        "tier1_ns": 222503622,
+        "total_ns": 316746352
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 8,
+        "active_tasks_lower_bound": 9,
+        "process_cpu_seconds": 0.8500000000000001,
+        "process_peak_rss_bytes": 302624768
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 152854800,
+        "decode_peak_requested_bytes": 224686892
+      }
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB16",
+      "style": 0,
+      "workers": 1,
+      "encoder": {
+        "assembly_ns": 541712,
+        "block_preparation_ns": 1123795,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 1350,
+        "conversion_level_shift_rct_ns": 3842226,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 1,
+        "forward_dwt_ns": 9467856,
+        "max_batch_blocks": 1,
+        "packet_headers_ns": 148814,
+        "participating_workers": 1,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 3051359,
+        "tier1_coding_passes": 26403,
+        "tier1_coefficients": 5265138,
+        "tier1_ns": 503491234,
+        "total_ns": 518856731
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 0,
+        "active_tasks_lower_bound": 1,
+        "process_cpu_seconds": 0.32,
+        "process_peak_rss_bytes": 42414080
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 26928016,
+        "decode_peak_requested_bytes": 24571176
+      }
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB16",
+      "style": 0,
+      "workers": 8,
+      "encoder": {
+        "assembly_ns": 652270,
+        "block_preparation_ns": 1076884,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 1350,
+        "conversion_level_shift_rct_ns": 3428840,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 8,
+        "forward_dwt_ns": 9458665,
+        "max_batch_blocks": 8,
+        "packet_headers_ns": 155018,
+        "participating_workers": 8,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 3051359,
+        "tier1_coding_passes": 26403,
+        "tier1_coefficients": 5265138,
+        "tier1_ns": 84932913,
+        "total_ns": 99892437
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 8,
+        "active_tasks_lower_bound": 8,
+        "process_cpu_seconds": 0.33,
+        "process_peak_rss_bytes": 44392448
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 27230768,
+        "decode_peak_requested_bytes": 24571176
+      }
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB16",
+      "style": 1,
+      "workers": 1,
+      "encoder": {
+        "assembly_ns": 41651,
+        "block_preparation_ns": 1078603,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 1350,
+        "conversion_level_shift_rct_ns": 3127647,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 1,
+        "forward_dwt_ns": 9458046,
+        "max_batch_blocks": 1,
+        "packet_headers_ns": 594214,
+        "participating_workers": 1,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": true,
+        "tier1_codeword_bytes": 3105202,
+        "tier1_coding_passes": 26403,
+        "tier1_coefficients": 5265138,
+        "tier1_ns": 299552267,
+        "total_ns": 313961022
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 0,
+        "active_tasks_lower_bound": 1,
+        "process_cpu_seconds": 0.15,
+        "process_peak_rss_bytes": 43053056
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 26076696,
+        "decode_peak_requested_bytes": 24571176
+      }
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB16",
+      "style": 1,
+      "workers": 8,
+      "encoder": {
+        "assembly_ns": 719980,
+        "block_preparation_ns": 1086624,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 1350,
+        "conversion_level_shift_rct_ns": 3494052,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 8,
+        "forward_dwt_ns": 9415013,
+        "max_batch_blocks": 8,
+        "packet_headers_ns": 602425,
+        "participating_workers": 8,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 3105202,
+        "tier1_coding_passes": 26403,
+        "tier1_coefficients": 5265138,
+        "tier1_ns": 51076148,
+        "total_ns": 66496537
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 8,
+        "active_tasks_lower_bound": 8,
+        "process_cpu_seconds": 0.16,
+        "process_peak_rss_bytes": 43876352
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 26381240,
+        "decode_peak_requested_bytes": 24571176
+      }
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-MS16",
+      "style": 0,
+      "workers": 1,
+      "encoder": {
+        "assembly_ns": 1541101,
+        "block_preparation_ns": 3395849,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 3600,
+        "conversion_level_shift_rct_ns": 9667634,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 1,
+        "forward_dwt_ns": 30553994,
+        "max_batch_blocks": 1,
+        "packet_headers_ns": 393495,
+        "participating_workers": 1,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 9094147,
+        "tier1_coding_passes": 80949,
+        "tier1_coefficients": 14040368,
+        "tier1_ns": 1425346466,
+        "total_ns": 1471870160
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 0,
+        "active_tasks_lower_bound": 1,
+        "process_cpu_seconds": 0.9400000000000001,
+        "process_peak_rss_bytes": 101486592
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 79128400,
+        "decode_peak_requested_bytes": 87753340
+      }
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-MS16",
+      "style": 0,
+      "workers": 8,
+      "encoder": {
+        "assembly_ns": 1685817,
+        "block_preparation_ns": 3244072,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 3600,
+        "conversion_level_shift_rct_ns": 9099771,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 8,
+        "forward_dwt_ns": 29253721,
+        "max_batch_blocks": 8,
+        "packet_headers_ns": 423109,
+        "participating_workers": 8,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 9094147,
+        "tier1_coding_passes": 80949,
+        "tier1_coefficients": 14040368,
+        "tier1_ns": 238440983,
+        "total_ns": 282882451
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 8,
+        "active_tasks_lower_bound": 9,
+        "process_cpu_seconds": 0.96,
+        "process_peak_rss_bytes": 102780928
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 79438320,
+        "decode_peak_requested_bytes": 87753340
+      }
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-MS16",
+      "style": 1,
+      "workers": 1,
+      "encoder": {
+        "assembly_ns": 163039,
+        "block_preparation_ns": 2983951,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 3600,
+        "conversion_level_shift_rct_ns": 8679934,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 1,
+        "forward_dwt_ns": 28176788,
+        "max_batch_blocks": 1,
+        "packet_headers_ns": 1796393,
+        "participating_workers": 1,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": true,
+        "tier1_codeword_bytes": 9668395,
+        "tier1_coding_passes": 80949,
+        "tier1_coefficients": 14040368,
+        "tier1_ns": 844266246,
+        "total_ns": 886636344
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 0,
+        "active_tasks_lower_bound": 1,
+        "process_cpu_seconds": 0.46,
+        "process_peak_rss_bytes": 102948864
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 75559768,
+        "decode_peak_requested_bytes": 87753340
+      }
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-MS16",
+      "style": 1,
+      "workers": 8,
+      "encoder": {
+        "assembly_ns": 1933165,
+        "block_preparation_ns": 3441600,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 3600,
+        "conversion_level_shift_rct_ns": 9532238,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 8,
+        "forward_dwt_ns": 28805374,
+        "max_batch_blocks": 8,
+        "packet_headers_ns": 1797945,
+        "participating_workers": 8,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 9668395,
+        "tier1_coding_passes": 80949,
+        "tier1_coefficients": 14040368,
+        "tier1_ns": 142870290,
+        "total_ns": 189094773
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 8,
+        "active_tasks_lower_bound": 9,
+        "process_cpu_seconds": 0.49,
+        "process_peak_rss_bytes": 104599552
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 75864312,
+        "decode_peak_requested_bytes": 87753340
+      }
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB8",
+      "style": 0,
+      "workers": 1,
+      "encoder": {
+        "assembly_ns": 2710978,
+        "block_preparation_ns": 33418500,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 21120,
+        "conversion_level_shift_rct_ns": 74023316,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 1,
+        "forward_dwt_ns": 242594322,
+        "max_batch_blocks": 1,
+        "packet_headers_ns": 1529721,
+        "participating_workers": 1,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 14298396,
+        "tier1_coding_passes": 140333,
+        "tier1_coefficients": 84257316,
+        "tier1_ns": 3200631550,
+        "total_ns": 3562111192
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 0,
+        "active_tasks_lower_bound": 1,
+        "process_cpu_seconds": 2.21,
+        "process_peak_rss_bytes": 524681216
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 362403544,
+        "decode_peak_requested_bytes": 505544740
+      }
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB8",
+      "style": 0,
+      "workers": 8,
+      "encoder": {
+        "assembly_ns": 4325635,
+        "block_preparation_ns": 31359449,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 21120,
+        "conversion_level_shift_rct_ns": 61499147,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 8,
+        "forward_dwt_ns": 208362933,
+        "max_batch_blocks": 8,
+        "packet_headers_ns": 1588844,
+        "participating_workers": 8,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 14298396,
+        "tier1_coding_passes": 140333,
+        "tier1_coefficients": 84257316,
+        "tier1_ns": 540682534,
+        "total_ns": 853026512
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 8,
+        "active_tasks_lower_bound": 9,
+        "process_cpu_seconds": 2.32,
+        "process_peak_rss_bytes": 525983744
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 3
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 362677624,
+        "decode_peak_requested_bytes": 505544740
+      }
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB8",
+      "style": 1,
+      "workers": 1,
+      "encoder": {
+        "assembly_ns": 762181,
+        "block_preparation_ns": 31834327,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 21120,
+        "conversion_level_shift_rct_ns": 64189537,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 1,
+        "forward_dwt_ns": 214155702,
+        "max_batch_blocks": 1,
+        "packet_headers_ns": 3264081,
+        "participating_workers": 1,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": true,
+        "tier1_codeword_bytes": 14865189,
+        "tier1_coding_passes": 140333,
+        "tier1_coefficients": 84257316,
+        "tier1_ns": 2699969809,
+        "total_ns": 3016721540
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 0,
+        "active_tasks_lower_bound": 1,
+        "process_cpu_seconds": 1.8,
+        "process_peak_rss_bytes": 528048128
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 366096288,
+        "decode_peak_requested_bytes": 505544740
+      }
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB8",
+      "style": 1,
+      "workers": 8,
+      "encoder": {
+        "assembly_ns": 5847878,
+        "block_preparation_ns": 30785496,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 21120,
+        "conversion_level_shift_rct_ns": 60283689,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 8,
+        "forward_dwt_ns": 208164101,
+        "max_batch_blocks": 8,
+        "packet_headers_ns": 2768332,
+        "participating_workers": 8,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 14865189,
+        "tier1_coding_passes": 140333,
+        "tier1_coefficients": 84257316,
+        "tier1_ns": 493483611,
+        "total_ns": 803771396
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 8,
+        "active_tasks_lower_bound": 9,
+        "process_cpu_seconds": 1.87,
+        "process_peak_rss_bytes": 527687680
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 3
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 366371264,
+        "decode_peak_requested_bytes": 505544740
+      }
+    },
+    {
+      "role": "regression",
+      "case": "105_104001002F92BB00-RGB8",
+      "style": 0,
+      "workers": 1,
+      "encoder": {
+        "assembly_ns": 2639432,
+        "block_preparation_ns": 18696870,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 13356,
+        "conversion_level_shift_rct_ns": 37092679,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 1,
+        "forward_dwt_ns": 140435442,
+        "max_batch_blocks": 1,
+        "packet_headers_ns": 1577656,
+        "participating_workers": 1,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 15221725,
+        "tier1_coding_passes": 115551,
+        "tier1_coefficients": 50517693,
+        "tier1_ns": 3003501889,
+        "total_ns": 3206212571
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 0,
+        "active_tasks_lower_bound": 1,
+        "process_cpu_seconds": 2.17,
+        "process_peak_rss_bytes": 322801664
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 239212220,
+        "decode_peak_requested_bytes": 303107002
+      }
+    },
+    {
+      "role": "regression",
+      "case": "105_104001002F92BB00-RGB8",
+      "style": 0,
+      "workers": 8,
+      "encoder": {
+        "assembly_ns": 3933970,
+        "block_preparation_ns": 18421810,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 13356,
+        "conversion_level_shift_rct_ns": 37671404,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 8,
+        "forward_dwt_ns": 140036275,
+        "max_batch_blocks": 8,
+        "packet_headers_ns": 1656599,
+        "participating_workers": 8,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 15221725,
+        "tier1_coding_passes": 115551,
+        "tier1_coefficients": 50517693,
+        "tier1_ns": 489610854,
+        "total_ns": 692805473
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 8,
+        "active_tasks_lower_bound": 9,
+        "process_cpu_seconds": 2.2600000000000002,
+        "process_peak_rss_bytes": 323432448
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 3
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 239488348,
+        "decode_peak_requested_bytes": 303107002
+      }
+    },
+    {
+      "role": "regression",
+      "case": "105_104001002F92BB00-RGB8",
+      "style": 1,
+      "workers": 1,
+      "encoder": {
+        "assembly_ns": 360697,
+        "block_preparation_ns": 19060956,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 13356,
+        "conversion_level_shift_rct_ns": 45190313,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 1,
+        "forward_dwt_ns": 140291967,
+        "max_batch_blocks": 1,
+        "packet_headers_ns": 2031773,
+        "participating_workers": 1,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": true,
+        "tier1_codeword_bytes": 15262943,
+        "tier1_coding_passes": 115551,
+        "tier1_coefficients": 50517693,
+        "tier1_ns": 2765990283,
+        "total_ns": 2976466434
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 0,
+        "active_tasks_lower_bound": 1,
+        "process_cpu_seconds": 2.0,
+        "process_peak_rss_bytes": 325292032
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 1
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 239746116,
+        "decode_peak_requested_bytes": 303107002
+      }
+    },
+    {
+      "role": "regression",
+      "case": "105_104001002F92BB00-RGB8",
+      "style": 1,
+      "workers": 8,
+      "encoder": {
+        "assembly_ns": 5371093,
+        "block_preparation_ns": 17955670,
+        "boundary": "instrumented_native_encoder",
+        "checked_tier1_blocks": 13356,
+        "conversion_level_shift_rct_ns": 35898431,
+        "decode_parallel_stage_telemetry": null,
+        "effective_workers": 8,
+        "forward_dwt_ns": 137780573,
+        "max_batch_blocks": 8,
+        "packet_headers_ns": 2078066,
+        "participating_workers": 8,
+        "serial_bypass_tier1_includes_subband_preparation_and_appends": false,
+        "tier1_codeword_bytes": 15262943,
+        "tier1_coding_passes": 115551,
+        "tier1_coefficients": 50517693,
+        "tier1_ns": 491053986,
+        "total_ns": 691047615
+      },
+      "direct_decode": {
+        "active_rayon_workers_lower_bound": 8,
+        "active_tasks_lower_bound": 9,
+        "process_cpu_seconds": 2.08,
+        "process_peak_rss_bytes": 324485120
+      },
+      "nested_decode": {
+        "active_rayon_workers_lower_bound": 3
+      },
+      "nested_allocation": {
+        "encode_peak_requested_bytes": 240023204,
+        "decode_peak_requested_bytes": 303107002
+      }
+    }
+  ],
+  "schedule_absolute": [
+    {
+      "role": "development",
+      "case": "94_104001000B823500-PAN16",
+      "operation": "decode",
+      "concurrent": 1,
+      "workers": 8,
+      "cohorts": 20,
+      "requests_per_cohort": 8,
+      "mean_application_wall_ns": 1402776857.6,
+      "mean_sum_process_cpu_seconds": 5.99,
+      "max_rss_upper_bound_bytes": 902287360,
+      "max_controller_rss_bytes": 723075072,
+      "aggregate_admission_bytes": 585174500,
+      "controller_reserve_exceeded": true,
+      "aggregate_admission_with_recorded_controller_bytes": 1174031844
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-PAN16",
+      "operation": "decode",
+      "concurrent": 2,
+      "workers": 4,
+      "cohorts": 20,
+      "requests_per_cohort": 8,
+      "mean_application_wall_ns": 1117514239.6,
+      "mean_sum_process_cpu_seconds": 6.078,
+      "max_rss_upper_bound_bytes": 1073758208,
+      "max_controller_rss_bytes": 723075072,
+      "aggregate_admission_bytes": 1002576840,
+      "controller_reserve_exceeded": true,
+      "aggregate_admission_with_recorded_controller_bytes": 1591434184
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-PAN16",
+      "operation": "decode",
+      "concurrent": 8,
+      "workers": 1,
+      "cohorts": 20,
+      "requests_per_cohort": 8,
+      "mean_application_wall_ns": 870478426.3,
+      "mean_sum_process_cpu_seconds": 6.4725,
+      "max_rss_upper_bound_bytes": 1725779968,
+      "max_controller_rss_bytes": 723075072,
+      "aggregate_admission_bytes": 3506990880,
+      "controller_reserve_exceeded": true,
+      "aggregate_admission_with_recorded_controller_bytes": 4095848224
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-PAN16",
+      "operation": "encode",
+      "concurrent": 1,
+      "workers": 8,
+      "cohorts": 20,
+      "requests_per_cohort": 8,
+      "mean_application_wall_ns": 3389811432.65,
+      "mean_sum_process_cpu_seconds": 17.122999999999998,
+      "max_rss_upper_bound_bytes": 918151168,
+      "max_controller_rss_bytes": 723075072,
+      "aggregate_admission_bytes": 585174500,
+      "controller_reserve_exceeded": true,
+      "aggregate_admission_with_recorded_controller_bytes": 1174031844
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-PAN16",
+      "operation": "encode",
+      "concurrent": 2,
+      "workers": 4,
+      "cohorts": 20,
+      "requests_per_cohort": 8,
+      "mean_application_wall_ns": 3351585511.45,
+      "mean_sum_process_cpu_seconds": 17.378,
+      "max_rss_upper_bound_bytes": 1105358848,
+      "max_controller_rss_bytes": 723075072,
+      "aggregate_admission_bytes": 1002576840,
+      "controller_reserve_exceeded": true,
+      "aggregate_admission_with_recorded_controller_bytes": 1591434184
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-PAN16",
+      "operation": "encode",
+      "concurrent": 8,
+      "workers": 1,
+      "cohorts": 20,
+      "requests_per_cohort": 8,
+      "mean_application_wall_ns": 2274659615.8,
+      "mean_sum_process_cpu_seconds": 17.889,
+      "max_rss_upper_bound_bytes": 1845596160,
+      "max_controller_rss_bytes": 723075072,
+      "aggregate_admission_bytes": 3506990880,
+      "controller_reserve_exceeded": true,
+      "aggregate_admission_with_recorded_controller_bytes": 4095848224
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB8",
+      "operation": "decode",
+      "concurrent": 1,
+      "workers": 8,
+      "cohorts": 20,
+      "requests_per_cohort": 8,
+      "mean_application_wall_ns": 2531661475.4,
+      "mean_sum_process_cpu_seconds": 13.171000000000001,
+      "max_rss_upper_bound_bytes": 983322624,
+      "max_controller_rss_bytes": 723075072,
+      "aggregate_admission_bytes": 762842276,
+      "controller_reserve_exceeded": true,
+      "aggregate_admission_with_recorded_controller_bytes": 1351699620
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB8",
+      "operation": "decode",
+      "concurrent": 2,
+      "workers": 4,
+      "cohorts": 20,
+      "requests_per_cohort": 8,
+      "mean_application_wall_ns": 2099808116.25,
+      "mean_sum_process_cpu_seconds": 13.5255,
+      "max_rss_upper_bound_bytes": 1240621056,
+      "max_controller_rss_bytes": 723075072,
+      "aggregate_admission_bytes": 1357912392,
+      "controller_reserve_exceeded": true,
+      "aggregate_admission_with_recorded_controller_bytes": 1946769736
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB8",
+      "operation": "decode",
+      "concurrent": 8,
+      "workers": 1,
+      "cohorts": 20,
+      "requests_per_cohort": 8,
+      "mean_application_wall_ns": 1898933895.45,
+      "mean_sum_process_cpu_seconds": 14.7185,
+      "max_rss_upper_bound_bytes": 2787594240,
+      "max_controller_rss_bytes": 723075072,
+      "aggregate_admission_bytes": 4928333088,
+      "controller_reserve_exceeded": true,
+      "aggregate_admission_with_recorded_controller_bytes": 5517190432
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB8",
+      "operation": "encode",
+      "concurrent": 1,
+      "workers": 8,
+      "cohorts": 20,
+      "requests_per_cohort": 8,
+      "mean_application_wall_ns": 6714955964.8,
+      "mean_sum_process_cpu_seconds": 34.2515,
+      "max_rss_upper_bound_bytes": 999587840,
+      "max_controller_rss_bytes": 723075072,
+      "aggregate_admission_bytes": 762842276,
+      "controller_reserve_exceeded": true,
+      "aggregate_admission_with_recorded_controller_bytes": 1351699620
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB8",
+      "operation": "encode",
+      "concurrent": 2,
+      "workers": 4,
+      "cohorts": 20,
+      "requests_per_cohort": 8,
+      "mean_application_wall_ns": 6148128400.4,
+      "mean_sum_process_cpu_seconds": 34.703,
+      "max_rss_upper_bound_bytes": 1270558720,
+      "max_controller_rss_bytes": 723075072,
+      "aggregate_admission_bytes": 1357912392,
+      "controller_reserve_exceeded": true,
+      "aggregate_admission_with_recorded_controller_bytes": 1946769736
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB8",
+      "operation": "encode",
+      "concurrent": 8,
+      "workers": 1,
+      "cohorts": 20,
+      "requests_per_cohort": 8,
+      "mean_application_wall_ns": 4644823247.25,
+      "mean_sum_process_cpu_seconds": 36.5495,
+      "max_rss_upper_bound_bytes": 2906955776,
+      "max_controller_rss_bytes": 723075072,
+      "aggregate_admission_bytes": 4928333088,
+      "controller_reserve_exceeded": true,
+      "aggregate_admission_with_recorded_controller_bytes": 5517190432
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-PAN16",
+      "operation": "decode",
+      "concurrent": 8,
+      "workers": 1,
+      "cohorts": 20,
+      "requests_per_cohort": 8,
+      "mean_application_wall_ns": 1081191708.15,
+      "mean_sum_process_cpu_seconds": 8.2775,
+      "max_rss_upper_bound_bytes": 2016731136,
+      "max_controller_rss_bytes": 33337344,
+      "aggregate_admission_bytes": 4822175520,
+      "controller_reserve_exceeded": false,
+      "aggregate_admission_with_recorded_controller_bytes": 4822175520
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-PAN16",
+      "operation": "encode",
+      "concurrent": 8,
+      "workers": 1,
+      "cohorts": 20,
+      "requests_per_cohort": 8,
+      "mean_application_wall_ns": 2869939468.9,
+      "mean_sum_process_cpu_seconds": 22.4465,
+      "max_rss_upper_bound_bytes": 2159177728,
+      "max_controller_rss_bytes": 33337344,
+      "aggregate_admission_bytes": 4822175520,
+      "controller_reserve_exceeded": false,
+      "aggregate_admission_with_recorded_controller_bytes": 4822175520
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB8",
+      "operation": "decode",
+      "concurrent": 8,
+      "workers": 1,
+      "cohorts": 20,
+      "requests_per_cohort": 8,
+      "mean_application_wall_ns": 2419293733.75,
+      "mean_sum_process_cpu_seconds": 18.7035,
+      "max_rss_upper_bound_bytes": 4245516288,
+      "max_controller_rss_bytes": 33337344,
+      "aggregate_admission_bytes": 7812768576,
+      "controller_reserve_exceeded": false,
+      "aggregate_admission_with_recorded_controller_bytes": 7812768576
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB8",
+      "operation": "encode",
+      "concurrent": 8,
+      "workers": 1,
+      "cohorts": 20,
+      "requests_per_cohort": 8,
+      "mean_application_wall_ns": 5970715686.45,
+      "mean_sum_process_cpu_seconds": 46.9955,
+      "max_rss_upper_bound_bytes": 4386856960,
+      "max_controller_rss_bytes": 33337344,
+      "aggregate_admission_bytes": 7812768576,
+      "controller_reserve_exceeded": false,
+      "aggregate_admission_with_recorded_controller_bytes": 7812768576
+    },
+    {
+      "role": "regression",
+      "case": "105_104001002F92BB00-RGB8",
+      "operation": "decode",
+      "concurrent": 8,
+      "workers": 1,
+      "cohorts": 20,
+      "requests_per_cohort": 8,
+      "mean_application_wall_ns": 2376828616.85,
+      "mean_sum_process_cpu_seconds": 18.492,
+      "max_rss_upper_bound_bytes": 2621079552,
+      "max_controller_rss_bytes": 31645696,
+      "aggregate_admission_bytes": 5637624696,
+      "controller_reserve_exceeded": false,
+      "aggregate_admission_with_recorded_controller_bytes": 5637624696
+    },
+    {
+      "role": "regression",
+      "case": "105_104001002F92BB00-RGB8",
+      "operation": "encode",
+      "concurrent": 8,
+      "workers": 1,
+      "cohorts": 20,
+      "requests_per_cohort": 8,
+      "mean_application_wall_ns": 5700554026.7,
+      "mean_sum_process_cpu_seconds": 45.037,
+      "max_rss_upper_bound_bytes": 2765746176,
+      "max_controller_rss_bytes": 31633408,
+      "aggregate_admission_bytes": 5637624696,
+      "controller_reserve_exceeded": false,
+      "aggregate_admission_with_recorded_controller_bytes": 5637624696
+    }
+  ],
+  "selected_reprofile": [
+    {
+      "role": "development",
+      "case": "94_104001000B823500-PAN16",
+      "operation": "profile",
+      "concurrent": 8,
+      "workers": 1,
+      "successful_invocations": 8,
+      "process_cpu_seconds": 29.119999999999997,
+      "rss_upper_bound_bytes": 1153990656,
+      "encoder_effective_workers": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "encoder_participating_workers": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "encoder_stage_fraction_of_summed_instrumented_intervals": {
+        "conversion_level_shift_rct_ns": 0.015164112923272676,
+        "forward_dwt_ns": 0.03887865832928472,
+        "block_preparation_ns": 0.006606830908474882,
+        "tier1_ns": 0.935874098087756,
+        "assembly_ns": 0.00046740592941371364,
+        "packet_headers_ns": 0.0012632447382448801
+      },
+      "serial_bypass_tier1_includes_subband_preparation_and_appends": true
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-PAN16",
+      "operation": "decode_diagnostic",
+      "concurrent": 8,
+      "workers": 1,
+      "successful_invocations": 8,
+      "process_cpu_seconds": 6.53,
+      "rss_upper_bound_bytes": 1029783552,
+      "active_rayon_workers_lower_bound_per_process": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "active_tasks_lower_bound_per_process": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "decoder_stage_fractions": null
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB8",
+      "operation": "profile",
+      "concurrent": 8,
+      "workers": 1,
+      "successful_invocations": 8,
+      "process_cpu_seconds": 58.2,
+      "rss_upper_bound_bytes": 2224963584,
+      "encoder_effective_workers": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "encoder_participating_workers": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "encoder_stage_fraction_of_summed_instrumented_intervals": {
+        "conversion_level_shift_rct_ns": 0.04546373983940247,
+        "forward_dwt_ns": 0.061328846226428285,
+        "block_preparation_ns": 0.009442406251852598,
+        "tier1_ns": 0.8807811009644878,
+        "assembly_ns": 0.00011548124179877262,
+        "packet_headers_ns": 0.0006593463397308451
+      },
+      "serial_bypass_tier1_includes_subband_preparation_and_appends": true
+    },
+    {
+      "role": "development",
+      "case": "94_104001000B823500-RGB8",
+      "operation": "decode_diagnostic",
+      "concurrent": 8,
+      "workers": 1,
+      "successful_invocations": 8,
+      "process_cpu_seconds": 14.790000000000001,
+      "rss_upper_bound_bytes": 2092863488,
+      "active_rayon_workers_lower_bound_per_process": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "active_tasks_lower_bound_per_process": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "decoder_stage_fractions": null
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-PAN16",
+      "operation": "profile",
+      "concurrent": 8,
+      "workers": 1,
+      "successful_invocations": 8,
+      "process_cpu_seconds": 36.160000000000004,
+      "rss_upper_bound_bytes": 2166599680,
+      "encoder_effective_workers": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "encoder_participating_workers": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "encoder_stage_fraction_of_summed_instrumented_intervals": {
+        "conversion_level_shift_rct_ns": 0.026526496993885533,
+        "forward_dwt_ns": 0.06850745748737827,
+        "block_preparation_ns": 0.011635186215587918,
+        "tier1_ns": 0.8878382498008237,
+        "assembly_ns": 0.0005533874210581362,
+        "packet_headers_ns": 0.001578979767403557
+      },
+      "serial_bypass_tier1_includes_subband_preparation_and_appends": true
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-PAN16",
+      "operation": "decode_diagnostic",
+      "concurrent": 8,
+      "workers": 1,
+      "successful_invocations": 8,
+      "process_cpu_seconds": 8.32,
+      "rss_upper_bound_bytes": 2006974464,
+      "active_rayon_workers_lower_bound_per_process": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "active_tasks_lower_bound_per_process": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "decoder_stage_fractions": null
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB8",
+      "operation": "profile",
+      "concurrent": 8,
+      "workers": 1,
+      "successful_invocations": 8,
+      "process_cpu_seconds": 74.3,
+      "rss_upper_bound_bytes": 4381532160,
+      "encoder_effective_workers": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "encoder_participating_workers": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "encoder_stage_fraction_of_summed_instrumented_intervals": {
+        "conversion_level_shift_rct_ns": 0.07126099827322777,
+        "forward_dwt_ns": 0.09732911587162353,
+        "block_preparation_ns": 0.014908860869877152,
+        "tier1_ns": 0.8128224197916456,
+        "assembly_ns": 0.00012436093894927609,
+        "packet_headers_ns": 0.000862452192421194
+      },
+      "serial_bypass_tier1_includes_subband_preparation_and_appends": true
+    },
+    {
+      "role": "validation",
+      "case": "106_10400100413CDF00-RGB8",
+      "operation": "decode_diagnostic",
+      "concurrent": 8,
+      "workers": 1,
+      "successful_invocations": 8,
+      "process_cpu_seconds": 18.75,
+      "rss_upper_bound_bytes": 4258885632,
+      "active_rayon_workers_lower_bound_per_process": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "active_tasks_lower_bound_per_process": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "decoder_stage_fractions": null
+    },
+    {
+      "role": "regression",
+      "case": "105_104001002F92BB00-RGB8",
+      "operation": "profile",
+      "concurrent": 8,
+      "workers": 1,
+      "successful_invocations": 8,
+      "process_cpu_seconds": 71.4,
+      "rss_upper_bound_bytes": 2777284608,
+      "encoder_effective_workers": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "encoder_participating_workers": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "encoder_stage_fraction_of_summed_instrumented_intervals": {
+        "conversion_level_shift_rct_ns": 0.0470690621987416,
+        "forward_dwt_ns": 0.05836007320350905,
+        "block_preparation_ns": 0.00990206133084819,
+        "tier1_ns": 0.8817111172632709,
+        "assembly_ns": 0.00012291207853687205,
+        "packet_headers_ns": 0.0006492035120381172
+      },
+      "serial_bypass_tier1_includes_subband_preparation_and_appends": true
+    },
+    {
+      "role": "regression",
+      "case": "105_104001002F92BB00-RGB8",
+      "operation": "decode_diagnostic",
+      "concurrent": 8,
+      "workers": 1,
+      "successful_invocations": 8,
+      "process_cpu_seconds": 18.53,
+      "rss_upper_bound_bytes": 2638733312,
+      "active_rayon_workers_lower_bound_per_process": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "active_tasks_lower_bound_per_process": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "decoder_stage_fractions": null
+    }
+  ],
+  "headline_verdict_counts": {
+    "improved": 50,
+    "inconclusive": 4
+  },
+  "selected_resource_confirmation": {
+    "status": "PASS",
+    "runner_revision": "39d749766a5b065de2b5434482c419103d5a3b56",
+    "codec_revision": "022a0bbd8e4782d59ecaf781fe819c4638e5991e",
+    "selection_changed": false,
+    "alternatives_measured": false,
+    "cohorts": 80,
+    "child_invocations": 640,
+    "limits": {
+      "max_working_bytes": 805306368,
+      "max_output_bytes": 67108864,
+      "aggregate_bytes": 8589934592,
+      "controller_reserve_bytes": 134217728
+    },
+    "evidence_directory": "real-scene-viewing-classic-development-resource-confirmation-v1",
+    "identities": {
+      "manifest.json": "5e28608bf2165ca3d87fe0f4dc02c4adc2aa558862e8dadf3791f8a2bbe51047",
+      "schedules.json": "957d22b339459a6fba370d6e3739d56aa3997cf31c2944893affe185c852bf4d",
+      "independent-reuse.json": "cbfd4fdb80cd3b9740a3abfa3ba13f7c9a4b235704d3c6349702f4c0da8a6ffb"
+    },
+    "max_controller_rss_bytes": 34091008,
+    "max_total_rss_upper_bound_bytes": 2217275392,
+    "absolute": [
+      {
+        "case": "94_104001000B823500-PAN16",
+        "operation": "decode",
+        "cohorts": 20,
+        "mean_application_wall_ns": 870103223.95,
+        "mean_sum_process_cpu_seconds": 6.5375000000000005
+      },
+      {
+        "case": "94_104001000B823500-PAN16",
+        "operation": "encode",
+        "cohorts": 20,
+        "mean_application_wall_ns": 2299354261.05,
+        "mean_sum_process_cpu_seconds": 17.9865
+      },
+      {
+        "case": "94_104001000B823500-RGB8",
+        "operation": "decode",
+        "cohorts": 20,
+        "mean_application_wall_ns": 1916138535.5,
+        "mean_sum_process_cpu_seconds": 14.7475
+      },
+      {
+        "case": "94_104001000B823500-RGB8",
+        "operation": "encode",
+        "cohorts": 20,
+        "mean_application_wall_ns": 4639278992.6,
+        "mean_sum_process_cpu_seconds": 36.5785
+      }
+    ]
+  },
+  "selected_schedule": {
+    "selected": [
+      8,
+      1
+    ],
+    "selection_rule": "one eligible: choose it; two: lower descriptive geometric mean; none: retain1x8",
+    "gates": [
+      {
+        "candidate": [
+          2,
+          4
+        ],
+        "eligible": true,
+        "descriptive_geometric_mean_ratio": 0.8794339831211198,
+        "verdicts": [
+          "equivalent",
+          "improved",
+          "improved",
+          "improved"
+        ]
+      },
+      {
+        "candidate": [
+          8,
+          1
+        ],
+        "eligible": true,
+        "descriptive_geometric_mean_ratio": 0.6817656773199998,
+        "verdicts": [
+          "improved",
+          "improved",
+          "improved",
+          "improved"
+        ]
+      }
+    ],
+    "scope": "development PAN16/RGB8 encode/decode only; other product scheduling unqualified",
+    "cohorts": 240,
+    "cohort_statuses": {
+      "ok": 240
+    },
+    "child_invocations": 1920,
+    "child_statuses": {
+      "0": 1920
+    },
+    "source_revision": "010ef7e73cd34293339a632334da87c3b266d4a2",
+    "codec_revision": "022a0bbd8e4782d59ecaf781fe819c4638e5991e",
+    "identities": {
+      "schedule-selection-protocol.json": "99fee9fdbf2373c5d0eb3253d23ad3b71b76df14b652a135604a05202de1f7d5",
+      "schedule-selection-clarification.json": "260f883d70d6b205dbb5815ab3bf95f682deddbd89ebf4e70da625cb4e660b33",
+      "schedules.json": "67cd28c0f10551b10c1fbd18803b30c62405576237b1190fc87b8060062a4e7a",
+      "schedule-comparisons.json": "893316a4a774fae2ad66d90190b56c2282bd2e7a1997f76bcadec620d72c60b6"
+    },
+    "validation_state": "Boca/Tok not prepared or measured at this selection checkpoint"
+  },
+  "development_schedule_comparisons": [
+    {
+      "case": "94_104001000B823500-PAN16",
+      "operation": "encode",
+      "baseline": [
+        1,
+        8
+      ],
+      "candidate": [
+        2,
+        4
+      ],
+      "boundary": "eight_request_application_cohort_including_process_io_and_verification",
+      "baseline_mean_ns": 3389811432.65,
+      "candidate_mean_ns": 3351585511.45,
+      "relative_change": -0.011276710212201113,
+      "relative_interval_99": [
+        -0.03063192372916601,
+        0.008331963486731153
+      ],
+      "verdict": "equivalent"
+    },
+    {
+      "case": "94_104001000B823500-PAN16",
+      "operation": "encode",
+      "baseline": [
+        1,
+        8
+      ],
+      "candidate": [
+        8,
+        1
+      ],
+      "boundary": "eight_request_application_cohort_including_process_io_and_verification",
+      "baseline_mean_ns": 3389811432.65,
+      "candidate_mean_ns": 2274659615.8,
+      "relative_change": -0.32897163721529643,
+      "relative_interval_99": [
+        -0.3355720418952549,
+        -0.3222847989876131
+      ],
+      "verdict": "improved"
+    },
+    {
+      "case": "94_104001000B823500-PAN16",
+      "operation": "decode",
+      "baseline": [
+        1,
+        8
+      ],
+      "candidate": [
+        2,
+        4
+      ],
+      "boundary": "eight_request_application_cohort_including_process_io_and_verification",
+      "baseline_mean_ns": 1402776857.6,
+      "candidate_mean_ns": 1117514239.6,
+      "relative_change": -0.20335566305823838,
+      "relative_interval_99": [
+        -0.24979467423563584,
+        -0.15393993615046841
+      ],
+      "verdict": "improved"
+    },
+    {
+      "case": "94_104001000B823500-PAN16",
+      "operation": "decode",
+      "baseline": [
+        1,
+        8
+      ],
+      "candidate": [
+        8,
+        1
+      ],
+      "boundary": "eight_request_application_cohort_including_process_io_and_verification",
+      "baseline_mean_ns": 1402776857.6,
+      "candidate_mean_ns": 870478426.3,
+      "relative_change": -0.3794605167715023,
+      "relative_interval_99": [
+        -0.3985970866059939,
+        -0.35909730306567356
+      ],
+      "verdict": "improved"
+    },
+    {
+      "case": "94_104001000B823500-RGB8",
+      "operation": "encode",
+      "baseline": [
+        1,
+        8
+      ],
+      "candidate": [
+        2,
+        4
+      ],
+      "boundary": "eight_request_application_cohort_including_process_io_and_verification",
+      "baseline_mean_ns": 6714955964.8,
+      "candidate_mean_ns": 6148128400.4,
+      "relative_change": -0.08441270015340796,
+      "relative_interval_99": [
+        -0.09413201931700932,
+        -0.07458838283471536
+      ],
+      "verdict": "improved"
+    },
+    {
+      "case": "94_104001000B823500-RGB8",
+      "operation": "encode",
+      "baseline": [
+        1,
+        8
+      ],
+      "candidate": [
+        8,
+        1
+      ],
+      "boundary": "eight_request_application_cohort_including_process_io_and_verification",
+      "baseline_mean_ns": 6714955964.8,
+      "candidate_mean_ns": 4644823247.25,
+      "relative_change": -0.30828686418819395,
+      "relative_interval_99": [
+        -0.314663339009573,
+        -0.3018415040795883
+      ],
+      "verdict": "improved"
+    },
+    {
+      "case": "94_104001000B823500-RGB8",
+      "operation": "decode",
+      "baseline": [
+        1,
+        8
+      ],
+      "candidate": [
+        2,
+        4
+      ],
+      "boundary": "eight_request_application_cohort_including_process_io_and_verification",
+      "baseline_mean_ns": 2531661475.4,
+      "candidate_mean_ns": 2099808116.25,
+      "relative_change": -0.17058100514081076,
+      "relative_interval_99": [
+        -0.1869463448601626,
+        -0.15401752782138423
+      ],
+      "verdict": "improved"
+    },
+    {
+      "case": "94_104001000B823500-RGB8",
+      "operation": "decode",
+      "baseline": [
+        1,
+        8
+      ],
+      "candidate": [
+        8,
+        1
+      ],
+      "boundary": "eight_request_application_cohort_including_process_io_and_verification",
+      "baseline_mean_ns": 2531661475.4,
+      "candidate_mean_ns": 1898933895.45,
+      "relative_change": -0.24992582385053264,
+      "relative_interval_99": [
+        -0.261724768441704,
+        -0.2379840276837264
+      ],
+      "verdict": "improved"
+    }
+  ],
+  "limitations": [
+    "Development controller process-lifetime RSS high-water was689.58MiB, above128MiB reserve. Reconciled admission using the larger recorded high-water and observed total RSS remain under8GiB; raw records retained. Its source cannot be inferred from these observations.",
+    "No family-wide confidence or universal fastest-schedule claim.",
+    "Schedule qualification covers only five PAN16/RGB8 products, not RGB16/MS16.",
+    "Application cohorts include process startup, input IO/hash checks and full verification; not a persistent-service or warm-cache metric.",
+    "Ordinary decoder task CPU deltas are activity lower bounds, not exact Tier-1 participants or decoder stage fractions.",
+    "Allocation probe uses nested_pool; direct/global decode allocation is unobserved. Development descriptor correction is separately bound; raw records were not rewritten.",
+    "Serial bypass instrumented Tier-1 interval includes subband preparation and output appends.",
+    "All timing remains bound to022a0bb; merged6586 correctness/build confirmations are separate, not relabelled performance."
+  ],
+  "merged_codec_confirmation": {
+    "codec_revision": "6586e3d50f95429b242cb2e3535742b002784f2d",
+    "codec_tree": "2347921fb8631b3bd1fe7768c991bc39e326fd22",
+    "recipe_runner_revision": "010ef7e73cd34293339a632334da87c3b266d4a2",
+    "build_provenance_sha256": "40eb31374cc3e0cd684dbec79d531f1c9bc0ce864d3333693f58046380f9924c",
+    "manifest_sha256": "93df1e93378ced12b387fdf0fd5f5c426ddde5898898adf15365668cc4ed62b3",
+    "confirmation_sha256": "a07a3cf0117327e70681a566606a3a1cb3ef15501be5ec06e893982fcaad0623",
+    "result": "four full development products/eight streams exact; independent receipts verified; PAN16 bypass8 direct/nested exact; PAN16/RGB16 bounded support unchanged; correctness-only setup"
+  },
+  "ht_support": {
+    "windows": "top-left256x256 development PAN16 and RGB16 derived only in memory",
+    "d2_bypass": "success and exact native reconstruction",
+    "d2_ht": "Unsupported WaveletTransform",
+    "d1_bypass_requirements": "Unsupported ComponentLayout",
+    "common_profile": false,
+    "interpretation": "support evidence only; no unmatched-profile codec ranking or ratio"
+  }
+}

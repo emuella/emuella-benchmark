@@ -4,7 +4,8 @@
 experiment. Codec-owned `lossless_bypass_batch` performs public facade calls,
 including decode packing. Benchmark owns fresh-process execution, conservative
 resource admission, treatment identities and statistics. No protected image
-payload belongs in this source tree.
+payload belongs in this source tree. See the [bounded campaign results](real-scene-classic-results.md)
+for the selected configuration, full contrasts and resource qualification limits.
 
 Create the bound consumers from a clean codec checkout and a fresh approved
 scratch child, using the public orchestration phase:
@@ -115,3 +116,9 @@ fixed top-left 256-square window in memory. It records actual D2 bypass success,
 D2 HT rejection and D1 bypass requirement rejection. It emits facts and hashes,
 never pixels. These unmatched profiles establish no codec ranking, full-scene
 HT coverage or independent decoding result.
+
+Schedule execution checks the controller process-lifetime RSS high-water against
+the 128 MiB reserve before dispatch and after each cohort. A pre-dispatch failure
+rejects the cohort; a post-cohort controller or conservative aggregate-RSS failure
+retains observations with failed status. Process-lifetime high-water is not
+assumed to describe only the current Python image.
