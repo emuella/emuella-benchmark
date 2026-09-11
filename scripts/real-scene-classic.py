@@ -23,6 +23,7 @@ WORKING = 768 * 1024**2
 OUTPUT = 64 * 1024**2
 BUDGET = 8 * 1024**3
 CONTROLLER = 128 * 1024**2
+CONTRASTS = [('bypass_at1',(0,1),(1,1)), ('bypass_at8',(0,8),(1,8)), ('combined',(0,1),(1,8))]
 MANIFEST = '6c37b54bf75af0c17c1b67c5ad7bd2d56b5d34d45de9737ddb50d0fc1fe10e7b'
 
 
@@ -89,11 +90,40 @@ def execute(binary, req, directory, cpus, address_limit=BUDGET, extra_args=None)
             status = 'timeout'
     result = dict(status=status, process_wall_ns=time.monotonic_ns() - start)
     if status == 0:
-        result['observation'] = json.loads((directory / 'stdout.json').read_text())
-        user, system, rss = (directory / 'resources.txt').read_text().split()
-        result.update(process_cpu_seconds=float(user) + float(system), process_peak_rss_bytes=int(rss) * 1024)
+        try:
+            observation = json.loads((directory / 'stdout.json').read_text())
+            if not isinstance(observation, dict):
+                raise ValueError('worker response is not an object')
+            if extra_args is None and req.get('operation') in ('encode','decode'):
+                samples = observation.get('samples_ns')
+                if not isinstance(samples,list) or len(samples)!=1 or not isinstance(samples[0],int) or samples[0]<=0:
+                    raise ValueError('worker timing cardinality differs')
+                for field in ('raw_sha256','stream_sha256','style','workers','execution_context','max_working_bytes','max_output_bytes'):
+                    if observation.get(field) != req[field]:
+                        raise ValueError('worker applied identity differs: '+field)
+                if observation.get('native_exact') is not True:
+                    raise ValueError('worker did not prove exact reconstruction')
+            user, system, rss = (directory / 'resources.txt').read_text().split()
+            result.update(observation=observation,process_cpu_seconds=float(user)+float(system),process_peak_rss_bytes=int(rss)*1024)
+        except (ValueError,TypeError,KeyError) as error:
+            result.update(status='invalid_response',reason=str(error))
     write(directory / 'result.json', result)
     return result
+
+
+def verify_inputs(args, selected, manifest):
+    if digest(args.binary) != manifest['binary_sha256']:
+        raise ValueError('bound executable changed during experiment')
+    if digest(args.prepared / 'prepared.json') != MANIFEST:
+        raise ValueError('prepared manifest changed during experiment')
+    for asset in selected:
+        if digest(args.prepared / asset['path']) != asset['sha256']:
+            raise ValueError('raw source changed during experiment')
+        for style in (0,1):
+            record = json.loads((args.output/'preparation'/(asset['id']+'-'+str(style))/'result.json').read_text())
+            stream = args.output/'streams'/(asset['id']+'-style'+str(style)+'.j2k')
+            if record['status'] != 0 or digest(stream) != record['observation']['stream_sha256']:
+                raise ValueError('prepared stream identity changed')
 
 
 def estimator_build(repo, directory):
@@ -139,11 +169,9 @@ def analyse(output, estimator):
     comparisons = []
     for case in sorted({r['case'] for r in rows}):
         for operation in ('encode', 'decode'):
-            for contrast, left, right in [('bypass_at1',(0,1),(1,1)), ('bypass_at8',(0,8),(1,8)),
-                                           ('combined',(0,1),(1,8)), ('style0_parallel',(0,1),(0,8)),
-                                           ('bypass_parallel',(1,1),(1,8))]:
-                sides = [[r for r in rows if (r['case'],r['operation'],r['style'],r['workers']) ==
-                          (case,operation,*side)] for side in (left,right)]
+            for contrast, left, right in CONTRASTS:
+                sides = [[r for r in rows if (r['case'],r['operation'],r['contrast'],r['style'],r['workers']) ==
+                          (case,operation,contrast,*side)] for side in (left,right)]
                 record = dict(case=case,operation=operation,contrast=contrast,baseline=left,candidate=right)
                 if any(len(s) != 20 or any(r['result']['status'] != 0 for r in s) for s in sides):
                     record['verdict'] = 'invalid'
@@ -156,9 +184,28 @@ def analyse(output, estimator):
     write(output / 'comparisons.json', comparisons)
 
 
+def analyse_schedules(output, estimator):
+    rows = json.loads((output/'schedules.json').read_text())
+    comparisons = []
+    for case in sorted({r['case'] for r in rows}):
+        for operation in ('encode','decode'):
+            for candidate in ((2,4),(8,1)):
+                sides = [[r for r in rows if (r['case'],r['operation'],r['concurrent'],r['workers']) ==
+                          (case,operation,*schedule)] for schedule in ((1,8),candidate)]
+                record = dict(case=case,operation=operation,baseline=[1,8],candidate=candidate,
+                              boundary='eight_request_application_cohort_including_process_io_and_verification')
+                if any(len(side)!=20 or any(r['status']!='ok' for r in side) for side in sides):
+                    record['verdict'] = 'invalid_or_not_measured'
+                else:
+                    data = {name:[r['application_wall_ns'] for r in side] for name,side in zip(('baseline','candidate'),sides)}
+                    record.update(json.loads(subprocess.check_output([str(estimator)],input=json.dumps(data),text=True)))
+                comparisons.append(record)
+    write(output/'schedule-comparisons.json',comparisons)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('phase', choices=['estimator','prepare','measure','diagnose','schedule','analyse'])
+    parser.add_argument('phase', choices=['estimator','prepare','measure','diagnose','schedule','analyse','analyse-schedules'])
     parser.add_argument('--prepared', type=Path)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--binary', type=Path)
@@ -171,6 +218,9 @@ def main():
     args = parser.parse_args()
     if args.phase == 'estimator':
         estimator_build(Path(__file__).resolve().parents[1], args.output)
+        return
+    if args.phase == 'analyse-schedules':
+        analyse_schedules(args.output,args.estimator)
         return
     if args.phase == 'analyse':
         analyse(args.output, args.estimator)
@@ -207,6 +257,7 @@ def main():
     manifest = json.loads((args.output / 'manifest.json').read_text())
     if manifest['binary_sha256'] != digest(args.binary) or manifest['cpus'] != cpus or manifest['assets'] != selected:
         raise ValueError('bound build, CPUs or coverage changed')
+    verify_inputs(args,selected,manifest)
     folder = args.output / args.phase
     folder.mkdir()
     rows = []
@@ -214,14 +265,14 @@ def main():
         for round_id in range(20):
             for asset in selected:
                 for operation in ('encode','decode'):
-                    treatments = [(0,1),(1,1),(0,8),(1,8)]
-                    if round_id % 2:
-                        treatments.reverse()
-                    for style,workers in treatments:
-                        req = request(asset,args.prepared,args.output,style,workers,operation,round_id)
-                        result = execute(args.binary,req,folder/str(len(rows)),cpus)
-                        rows.append(dict(case=asset['id'],operation=operation,style=style,workers=workers,round=round_id,result=result))
+                    for contrast, left, right in CONTRASTS:
+                        treatments = [left,right] if round_id % 2 == 0 else [right,left]
+                        for style,workers in treatments:
+                            req = request(asset,args.prepared,args.output,style,workers,operation,round_id)
+                            result = execute(args.binary,req,folder/str(len(rows)),cpus)
+                            rows.append(dict(case=asset['id'],operation=operation,contrast=contrast,style=style,workers=workers,round=round_id,result=result))
             print(json.dumps({'round_complete':round_id,'batches':len(rows),'failures':sum(r['result']['status']!=0 for r in rows)}),flush=True)
+        verify_inputs(args,selected,manifest)
         write(args.output/'batches.json',rows)
     elif args.phase == 'diagnose':
         for asset in selected:
@@ -231,9 +282,12 @@ def main():
                     result = execute(args.binary,req,folder/(str(len(rows))+'-profile'),cpus)
                     alloc = execute(args.allocation,req,folder/(str(len(rows))+'-allocation'),cpus,
                         extra_args=[req['raw_path'],str(req['width']),str(req['height']),str(req['components']),str(req['bits']),str(workers),str(style),str(WORKING),str(OUTPUT)])
-                    nested_req = request(asset,args.prepared,args.output,style,workers,'decode',context='nested_pool')
+                    direct_req = request(asset,args.prepared,args.output,style,workers,'decode_diagnostic')
+                    direct = execute(args.binary,direct_req,folder/(str(len(rows))+'-direct'),cpus)
+                    nested_req = request(asset,args.prepared,args.output,style,workers,'decode_diagnostic',context='nested_pool')
                     nested = execute(args.binary,nested_req,folder/(str(len(rows))+'-nested'),cpus)
-                    rows.append(dict(case=asset['id'],style=style,workers=workers,profile=result,allocation=alloc,nested=nested))
+                    rows.append(dict(case=asset['id'],style=style,workers=workers,profile=result,allocation=alloc,direct=direct,nested=nested))
+        verify_inputs(args,selected,manifest)
         write(args.output/'diagnostics.json',rows)
     elif args.phase == 'schedule':
         # Eight identical requests per cohort; only the admission-checked window
@@ -281,6 +335,7 @@ def main():
                                 controller_peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024)
                         rows.append(row)
             print(json.dumps({'schedule_round_complete':round_id,'cohorts':len(rows)}),flush=True)
+        verify_inputs(args,selected,manifest)
         write(args.output/'schedules.json',rows)
 
 

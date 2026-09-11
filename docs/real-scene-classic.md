@@ -27,9 +27,9 @@ with the same products, and Tok RGB8 regression. Run `prepare` into a new child
 of the approved image store for each role, passing `--prepared`, `--output`,
 `--binary`, `--codec-source`, `--role` and exactly eight `--cpus`. Generated streams
 retain the complete licence notice, attribution, modification note and lineage.
-Run `measure` against the same directory and binary. It executes 20 fixed
-four-arm rounds, alternating forward/reverse order: style0/one worker,
-bypass/one, style0/eight, bypass/eight. Each process loads and checks input before
+Run `measure` against the same directory and binary. It executes 20 fixed AB/BA rounds for each of three adjacent paired contrasts:
+style0/bypass at one worker, style0/bypass at eight, and style0/one versus
+bypass/eight. Each process loads and checks input before
 one measured facade call, with zero warmups and a 120-second process timeout.
 All failed observations remain in their own directories and invalidate coverage.
 No retries, trimmed samples or multiplied historical speedups are admitted.
@@ -41,22 +41,26 @@ wrapper around the exact benchmark-owned `src/compare.rs`. It uses the unchanged
 side. `analyse --output ROLE_DIRECTORY --estimator BINARY` retains separately
 named style/thread treatment comparisons. These are operating-point experiments;
 they do not forge identical settings or relax ordinary `compare()` comparability.
-The four-arm alternating acquisition is recorded explicitly; only adjacent arms
-are immediately paired, and all contrasts use independent-mean inference.
+Every claimed contrast keeps its two arms adjacent and alternates order;
+all contrasts use independent-mean inference. Thread-only effects are descriptive.
 
 `diagnose` separately records encoder stage/work/participant counters, instrumented
 encoder allocation, nested decode and whole-process CPU/RSS. Serial bypass's
 Tier-1 interval includes subband preparation and output appends. Parallel bypass
 uses the existing separate preparation/assembly collector. These boundaries must
-remain visible when reading profiles. Missing decoder stage/worker telemetry is
-null; effective pool width is not an observed participation count. Diagnostic
+remain visible when reading profiles. Decoder diagnostics separately retain before/after Linux task CPU ticks for named
+Rayon workers around the ordinary facade call, before validation. Nonzero deltas
+are a lower bound on workers with CPU activity, not exact Tier-1 participation.
+Missing decoder stage timings remain null; pool width is not participation. Diagnostic
 clocks and allocation accounting never supply headline operation timing.
 
 `schedule` compares eight identical full-image requests per cohort using one
 eight-thread process, two four-thread processes or eight one-thread processes.
 Only development PAN16/RGB8 select a schedule; use `--schedule 1x8`, `2x4` or
 `8x1` for fixed Boca PAN16/RGB8 and Tok RGB8 validation. Other products have no
-schedule qualification. Twenty alternating cohorts retain application wall time,
+schedule qualification. `analyse-schedules` retains the same numeric estimator
+for three-arm schedule observations, with the application boundary named.
+Twenty alternating cohorts retain application wall time,
 including process lifecycle, input reads and full verification, separately from
 the inner warm-input facade latency. There is no claim of a persistent-service
 latency or warm decoded-content cache.

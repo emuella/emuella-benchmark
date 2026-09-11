@@ -23,11 +23,19 @@ class ClassicTests(unittest.TestCase):
             with self.assertRaises(FileExistsError):
                 module.execute(Path('/bin/sh'), {}, root/'batch', [min(os.sched_getaffinity(0))], extra_args=['-c','exit 0'])
 
+    def test_success_exit_with_invalid_output_is_retained_as_failure(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            result = module.execute(Path('/bin/sh'), {}, root/'batch', [min(os.sched_getaffinity(0))], extra_args=['-c','printf invalid'])
+            self.assertEqual(result['status'], 'invalid_response')
+            self.assertNotIn('observation', result)
+            self.assertEqual((root/'batch/stdout.json').read_text(), 'invalid')
+
     def test_incomplete_coverage_never_invokes_estimator(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
-            module.write(root/'batches.json', [dict(case='authored',operation='encode',style=0,workers=1,result=dict(status=0))])
+            module.write(root/'batches.json', [dict(case='authored',operation='encode',contrast='bypass_at1',style=0,workers=1,result=dict(status=0))])
             module.analyse(root, Path('/nonexistent-estimator'))
             rows = json.loads((root/'comparisons.json').read_text())
-            self.assertEqual(len(rows), 10)
+            self.assertEqual(len(rows), 6)
             self.assertTrue(all(r['verdict']=='invalid' for r in rows))
