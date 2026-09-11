@@ -15,6 +15,22 @@ spec.loader.exec_module(module)
 
 
 class ClassicTests(unittest.TestCase):
+    def test_controller_reserve_failure_prevents_dispatch(self):
+        with mock.patch.object(module.resource,'getrusage',return_value=SimpleNamespace(ru_maxrss=module.CONTROLLER//1024+1)), mock.patch.object(module,'execute') as execute:
+            row=module.schedule_cohort(Path('/unused'),{},Path('/unused'),0,list(range(8)),8)
+        self.assertEqual(row['status'],'rejected')
+        execute.assert_not_called()
+        self.assertNotIn('application_wall_ns',row)
+
+    def test_post_cohort_resource_failures_retain_all_observations(self):
+        for controller_kib,child_peak in ((module.CONTROLLER//1024+1,1024),(1,module.BUDGET//8)):
+            with self.subTest(controller_kib=controller_kib), mock.patch.object(module.resource,'getrusage',side_effect=[SimpleNamespace(ru_maxrss=1),SimpleNamespace(ru_maxrss=controller_kib)]), mock.patch.object(module,'execute',return_value=dict(status=0,process_peak_rss_bytes=child_peak)) as execute:
+                row=module.schedule_cohort(Path('/unused'),{},Path('/unused'),0,list(range(8)),8)
+            self.assertEqual(row['status'],'failed')
+            self.assertEqual(len(row['results']),8)
+            self.assertEqual(execute.call_count,8)
+            self.assertIn('application_wall_ns',row)
+
     def test_selected_reprofile_rejects_over_budget_without_dispatch(self):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp)

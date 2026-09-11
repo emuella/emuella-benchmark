@@ -279,6 +279,30 @@ def reprofile_schedule(args, selected, cpus, folder):
     return rows
 
 
+def schedule_cohort(binary, req, folder, index, cpus, concurrent):
+    """Keep the original application clock; enforce controller/total RSS gates."""
+    controller_before = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024
+    if controller_before > CONTROLLER:
+        return dict(status='rejected',reason='controller high-water exceeds reserved128MiB before dispatch',
+                    controller_peak_rss_bytes=controller_before)
+    start = time.monotonic_ns()
+    def one(child_index):
+        return execute(binary,req,folder/(str(index)+'-'+str(child_index)),cpus,address_limit=(BUDGET-CONTROLLER)//concurrent)
+    with concurrent_module(concurrent) as pool:
+        results = list(pool.map(one,range(8)))
+    elapsed = time.monotonic_ns()-start
+    controller = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024
+    child_peak = sum(sorted((r.get('process_peak_rss_bytes',0) for r in results),reverse=True)[:concurrent])
+    row = dict(status='ok' if all(r['status']==0 for r in results) else 'failed',
+               application_wall_ns=elapsed,results=results,sum_process_peak_rss_upper_bound=child_peak,
+               controller_peak_rss_bytes=controller)
+    if controller > CONTROLLER:
+        row.update(status='failed',reason='controller high-water exceeds reserved128MiB after cohort')
+    elif child_peak+controller > BUDGET:
+        row.update(status='failed',reason='conservative total process RSS exceeds8GiB after cohort')
+    return row
+
+
 def estimator_build(repo, directory):
     """Use the historical exact owner module and classification-block wrapper."""
     directory.mkdir()
@@ -502,15 +526,7 @@ def main():
                         if allowance * concurrent + CONTROLLER > BUDGET:
                             row.update(status='rejected',reason='conservative aggregate admission exceeds8GiB')
                         else:
-                            start = time.monotonic_ns()
-                            def one(index):
-                                return execute(args.binary,req,folder/(str(len(rows))+'-'+str(index)),cpus,address_limit=(BUDGET-CONTROLLER)//concurrent)
-                            with concurrent_module(concurrent) as pool:
-                                results = list(pool.map(one,range(8)))
-                            row.update(status='ok' if all(r['status']==0 for r in results) else 'failed',
-                                application_wall_ns=time.monotonic_ns()-start,results=results,
-                                sum_process_peak_rss_upper_bound=sum(sorted((r.get('process_peak_rss_bytes',0) for r in results),reverse=True)[:concurrent]),
-                                controller_peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024)
+                            row.update(schedule_cohort(args.binary,req,folder,len(rows),cpus,concurrent))
                         rows.append(row)
             print(json.dumps({'schedule_round_complete':round_id,'cohorts':len(rows)}),flush=True)
         verify_inputs(args,selected,manifest)
