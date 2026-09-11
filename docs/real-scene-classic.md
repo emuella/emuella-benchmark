@@ -48,7 +48,9 @@ Every claimed contrast keeps its two arms adjacent and alternates order;
 all contrasts use independent-mean inference. Thread-only effects are descriptive.
 
 `diagnose` separately records encoder stage/work/participant counters, instrumented
-encoder allocation, nested decode and whole-process CPU/RSS. Serial bypass's
+encoder allocation, nested decode and whole-process CPU/RSS. The allocation-only
+CLI uses a nested pool; its supplementary decode allocation must not be assigned
+to direct/global decode. Use the ordinary direct diagnostic for that process RSS. Serial bypass's
 Tier-1 interval includes subband preparation and output appends. Parallel bypass
 uses the existing separate preparation/assembly collector. These boundaries must
 remain visible when reading profiles. Decoder diagnostics separately retain before/after Linux task CPU ticks for named

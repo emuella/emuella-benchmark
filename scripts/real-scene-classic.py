@@ -327,7 +327,8 @@ def main():
                 for workers in (1,8):
                     req = request(asset,args.prepared,args.output,style,workers,'profile')
                     result = execute(args.binary,req,folder/(str(len(rows))+'-profile'),cpus)
-                    alloc = execute(args.allocation,req,folder/(str(len(rows))+'-allocation'),cpus,
+                    allocation_req = dict(req,operation='allocation',execution_context='nested_pool')
+                    alloc = execute(args.allocation,allocation_req,folder/(str(len(rows))+'-allocation'),cpus,
                         extra_args=[req['raw_path'],str(req['width']),str(req['height']),str(req['components']),str(req['bits']),str(workers),str(style),str(WORKING),str(OUTPUT)])
                     direct_req = request(asset,args.prepared,args.output,style,workers,'decode_diagnostic')
                     direct = execute(args.binary,direct_req,folder/(str(len(rows))+'-direct'),cpus)
