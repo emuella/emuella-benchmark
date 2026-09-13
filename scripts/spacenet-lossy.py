@@ -147,6 +147,10 @@ def run(args):
     if any(asset[k] != v for k, v in expected_asset.items()):
         raise ValueError('view asset differs from prepared contract')
     build = json.loads(args.build.read_text())
+    if subprocess.check_output(['git', '-C', str(args.polyorama), 'rev-parse', 'HEAD'], text=True).strip() != build['polyorama_revision']:
+        raise ValueError('quality-tool source revision differs from frozen build')
+    if subprocess.check_output(['git', '-C', str(args.polyorama), 'status', '--porcelain']):
+        raise ValueError('quality-tool source must be clean')
     for name, path in [('tool', args.tool), ('gdal', args.gdal_library)]:
         if digest(path) != build[name]['sha256']:
             raise ValueError('tool build identity mismatch')
@@ -198,7 +202,7 @@ def run(args):
     profile = identity['profile']
     for key, expected in [('width', asset['image']['width']), ('height', asset['image']['height']),
                           ('components', 3), ('bits_per_sample', 16), ('bits_per_pixel', 12),
-                          ('decomposition_levels', 6)]:
+                          ('decomposition_levels', 6), ('tile_edge', 512)]:
         if profile[key] != expected:
             raise ValueError('applied indexed profile mismatch: ' + key)
     report['storage'] = acceptance.storage(representation)
