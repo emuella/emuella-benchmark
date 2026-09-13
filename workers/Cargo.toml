@@ -10,6 +10,7 @@ publish = false
 default = ["emuella", "openjpeg"]
 emuella = ["dep:emuella-j2k", "dep:emuella-j2k-codestream", "dep:rayon"]
 openjpeg = []
+classic-compare = []
 simd = ["emuella", "emuella-j2k/simd", "emuella-j2k-codestream/simd"]
 
 [profile.perf]
@@ -45,3 +46,8 @@ required-features = ["openjpeg"]
 [[bin]]
 name = "openjph-worker"
 path = "src/bin/openjph.rs"
+
+[[bin]]
+name = "classic-compare-worker"
+path = "src/bin/classic_compare.rs"
+required-features = ["emuella", "openjpeg", "classic-compare"]

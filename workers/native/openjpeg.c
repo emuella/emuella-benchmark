@@ -77,9 +77,9 @@ static opj_stream_t *stream(memory *m, int reading) {
   return s;
 }
 void benchmark_openjpeg_free(void *p) { free(p); }
-int benchmark_openjpeg_encode(const int32_t *samples, uint32_t w, uint32_t h,
+int benchmark_openjpeg_encode_profile(const int32_t *samples, uint32_t w, uint32_t h,
                               uint32_t components, uint32_t bits, int levels,
-                              int lossless, double ratio, int threads,
+                              int lossless, double ratio, int threads, int style, int mct,
                               unsigned char **out, size_t *len) {
   int ok = 0;
   memory m = {0};
@@ -117,7 +117,13 @@ int benchmark_openjpeg_encode(const int32_t *samples, uint32_t w, uint32_t h,
   options.cp_disto_alloc = 1;
   options.tcp_rates[0] = lossless ? 0 : (float)ratio;
   options.irreversible = !lossless;
-  options.tcp_mct = 0;
+  if ((style != 0 && style != 1) || (mct != 0 && mct != 1) ||
+      (mct && components != 3))
+    goto done;
+  options.tcp_mct = (char)mct;
+  options.mode = style;
+  options.cblockw_init = 64;
+  options.cblockh_init = 64;
   options.prog_order = OPJ_LRCP;
   codec = opj_create_compress(OPJ_CODEC_J2K);
   if (!codec || !opj_setup_encoder(codec, &options, image) ||
@@ -140,6 +146,15 @@ done:
     opj_image_destroy(image);
   free(m.data);
   return ok;
+}
+/* Preserve the historical adapter's style-zero, no-MCT contract. */
+int benchmark_openjpeg_encode(const int32_t *samples, uint32_t w, uint32_t h,
+                              uint32_t components, uint32_t bits, int levels,
+                              int lossless, double ratio, int threads,
+                              unsigned char **out, size_t *len) {
+  return benchmark_openjpeg_encode_profile(samples, w, h, components, bits,
+                                           levels, lossless, ratio, threads,
+                                           0, 0, out, len);
 }
 int benchmark_openjpeg_decode(const unsigned char *input, size_t len,
                               uint32_t source_w, uint32_t source_h, uint32_t w,
