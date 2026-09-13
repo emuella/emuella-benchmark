@@ -66,6 +66,7 @@ python3 scripts/openjpeg-refresh.py measure \
 python3 scripts/openjpeg-refresh.py estimator --output /registered/scratch/estimator
 python3 scripts/openjpeg-refresh.py analyse --output /approved/rareplanes-store/refresh-main \
   --estimator /registered/scratch/estimator/target/release/classic-treatment-estimator
+python3 scripts/render-openjpeg-refresh.py /approved/rareplanes-store/refresh-main/report.json
 ```
 
 Build receipts bind clean committed source bytes/modes, codec revision/tree,

@@ -252,11 +252,15 @@ def analyse(folder, estimator):
                         samples={c:[r['observation']['samples_ns'][0] for r in arm] for c,arm in arms.items()}
                         estimate=json.loads(subprocess.check_output([str(estimator)],input=json.dumps(dict(baseline=samples['openjpeg'],candidate=samples['emuella'])),text=True))
                         entry.update(estimate)
-                        entry['codecs']={c:dict(mean_ms=statistics.mean(samples[c])/1e6,maximum_process_rss_bytes=max(r['process_peak_rss_bytes'] for r in arm),mean_process_cpu_seconds=statistics.mean(r['process_cpu_seconds'] for r in arm),stream_bytes=sorted({r['observation']['stream_bytes'] for r in arm})) for c,arm in arms.items()}
+                        entry['codecs']={c:dict(mean_ms=statistics.mean(samples[c])/1e6,operation_samples_ns=samples[c],exact_batches=len(arm),maximum_process_rss_bytes=max(r['process_peak_rss_bytes'] for r in arm),mean_process_cpu_seconds=statistics.mean(r['process_cpu_seconds'] for r in arm),stream_bytes=sorted({r['observation']['stream_bytes'] for r in arm})) for c,arm in arms.items()}
                     comparisons.append(entry)
     report=dict(schema_version=1,complete=measurement['complete'],manifest_sha256=sha(folder/'manifest.json'),measurement_sha256=sha(folder/'measurement.json'),
                 codec_revision=manifest['build']['codec']['source_revision'],codec_tree=manifest['build']['codec']['source_tree'],
                 benchmark_revision=manifest['owner']['source_revision'],openjpeg=manifest['build']['openjpeg'],
+                analysis_revision=git(ROOT,'rev-parse','HEAD'),analysis_script_sha256=sha(__file__),
+                build_summary=dict(rustc=manifest['build']['rustc'],requested_profile='perf',binary_sha256=manifest['build']['binary_sha256'],runtime_libraries={Path(p).name:d for p,d in manifest['build']['libraries'].items()}),
+                inputs=[dict(case_id=a['id'],image=a['image'],raw_sha256=a['sha256'],raw_bytes=(a['image']['width']*a['image']['height']*a['image']['components']*a['image']['precision']//8)) for a in manifest['assets']],
+                estimator_provenance=json.loads((estimator.parents[2]/'provenance.json').read_text()),
                 machine=manifest['machine'],comparisons=comparisons,
                 interpretation='candidate is Emuella; relative change is Emuella/OpenJPEG minus one; per-comparison uncertainty only; failures retained',
                 estimator_sha256=sha(estimator),completed_utc=measurement['finished_utc'])
