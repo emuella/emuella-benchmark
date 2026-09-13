@@ -1,0 +1,426 @@
+{
+  "schema_version": 1,
+  "pack_id": "common/spacenet-psrgb16",
+  "pack_version": "1",
+  "measured_benchmark_revision": "c17058ea8d901e500b157381e3f9818014629dcd",
+  "codec_revision": "08fd8dfc80c3475209680032ce2c097409716246",
+  "codec_tree": "fd6be6f310996223fa69551829b30f3865748f95",
+  "worker_sha256": "e9d37f3b30186de508149dddb1445859b4efa57fa2d8ea8f60d6e2198a9a6546",
+  "build_provenance_sha256": "f7f1fc0b2c05b39abf7c1b743bd7bb495766337bda38597bca87b335fa9a0fbc",
+  "independent_decoder": {
+    "name": "OpenJPEG CLI",
+    "version": "2.5.4",
+    "executable_sha256": "28fcc40fb38004aeeff3ec002c3eab0fb5a1f3fa1aa98bd823cbac5be42ba7eb",
+    "libopenjp2_sha256": "37c756f2fef023a265ba8419105ee2ab6ad08fc5e29e855235fbd583b39122a4"
+  },
+  "machine": {
+    "cpu": "AMD Ryzen 9 9950X3D",
+    "worker_cpus": [
+      0
+    ],
+    "governor": "powersave",
+    "kernel": "7.1.3-arch1-1"
+  },
+  "protocol": {
+    "rounds": 5,
+    "warmups": 0,
+    "samples": 1,
+    "workers": 1,
+    "styles": [
+      0,
+      1
+    ],
+    "operations": [
+      "encode",
+      "decode"
+    ],
+    "timeout_seconds": 120,
+    "execution_context": "direct_global",
+    "boundary": "facade_operation",
+    "max_working_bytes": 805306368,
+    "max_output_bytes": 67108864,
+    "process_address_limit_bytes": 4294967296,
+    "observed_process_rss_ceiling_bytes": 4294967296,
+    "resource_claim": "execution cap only; no owner admission qualification"
+  },
+  "profile": {
+    "coding": "classic lossless",
+    "decomposition_levels": 2,
+    "mct": "reversible colour transform",
+    "layout": "interleaved U16LE RGB",
+    "geometry": [
+      1300,
+      1300
+    ]
+  },
+  "coverage": {
+    "chips": 16,
+    "development": 12,
+    "reserved": 4,
+    "untimed_native_exact_streams": 32,
+    "untimed_independent_exact_streams": 32,
+    "timed_development_batches": 240,
+    "successful_batches": 240,
+    "reserved_timing_batches": 0,
+    "reserved_lossy_points": 0
+  },
+  "retained_evidence": {
+    "manifest.json": {
+      "sha256": "7d05e316461f52be20d386968ad0f11e938208b12af1603f413a1cc07a850097",
+      "bytes": 87096
+    },
+    "preparation.json": {
+      "sha256": "6c34ca96f3a8aaa9952764ae34e47ebb694a31bc5331fcba7392006c5a26d7a7",
+      "bytes": 64999
+    },
+    "batches.json": {
+      "sha256": "635278a93572c6c6f031d0a31f32dda5473b6585b62f9061c6f26dd6d43e99d9",
+      "bytes": 472838
+    },
+    "summary.json": {
+      "sha256": "a82cf03fb8acef2e28e105556c516aca45de97641574536f73f19ba61104e77f",
+      "bytes": 47898
+    }
+  },
+  "prepared_manifest_sha256": "209eb97c250f108c4ff0aff9a226db6dc6e4ecd68b10bc074e844b60b89e406e",
+  "source_views_sha256": "784f4143846d6c77d6b6d498f9221f4b5b570b5c8e673818aefc1bfa08d562fe",
+  "aggregates": [
+    {
+      "aoi": "AOI_2_Vegas",
+      "style": 0,
+      "operation": "encode",
+      "chips": 4,
+      "fresh_process_batches": 20,
+      "mean_ns": 1110705499.05,
+      "sample_ns_range": [
+        635305434,
+        1391376405
+      ],
+      "component_msamples_per_second_range": [
+        3.6438737797914578,
+        7.980413402225047
+      ],
+      "complete_stream_bytes_range": [
+        3020684,
+        3576221
+      ],
+      "raw_storage_ratio_range": [
+        2.8353952398355693,
+        3.356855599592675
+      ],
+      "process_peak_rss_bytes_range": [
+        54435840,
+        57057280
+      ]
+    },
+    {
+      "aoi": "AOI_2_Vegas",
+      "style": 0,
+      "operation": "decode",
+      "chips": 4,
+      "fresh_process_batches": 20,
+      "mean_ns": 698666687.35,
+      "sample_ns_range": [
+        367489919,
+        830021751
+      ],
+      "component_msamples_per_second_range": [
+        6.108273661373002,
+        13.796296817600593
+      ],
+      "complete_stream_bytes_range": [
+        3020684,
+        3576221
+      ],
+      "raw_storage_ratio_range": [
+        2.8353952398355693,
+        3.356855599592675
+      ],
+      "process_peak_rss_bytes_range": [
+        42156032,
+        42909696
+      ]
+    },
+    {
+      "aoi": "AOI_2_Vegas",
+      "style": 1,
+      "operation": "encode",
+      "chips": 4,
+      "fresh_process_batches": 20,
+      "mean_ns": 768020310.65,
+      "sample_ns_range": [
+        433935627,
+        903239940
+      ],
+      "component_msamples_per_second_range": [
+        5.613126452313435,
+        11.683760642220788
+      ],
+      "complete_stream_bytes_range": [
+        3094243,
+        3614142
+      ],
+      "raw_storage_ratio_range": [
+        2.8056451572738426,
+        3.2770535475074194
+      ],
+      "process_peak_rss_bytes_range": [
+        54833152,
+        57724928
+      ]
+    },
+    {
+      "aoi": "AOI_2_Vegas",
+      "style": 1,
+      "operation": "decode",
+      "chips": 4,
+      "fresh_process_batches": 20,
+      "mean_ns": 370324985.15,
+      "sample_ns_range": [
+        196540051,
+        470251535
+      ],
+      "component_msamples_per_second_range": [
+        10.78146400946889,
+        25.796268873462335
+      ],
+      "complete_stream_bytes_range": [
+        3094243,
+        3614142
+      ],
+      "raw_storage_ratio_range": [
+        2.8056451572738426,
+        3.2770535475074194
+      ],
+      "process_peak_rss_bytes_range": [
+        42553344,
+        43257856
+      ]
+    },
+    {
+      "aoi": "AOI_3_Paris",
+      "style": 0,
+      "operation": "encode",
+      "chips": 4,
+      "fresh_process_batches": 20,
+      "mean_ns": 838846378.95,
+      "sample_ns_range": [
+        197447179,
+        1248972050
+      ],
+      "component_msamples_per_second_range": [
+        4.059338237392902,
+        25.677753542379048
+      ],
+      "complete_stream_bytes_range": [
+        791135,
+        2853974
+      ],
+      "raw_storage_ratio_range": [
+        3.5529405663821745,
+        12.817028699273829
+      ],
+      "process_peak_rss_bytes_range": [
+        49782784,
+        55848960
+      ]
+    },
+    {
+      "aoi": "AOI_3_Paris",
+      "style": 0,
+      "operation": "decode",
+      "chips": 4,
+      "fresh_process_batches": 20,
+      "mean_ns": 538610629,
+      "sample_ns_range": [
+        116680490,
+        721060779
+      ],
+      "component_msamples_per_second_range": [
+        7.031307412159218,
+        43.45199441654727
+      ],
+      "complete_stream_bytes_range": [
+        791135,
+        2853974
+      ],
+      "raw_storage_ratio_range": [
+        3.5529405663821745,
+        12.817028699273829
+      ],
+      "process_peak_rss_bytes_range": [
+        39985152,
+        42160128
+      ]
+    },
+    {
+      "aoi": "AOI_3_Paris",
+      "style": 1,
+      "operation": "encode",
+      "chips": 4,
+      "fresh_process_batches": 20,
+      "mean_ns": 643311068.65,
+      "sample_ns_range": [
+        146114568,
+        873801849
+      ],
+      "component_msamples_per_second_range": [
+        5.802230798438148,
+        34.698798822031215
+      ],
+      "complete_stream_bytes_range": [
+        922405,
+        2931088
+      ],
+      "raw_storage_ratio_range": [
+        3.4594662459810146,
+        10.993001989364759
+      ],
+      "process_peak_rss_bytes_range": [
+        50049024,
+        54734848
+      ]
+    },
+    {
+      "aoi": "AOI_3_Paris",
+      "style": 1,
+      "operation": "decode",
+      "chips": 4,
+      "fresh_process_batches": 20,
+      "mean_ns": 376038811.6,
+      "sample_ns_range": [
+        102186681,
+        562782950
+      ],
+      "component_msamples_per_second_range": [
+        9.008801705879682,
+        49.61507654798965
+      ],
+      "complete_stream_bytes_range": [
+        922405,
+        2931088
+      ],
+      "raw_storage_ratio_range": [
+        3.4594662459810146,
+        10.993001989364759
+      ],
+      "process_peak_rss_bytes_range": [
+        40247296,
+        42598400
+      ]
+    },
+    {
+      "aoi": "AOI_4_Shanghai",
+      "style": 0,
+      "operation": "encode",
+      "chips": 4,
+      "fresh_process_batches": 20,
+      "mean_ns": 750270346.2,
+      "sample_ns_range": [
+        107476008,
+        1118370262
+      ],
+      "component_msamples_per_second_range": [
+        4.533382344173955,
+        47.17331890481083
+      ],
+      "complete_stream_bytes_range": [
+        366271,
+        2724532
+      ],
+      "raw_storage_ratio_range": [
+        3.721740100685182,
+        27.6844194599081
+      ],
+      "process_peak_rss_bytes_range": [
+        48750592,
+        54116352
+      ]
+    },
+    {
+      "aoi": "AOI_4_Shanghai",
+      "style": 0,
+      "operation": "decode",
+      "chips": 4,
+      "fresh_process_batches": 20,
+      "mean_ns": 455126783.85,
+      "sample_ns_range": [
+        66388171,
+        685451871
+      ],
+      "component_msamples_per_second_range": [
+        7.396580583554932,
+        76.36902664482201
+      ],
+      "complete_stream_bytes_range": [
+        366271,
+        2724532
+      ],
+      "raw_storage_ratio_range": [
+        3.721740100685182,
+        27.6844194599081
+      ],
+      "process_peak_rss_bytes_range": [
+        39550976,
+        42070016
+      ]
+    },
+    {
+      "aoi": "AOI_4_Shanghai",
+      "style": 1,
+      "operation": "encode",
+      "chips": 4,
+      "fresh_process_batches": 20,
+      "mean_ns": 539689341.75,
+      "sample_ns_range": [
+        86904809,
+        795075955
+      ],
+      "component_msamples_per_second_range": [
+        6.376749250327913,
+        58.33969441207793
+      ],
+      "complete_stream_bytes_range": [
+        520464,
+        2776005
+      ],
+      "raw_storage_ratio_range": [
+        3.652731173034631,
+        19.48261551231209
+      ],
+      "process_peak_rss_bytes_range": [
+        49283072,
+        54329344
+      ]
+    },
+    {
+      "aoi": "AOI_4_Shanghai",
+      "style": 1,
+      "operation": "decode",
+      "chips": 4,
+      "fresh_process_batches": 20,
+      "mean_ns": 305303833.75,
+      "sample_ns_range": [
+        50681759,
+        425360091
+      ],
+      "component_msamples_per_second_range": [
+        11.919312853447739,
+        100.03599125278978
+      ],
+      "complete_stream_bytes_range": [
+        520464,
+        2776005
+      ],
+      "raw_storage_ratio_range": [
+        3.652731173034631,
+        19.48261551231209
+      ],
+      "process_peak_rss_bytes_range": [
+        39755776,
+        42401792
+      ]
+    }
+  ],
+  "interpretation": "Descriptive means and observed ranges across four chips and five fresh processes each; no uncertainty interval, comparative ranking, speedup or reserve performance claim. Whole-process RSS is separate from facade operation time. Execution limits do not qualify codec-owner memory admission."
+}
