@@ -43,6 +43,7 @@ pixel payloads or secrets.
 [Comparison methodology](docs/comparisons.md) explains uncertainty and verdicts.
 [Multi-run series](docs/series.md) describes factual rate/distortion and progress extracts.
 [Corpus integration](docs/corpus.md) describes runtime catalogue identities.
+[Refreshed Emuella–OpenJPEG results](docs/openjpeg-refresh-results.md) compare matched classic profiles and CPU budgets.
 [RarePlanes calibration](docs/rareplanes-calibration.md) describes the bounded
 full-location real-scene probe.
 
