@@ -49,3 +49,7 @@ source-valid display gates; a quality failure does not alter corpus membership.
 Offline authored tests exercise separate-pack admission, per-band masks,
 whole-group reserve protection, immutable output, raw mutation, incorrect worker
 profiles, forbidden preparation clocks and incomplete/failed timing coverage.
+
+The separate [single lossy baseline](spacenet-lossy.md) and its
+[results](spacenet-lossy-results.md) use the same corpus with their own unchanged
+indexed profile and quality boundaries. They do not enter these lossless timings.
