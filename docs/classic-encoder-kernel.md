@@ -1,5 +1,8 @@
 # Classic encoder kernel measurement
 
+The [completed qualification](classic-encoder-kernel-results.md) records the
+selected backend, every-case results, resource evidence and limitations.
+
 This bounded treatment compares the unchanged Emuella encoder with one selected
 packed-state encoder. The [matched refresh protocol](openjpeg-refresh.md) supplies
 the facade worker, process limits, CPU affinity, profile inspection and complete
