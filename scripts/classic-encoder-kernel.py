@@ -151,8 +151,12 @@ def analyse(args):
         else:
             arms={a:[r['result'] for r in subset if r['arm']==a] for a in ARMS}
             samples={a:[r['observation']['samples_ns'][0] for r in arm] for a,arm in arms.items()}
-            entry.update(json.loads(subprocess.check_output([str(args.estimator)],text=True,
-                input=json.dumps(dict(baseline=samples['reference'],candidate=samples['packed'])))))
+            if manifest['phase']=='screen':
+                entry.update(verdict='development_screen_only',
+                             descriptive_ratio=statistics.mean(samples['packed'])/statistics.mean(samples['reference']))
+            else:
+                entry.update(json.loads(subprocess.check_output([str(args.estimator)],text=True,
+                    input=json.dumps(dict(baseline=samples['reference'],candidate=samples['packed'])))))
             entry['arms']={a:dict(mean_ms=statistics.mean(samples[a])/1e6,samples_ns=samples[a],
                 stream_bytes=sorted({r['observation']['stream_bytes'] for r in arm}),
                 maximum_process_rss_bytes=max(r['process_peak_rss_bytes'] for r in arm),
