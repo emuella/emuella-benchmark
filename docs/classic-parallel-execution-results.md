@@ -80,7 +80,7 @@ improved threshold. Every encode upper bound was at most +2.22%.
 
 ## Targeted decoder regression
 
-The twelve fixed Mansfield decoder contrasts use common immutable Emuella
+The twelve fixed Mansfield decoder contrasts use common immutable OpenJPEG-origin
 streams. Nine were equivalent and three inconclusive. The eight-worker MS16
 style 0 interval reaches +6.23%, so these observations do not establish
 practical non-regression for every targeted decoder contrast. The decoder was
