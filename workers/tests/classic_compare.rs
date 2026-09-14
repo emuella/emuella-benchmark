@@ -3,7 +3,8 @@
     feature = "openjpeg",
     feature = "classic-compare",
     not(feature = "classic-encode-sampling"),
-    not(feature = "classic-execution-diagnostics")
+    not(feature = "classic-execution-diagnostics"),
+    not(feature = "classic-allocation-diagnostics")
 ))]
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -97,7 +98,7 @@ fn rejects_unknown_fields_hashes_and_unsupported_settings() {
     for (key, value) in [
         ("unknown", json!(0)),
         ("style", json!(2)),
-        ("workers", json!(2)),
+        ("workers", json!(3)),
         ("layout", json!("planar")),
         ("raw_sha256", json!("0".repeat(64))),
         ("components", json!(8)),

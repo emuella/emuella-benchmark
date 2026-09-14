@@ -107,3 +107,24 @@ concurrency observations, selected re-profile, matched external anchor and the
 remaining bottleneck. Freeze source identities and retain all failures. Raw
 observations and protected derivatives stay with their approved RarePlanes or
 SpaceNet source store and notices; only authorised factual summaries enter Git.
+
+## Resource-only and scaling processes
+
+The 36-call diagnostic cap applies to block/stage attribution. The separately
+required allocation matrix covers all nine products, both styles and 1/2/4/8
+workers: 72 allocation-only calls per freshly measured arm. Build using
+`openjpeg-refresh.py build --allocation-diagnostics`; this feature enables only
+the forwarding allocation meter, with no block observer, histograms or inner
+clocks. It emits no headline samples. Worker responses retain queried working
+bounds and actual output capacity alongside complete stream identity. Reuse
+historical resource receipts only when source/build/input/command/environment
+identities prove applicability; otherwise run the matched matrix for both arms.
+
+Labelled ordinary 2/4-worker scaling uses three fresh processes per case/style
+and worker count, no warmups, separate from the twenty-pair 1/8-worker confirmation.
+Those descriptive observations cannot establish a promotion verdict. The worker
+supports 1/2/4/8 requests without changing any historical driver's fixed1/8
+headline cohort. Driver `--study parallel` selects the finite 72-call screen and
+fixed three-chip SpaceNet coverage; the historical kernel study remains its
+default. Build receipts record the finite geometry selector separately from the
+unchanged packed encoder selector and compiler/affinity settings.

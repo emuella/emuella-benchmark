@@ -1,5 +1,8 @@
 //! One fresh-process sample with matching owned interleaved buffer boundaries.
-#[cfg(feature = "classic-execution-diagnostics")]
+#[cfg(any(
+    feature = "classic-execution-diagnostics",
+    feature = "classic-allocation-diagnostics"
+))]
 #[path = "../classic_execution_diagnostics.rs"]
 mod execution_diagnostics;
 
@@ -8,7 +11,10 @@ use emuella_benchmark_workers as _;
 use emuella_j2k as codec;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
-#[cfg(not(feature = "classic-execution-diagnostics"))]
+#[cfg(not(any(
+    feature = "classic-execution-diagnostics",
+    feature = "classic-allocation-diagnostics"
+)))]
 use std::time::Instant;
 use std::{ffi::c_void, io::Write, path::PathBuf, ptr};
 
@@ -216,7 +222,7 @@ impl Request {
             || ![8, 16].contains(&r.bits)
             || (r.components == 8 && r.bits != 16)
             || r.style > 1
-            || ![1, 8].contains(&r.workers)
+            || ![1, 2, 4, 8].contains(&r.workers)
             || r.limits.max_working_bytes == 0
             || r.limits.max_output_bytes == 0
         {
@@ -512,7 +518,7 @@ fn run(r: Request) -> Result<Value> {
         .map_err(err)?;
     // Same conservative geometry admission for both codecs. This is not an OpenJPEG RSS cap.
     let info = r.info()?;
-    if r.style == 0 {
+    let requirements = if r.style == 0 {
         codec::lossless_encode_requirements(&info, &r.options(), &r.limits)
     } else {
         codec::lossless_bypass_encode_requirements(&info, &r.options(), &r.limits)
@@ -544,7 +550,10 @@ fn run(r: Request) -> Result<Value> {
         sampling.command(b"enable\n")?;
         sampling
     };
-    #[cfg(not(feature = "classic-execution-diagnostics"))]
+    #[cfg(not(any(
+        feature = "classic-execution-diagnostics",
+        feature = "classic-allocation-diagnostics"
+    )))]
     let start = Instant::now();
     #[cfg(feature = "classic-execution-diagnostics")]
     let (output, diagnostic, ns) = {
@@ -553,20 +562,40 @@ fn run(r: Request) -> Result<Value> {
         }
         execution_diagnostics::encode(|| encode(&r, &raw))
     };
-    #[cfg(not(feature = "classic-execution-diagnostics"))]
+    #[cfg(not(any(
+        feature = "classic-execution-diagnostics",
+        feature = "classic-allocation-diagnostics"
+    )))]
     let output = if r.operation == "decode" {
         decode(&r, input.as_ref().unwrap())?
     } else {
         encode(&r, &raw)?
     };
-    #[cfg(feature = "classic-execution-diagnostics")]
+    #[cfg(feature = "classic-allocation-diagnostics")]
+    let (output, diagnostic, ns) = {
+        if r.operation != "encode" || r.codec != "emuella" {
+            return Err("allocation diagnostics require Emuella encode".into());
+        }
+        execution_diagnostics::allocation(|| encode(&r, &raw))
+    };
+    #[cfg(any(
+        feature = "classic-execution-diagnostics",
+        feature = "classic-allocation-diagnostics"
+    ))]
     let output = output?;
-    #[cfg(not(feature = "classic-execution-diagnostics"))]
+    #[cfg(not(any(
+        feature = "classic-execution-diagnostics",
+        feature = "classic-allocation-diagnostics"
+    )))]
     let ns = u64::try_from(start.elapsed().as_nanos()).map_err(err)?;
-    #[cfg(not(feature = "classic-execution-diagnostics"))]
+    #[cfg(not(any(
+        feature = "classic-execution-diagnostics",
+        feature = "classic-allocation-diagnostics"
+    )))]
     let diagnostic = Value::Null;
     #[cfg(feature = "classic-encode-sampling")]
     sampling.command(b"disable\n")?;
+    let output_capacity = output.capacity();
     let (stream, pixels) = if r.operation == "decode" {
         (input.unwrap(), output)
     } else {
@@ -596,9 +625,13 @@ fn run(r: Request) -> Result<Value> {
         json!({"codec":r.codec,"operation":r.operation,"case_id":r.case_id,"round":r.round,"style":r.style,"workers":r.workers,
         "boundary":"owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes", "profile":profile,
         "exact":true,"diagnostic_sampling":cfg!(feature = "classic-encode-sampling"),
-        "execution_diagnostic":diagnostic,"diagnostic_facade_ns":if cfg!(feature = "classic-execution-diagnostics") {Some(ns)} else {None},
-        "samples_ns":if r.operation=="prepare" || cfg!(feature = "classic-encode-sampling") || cfg!(feature = "classic-execution-diagnostics") {vec![]} else {vec![ns]},"raw_sha256":r.raw_sha256,
-        "stream_sha256":hash(&stream),"binary_sha256":binary_sha256,"stream_bytes":stream.len()}),
+        "execution_diagnostic":if cfg!(feature = "classic-execution-diagnostics") {Some(&diagnostic)} else {None},
+        "allocation_diagnostic":if cfg!(feature = "classic-allocation-diagnostics") {Some(&diagnostic)} else {None},
+        "diagnostic_facade_ns":if cfg!(any(feature = "classic-execution-diagnostics", feature = "classic-allocation-diagnostics")) {Some(ns)} else {None},
+        "samples_ns":if r.operation=="prepare" || cfg!(feature = "classic-encode-sampling") || cfg!(any(feature = "classic-execution-diagnostics", feature = "classic-allocation-diagnostics")) {vec![]} else {vec![ns]},"raw_sha256":r.raw_sha256,
+        "stream_sha256":hash(&stream),"binary_sha256":binary_sha256,"stream_bytes":stream.len(),
+        "working_bytes":requirements.working_bytes,"output_capacity_limit":requirements.output_capacity_limit,
+        "output_capacity":if r.operation == "decode" {None} else {Some(output_capacity)}}),
     )
 }
 fn main() {

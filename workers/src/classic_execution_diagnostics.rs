@@ -1,9 +1,11 @@
 //! Separate-build allocation and execution observations of the facade call.
 #[path = "allocation_meter.rs"]
 mod allocation_meter;
+#[cfg(feature = "classic-execution-diagnostics")]
 use emuella_j2k_codestream::observe_lossless_encode;
 use serde_json::{Value, json};
 
+#[cfg(feature = "classic-execution-diagnostics")]
 pub fn encode<T>(call: impl FnOnce() -> T) -> (T, Value, u64) {
     let baseline = allocation_meter::reset();
     let start = std::time::Instant::now();
@@ -45,5 +47,22 @@ pub fn encode<T>(call: impl FnOnce() -> T) -> (T, Value, u64) {
             "overhead_note":"Clock reads, post-join endpoint aggregation, profiled bookkeeping and atomic allocation metering perturb execution. No headline samples. Retained capacities exclude transient growth, which the separate allocation peak conservatively includes."
         }),
         facade_ns,
+    )
+}
+
+#[cfg(feature = "classic-allocation-diagnostics")]
+pub fn allocation<T>(call: impl FnOnce() -> T) -> (T, Value, u64) {
+    let baseline = allocation_meter::reset();
+    let start = std::time::Instant::now();
+    let result = call();
+    let ns = start.elapsed().as_nanos() as u64;
+    let peak = allocation_meter::peak_since(baseline);
+    (
+        result,
+        json!({"allocation_peak_additional_requested_bytes":peak,
+        "includes_output_and_reallocation_overlap":true,
+        "boundary":"facade_encode_allocation_only_no_block_observer",
+        "overhead_note":"Atomic allocation metering perturbs this separate resource process; samples_ns remains empty. Peak is requested allocation, not RSS."}),
+        ns,
     )
 }

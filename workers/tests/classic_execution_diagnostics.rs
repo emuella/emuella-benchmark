@@ -1,4 +1,7 @@
-#![cfg(feature = "classic-execution-diagnostics")]
+#![cfg(any(
+    feature = "classic-execution-diagnostics",
+    feature = "classic-allocation-diagnostics"
+))]
 use emuella_j2k as codec;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -66,23 +69,30 @@ fn diagnostic_process_preserves_bytes_and_cannot_emit_headline_samples() {
             assert_eq!(response["exact"], true);
             assert_eq!(response["samples_ns"], json!([]));
             assert_eq!(response["stream_sha256"], request["stream_sha256"]);
-            let d = &response["execution_diagnostic"];
-            assert_eq!(d["effective_workers"], workers);
-            assert!(d["peak_active_blocks"].as_u64().unwrap() <= workers);
-            assert!(d["blocks"]["count"].as_u64().unwrap() > 0);
-            assert!(
-                d["active_block_ns"].as_u64().unwrap()
-                    >= d["any_block_active_ns"].as_u64().unwrap()
-            );
-            assert!(
-                response["diagnostic_facade_ns"].as_u64().unwrap()
-                    >= d["stages_ns"]["total"].as_u64().unwrap()
-            );
+            assert!(response["output_capacity"].as_u64().unwrap() <= limits.max_output_bytes);
+            let d = if cfg!(feature = "classic-execution-diagnostics") {
+                let d = &response["execution_diagnostic"];
+                assert_eq!(d["effective_workers"], workers);
+                assert!(d["peak_active_blocks"].as_u64().unwrap() <= workers);
+                assert!(d["blocks"]["count"].as_u64().unwrap() > 0);
+                assert!(
+                    d["active_block_ns"].as_u64().unwrap()
+                        >= d["any_block_active_ns"].as_u64().unwrap()
+                );
+                assert!(
+                    response["diagnostic_facade_ns"].as_u64().unwrap()
+                        >= d["stages_ns"]["total"].as_u64().unwrap()
+                );
+                d
+            } else {
+                assert!(response["execution_diagnostic"].is_null());
+                &response["allocation_diagnostic"]
+            };
             assert!(
                 d["allocation_peak_additional_requested_bytes"]
                     .as_u64()
                     .unwrap()
-                    < limits.max_working_bytes
+                    < response["working_bytes"].as_u64().unwrap()
             );
         }
     }
