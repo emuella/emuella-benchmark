@@ -1,5 +1,10 @@
 # Classic packed encoder qualification
 
+The later [finite scheduling study](classic-parallel-execution-results.md)
+rejected its selected 4W policy at fixed confirmation and retained the original
+W-batch scheduler. Its complete internal, resource and encode-only external
+evidence is separate from the historical results and scopes below.
+
 The frozen packed encoder passed the predeclared promotion gates on 14 September
 2026. Against a freshly built unchanged Emuella reference, all eighteen
 one-worker RarePlanes encode comparisons improved under the conservative 99%

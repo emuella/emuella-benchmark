@@ -35,5 +35,16 @@ class RefreshCoverageTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'missing'):
             refresh.validate_rows(rows,['first'],20)
 
+    def test_encode_only_anchor_has_every_fixed_style_worker_and_codec(self):
+        fields=('case_id','style','workers','operation','origin','round','codec')
+        rows=[dict(zip(fields,key)) for key in refresh.expected_keys(['first'],20,True)]
+        self.assertEqual(len(rows),160)
+        self.assertEqual({r['operation'] for r in rows},{'encode'})
+        refresh.validate_rows(rows,['first'],20,True)
+        with self.assertRaisesRegex(ValueError,'missing'):
+            refresh.validate_rows(rows,['first'],20)
+        with self.assertRaisesRegex(ValueError,'missing'):
+            refresh.validate_rows(rows[:-1],['first'],20,True)
+
 if __name__=='__main__':
     unittest.main()

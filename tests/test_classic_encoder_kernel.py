@@ -56,6 +56,23 @@ class KernelCoverageTests(unittest.TestCase):
             changed=[dict(a) for a in assets];changed[0].update(delta)
             with self.assertRaises(ValueError):kernel.contrasts(changed,'spacenet')
 
+    def test_parallel_screen_and_fixed_spacenet_worker_coverage(self):
+        manifest, _ = self.fixture('screen')
+        cases=kernel.contrasts(manifest['assets'],'screen','parallel')
+        self.assertEqual(len(cases),12)
+        self.assertEqual({c[2] for c in cases},{1,8})
+        manifest.update(study='parallel',contrasts=[dict(case_id=a['id'],style=s,workers=w,operation=op,origin=o) for a,s,w,op,o in cases])
+        rows=[dict(c,round=r,arm=arm,result=dict(status=0)) for c in manifest['contrasts'] for r in range(3) for arm in kernel.ARMS]
+        self.assertEqual(len(rows),72)
+        kernel.validate_rows(manifest,rows)
+        with self.assertRaises(ValueError):kernel.validate_rows(manifest,[r for r in rows if r['workers']==8])
+        chips=['AOI_2_Vegas_img1454','AOI_3_Paris_img235','AOI_4_Shanghai_img1196']+[f'AOI_2_Vegas_img{i}' for i in range(9)]
+        assets=[dict(id='RGB-PanSharpen_'+chip,role='development') for chip in chips]
+        contrasts=kernel.contrasts(assets,'spacenet','parallel')
+        self.assertEqual(len(contrasts),12)
+        self.assertEqual({c[0]['id'] for c in contrasts},{'RGB-PanSharpen_'+c for c in chips[:3]})
+        with self.assertRaises(ValueError):kernel.contrasts(assets[1:]+[assets[-1]],'spacenet','parallel')
+
     def test_three_round_screen_never_calls_twenty_round_estimator(self):
         manifest,rows=self.fixture('screen')
         for row in rows:

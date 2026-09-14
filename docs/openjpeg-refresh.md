@@ -1,5 +1,10 @@
 # Matched Emuella–OpenJPEG refresh
 
+The later [finite scheduling study](classic-parallel-execution-results.md)
+rejected its selected 4W policy at fixed confirmation and retained the original
+W-batch scheduler. Its complete internal, resource and encode-only external
+evidence is separate from the historical results and scopes below.
+
 `scripts/openjpeg-refresh.py` compares current public Emuella APIs and the
 installed OpenJPEG library through a dedicated `classic-compare-worker`.
 Historical worker defaults and their measurements are unchanged. The optional

@@ -34,7 +34,9 @@ def git(source, *args):
     return subprocess.check_output(['git', '-C', str(source), *args], text=True).strip()
 
 
-def build(source, output, sampling=False):
+def build(source, output, sampling=False, execution_diagnostics=False, allocation_diagnostics=False):
+    if sum((sampling, execution_diagnostics, allocation_diagnostics)) > 1:
+        raise ValueError("diagnostic build modes are exclusive")
     benchmark = classic.clean_source(ROOT)
     codec = classic.clean_source(source)
     output.mkdir(parents=True, exist_ok=False)
@@ -46,7 +48,7 @@ def build(source, output, sampling=False):
     if archive.wait():
         raise ValueError('source archive failed')
     command = ['cargo', 'build', '--profile', 'perf', '--manifest-path', str(snapshot / 'workers/Cargo.toml'),
-               '--bin', 'classic-compare-worker', '--features', 'classic-encode-sampling' if sampling else 'classic-compare', '--target-dir', str(output / 'target'), '--message-format=json', '-vv']
+               '--bin', 'classic-compare-worker', '--features', 'classic-encode-sampling' if sampling else ('classic-execution-diagnostics,emuella-j2k-codestream/classic-execution-diagnostics' if execution_diagnostics else ('classic-allocation-diagnostics' if allocation_diagnostics else 'classic-compare')), '--target-dir', str(output / 'target'), '--message-format=json', '-vv']
     for package in ('emuella-j2k', 'emuella-j2k-codestream'):
         command += ['--config', 'patch."https://github.com/emuella/emuella-j2k".' + package + '.path=' + json.dumps(str(source / 'crates' / package))]
     env = dict(os.environ)
@@ -66,8 +68,8 @@ def build(source, output, sampling=False):
     if classic.clean_source(ROOT) != benchmark or classic.clean_source(source) != codec or configs != build_support.cargo_config_files(snapshot, env):
         raise ValueError('source/configuration changed during build')
     libraries = {str(p): sha(p) for p in build_support.libraries(binary)}
-    write(output / 'build.json', dict(benchmark=benchmark, codec=codec, sampling=sampling,
-          encoder_backend=env.get('EMUELLA_TIER1_ENCODER', 'default'), binary=str(binary), binary_sha256=sha(binary),
+    write(output / 'build.json', dict(benchmark=benchmark, codec=codec, sampling=sampling, execution_diagnostics=execution_diagnostics, allocation_diagnostics=allocation_diagnostics,
+          encoder_backend=env.get('EMUELLA_TIER1_ENCODER', 'default'), scheduling_window=env.get('EMUELLA_CLASSIC_WINDOW', 'default'), binary=str(binary), binary_sha256=sha(binary),
           libraries=libraries, rustc=subprocess.check_output(['rustc', '-vV'], text=True),
           openjpeg=subprocess.check_output(['pkg-config', '--modversion', 'libopenjp2'], text=True).strip(),
           command=command, environment=build_support.build_environment(env), cargo_configs=configs,
@@ -93,7 +95,7 @@ def cpu_identity(cpus):
                 topology={str(c):{k:Path(f'/sys/devices/system/cpu/cpu{c}/topology/{k}').read_text().strip() for k in ('physical_package_id','core_id','thread_siblings_list')} for c in cpus})
 
 
-def run_process(binary, request, directory, cpus):
+def run_process(binary, request, directory, cpus, execution_diagnostics=False, allocation_diagnostics=False):
     directory.mkdir()
     write(directory / 'request.json', request)
     command = ['taskset','-c',','.join(map(str,cpus)), 'prlimit','--as='+str(classic.BUDGET),'--',
@@ -120,6 +122,14 @@ def run_process(binary, request, directory, cpus):
             if request['operation'] == 'prepare':
                 if samples != [] or value['stream_sha256'] != sha(request['stream_path']):
                     raise ValueError('prepare response differs')
+            elif execution_diagnostics:
+                if samples != [] or not isinstance(value.get('execution_diagnostic'), dict) or value.get('stream_sha256') != request['stream_sha256']:
+                    raise ValueError('execution diagnostic/stream identity differs')
+            elif allocation_diagnostics:
+                if samples != [] or not isinstance(value.get('allocation_diagnostic'), dict) or value.get('execution_diagnostic') is not None or value.get('stream_sha256') != request['stream_sha256']:
+                    raise ValueError('allocation diagnostic/stream identity differs')
+            elif value.get('execution_diagnostic') is not None or value.get('allocation_diagnostic') is not None:
+                raise ValueError('diagnostic response cannot supply headline timings')
             elif (not isinstance(samples,list) or len(samples)!=1 or type(samples[0]) is not int or samples[0]<=0 or value.get('stream_sha256') != request['stream_sha256']):
                 raise ValueError('timing/stream identity differs')
             user, system, rss = (directory/'resources.txt').read_text().split()
@@ -143,14 +153,18 @@ def make_request(asset, prepared, folder, origin, codec, style, workers, operati
     return request
 
 
-def expected_keys(case_ids, rounds):
+def operations(encode_only=False):
+    return (('encode','own'),) if encode_only else (('encode','own'),('decode','openjpeg'),('decode','emuella'))
+
+
+def expected_keys(case_ids, rounds, encode_only=False):
     return {(case,s,w,op,origin,r,codec) for case in case_ids for s in STYLES for w in THREADS
-            for op,origin in (('encode','own'),('decode','openjpeg'),('decode','emuella'))
+            for op,origin in operations(encode_only)
             for r in range(rounds) for codec in CODECS}
 
 
-def validate_rows(rows, case_ids, rounds):
-    expected = expected_keys(case_ids, rounds)
+def validate_rows(rows, case_ids, rounds, encode_only=False):
+    expected = expected_keys(case_ids, rounds, encode_only)
     seen = set()
     for row in rows:
         key = tuple(row[k] for k in ('case_id','style','workers','operation','origin','round','codec'))
@@ -164,7 +178,7 @@ def validate_rows(rows, case_ids, rounds):
 def measure(args):
     owner = classic.clean_source(ROOT)
     build_record = bind(args.build)
-    if build_record.get('sampling'):
+    if build_record.get('sampling') or build_record.get('execution_diagnostics') or build_record.get('allocation_diagnostics'):
         raise ValueError('sampling builds cannot supply headline measurements')
     # Source identity is fixed by committed bytes, including hidden index changes.
     if build_record['benchmark']['source_files_sha256'] != owner['source_files_sha256']:
@@ -180,13 +194,20 @@ def measure(args):
     if len(cpus)!=8 or len(set(cpus))!=8 or not set(cpus)<=os.sched_getaffinity(0):
         raise ValueError('requires eight distinct available CPU IDs')
     args.output.mkdir(exist_ok=False)
-    (args.output/'streams').mkdir()
+    if args.streams is not None and (not args.encode_only or args.streams.parent.resolve() != store):
+        raise ValueError('stream reuse is only for encode-only runs inside the approved store')
+    stream_owner = args.streams if args.streams is not None else args.output
+    if args.streams is None:
+        (args.output/'streams').mkdir()
+    reused_streams = {str(stream_owner/'streams'/f"{a['id']}-{codec}-s{style}.j2k"):sha(stream_owner/'streams'/f"{a['id']}-{codec}-s{style}.j2k")
+                      for a in selected for style in STYLES for codec in CODECS} if args.streams is not None else {}
+    reused_records = {str(args.streams/f):sha(args.streams/f) for f in ('manifest.json','measurement.json','preparations.json')} if args.streams is not None else {}
     notice = store/'source/LICENSE.txt'
     if sha(notice) != 'f627ad059128fa5246a21e25759c1d33e35c4bb6287d636c4b970f7df57e7eba':
         raise ValueError('reviewed licence notice differs')
     (args.output/'LICENSE.txt').write_bytes(notice.read_bytes())
     (args.output/'NOTICE.txt').write_text('RarePlanes Dataset, June 2020. J. Shermeyer, T. Hossler, A. Van Etten, D. Hogan, R. Lewis and D. Kim; In-Q-Tel - CosmiQ Works and AI.Reverie. CC BY-SA 4.0. New lossless JPEG 2000 encodings of the identified prepared samples; no imagery redistribution. See manifest.json for source lineage.\n')
-    manifest = dict(schema_version=1,probe=args.probe,rounds=rounds,case_ids=[a['id'] for a in selected],assets=selected,
+    manifest = dict(schema_version=1,probe=args.probe,encode_only=args.encode_only,reused_streams=reused_streams,reused_records=reused_records,rounds=rounds,case_ids=[a['id'] for a in selected],assets=selected,
                     prepared_sha256=sha(args.prepared/'prepared.json'),build_sha256=sha(args.build),build=build_record,
                     owner=owner,machine=cpu_identity(cpus),boundary=BOUNDARY,styles=list(STYLES),workers=list(THREADS),
                     timeout_seconds=120,address_space_bytes=classic.BUDGET,warmup=0,samples_per_batch=1,
@@ -198,9 +219,13 @@ def measure(args):
     for asset in selected:
         for style in STYLES:
             for codec in CODECS:
-                request = make_request(asset,args.prepared,args.output,codec,codec,style,1,'prepare',0)
                 name=f"prepare-{asset['id']}-{codec}-s{style}"
-                result=run_process(binary,request,args.output/name,cpus[:1])
+                if args.streams is None:
+                    request = make_request(asset,args.prepared,args.output,codec,codec,style,1,'prepare',0)
+                    result=run_process(binary,request,args.output/name,cpus[:1])
+                else:
+                    path = stream_owner/'streams'/f"{asset['id']}-{codec}-s{style}.j2k"
+                    result = dict(status=0,reused=True,stream_sha256=sha(path),boundary='existing immutable stream binding; no new preparation call')
                 preparations.append(dict(case_id=asset['id'],style=style,codec=codec,result=result,path=name))
                 print(name,result['status'],flush=True)
     write(args.output/'preparations.json',preparations)
@@ -209,20 +234,23 @@ def measure(args):
         for asset in selected:
             for style in STYLES:
                 for workers in THREADS:
-                    for operation,origin in (('encode','own'),('decode','openjpeg'),('decode','emuella')):
+                    for operation,origin in operations(args.encode_only):
                         for codec in CODECS if round_id%2==0 else tuple(reversed(CODECS)):
                             stream_origin=codec if origin=='own' else origin
                             name=f"r{round_id:02}-{asset['id']}-s{style}-w{workers}-{operation}-{origin}-{codec}"
-                            stream=args.output/'streams'/f"{asset['id']}-{stream_origin}-s{style}.j2k"
+                            stream=stream_owner/'streams'/f"{asset['id']}-{stream_origin}-s{style}.j2k"
                             prep=next(p for p in preparations if p['case_id']==asset['id'] and p['style']==style and p['codec']==stream_origin)
                             if prep['result']['status']!=0:
                                 result=dict(status='preparation_failed')
                             else:
-                                request=make_request(asset,args.prepared,args.output,stream_origin,codec,style,workers,operation,round_id)
+                                request=make_request(asset,args.prepared,stream_owner,stream_origin,codec,style,workers,operation,round_id)
                                 result=run_process(binary,request,args.output/name,cpus[:workers])
                             rows.append(dict(case_id=asset['id'],style=style,workers=workers,operation=operation,origin=origin,round=round_id,codec=codec,result=result,path=name))
+                            write(args.output/(name+'-receipt.json'),rows[-1])
         print(f'round {round_id+1}/{rounds}: {len(rows)} observations; {sum(r["result"]["status"]!=0 for r in rows)} failures',flush=True)
-    validate_rows(rows,manifest['case_ids'],rounds)
+    validate_rows(rows,manifest['case_ids'],rounds,args.encode_only)
+    if any(sha(path)!=digest for path,digest in {**reused_streams,**reused_records}.items()):
+        raise ValueError('reused stream evidence changed')
     if classic.clean_source(ROOT)!=owner or bind(args.build)!=build_record or sha(args.prepared/'prepared.json')!=manifest['prepared_sha256']:
         raise ValueError('source/build/manifest changed during measurement')
     for asset in selected:
@@ -240,12 +268,12 @@ def analyse(folder, estimator):
     if manifest['probe'] or manifest['rounds']!=ROUNDS or sha(folder/'manifest.json')!=measurement['manifest_sha256']:
         raise ValueError('headline analysis requires complete bound twenty-round protocol')
     rows=measurement['rows']
-    validate_rows(rows,manifest['case_ids'],ROUNDS)
+    validate_rows(rows,manifest['case_ids'],ROUNDS,manifest.get('encode_only',False))
     comparisons=[]
     for case in manifest['case_ids']:
         for style in STYLES:
             for workers in THREADS:
-                for operation,origin in (('encode','own'),('decode','openjpeg'),('decode','emuella')):
+                for operation,origin in operations(manifest.get('encode_only',False)):
                     subset=[r for r in rows if (r['case_id'],r['style'],r['workers'],r['operation'],r['origin'])==(case,style,workers,operation,origin)]
                     entry=dict(case_id=case,style=style,workers=workers,operation=operation,origin=origin)
                     if any(r['result']['status']!=0 for r in subset):
@@ -257,7 +285,7 @@ def analyse(folder, estimator):
                         entry.update(estimate)
                         entry['codecs']={c:dict(mean_ms=statistics.mean(samples[c])/1e6,operation_samples_ns=samples[c],exact_batches=len(arm),maximum_process_rss_bytes=max(r['process_peak_rss_bytes'] for r in arm),mean_process_cpu_seconds=statistics.mean(r['process_cpu_seconds'] for r in arm),stream_bytes=sorted({r['observation']['stream_bytes'] for r in arm})) for c,arm in arms.items()}
                     comparisons.append(entry)
-    report=dict(schema_version=1,complete=measurement['complete'],manifest_sha256=sha(folder/'manifest.json'),measurement_sha256=sha(folder/'measurement.json'),
+    report=dict(schema_version=1,encode_only=manifest.get('encode_only',False),complete=measurement['complete'],manifest_sha256=sha(folder/'manifest.json'),measurement_sha256=sha(folder/'measurement.json'),
                 codec_revision=manifest['build']['codec']['source_revision'],codec_tree=manifest['build']['codec']['source_tree'],
                 benchmark_revision=manifest['owner']['source_revision'],openjpeg=manifest['build']['openjpeg'],
                 analysis_revision=git(ROOT,'rev-parse','HEAD'),analysis_script_sha256=sha(__file__),
@@ -286,15 +314,15 @@ def analyse(folder, estimator):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     sub=parser.add_subparsers(dest='command',required=True)
-    p=sub.add_parser('build'); p.add_argument('--codec-source',type=Path,required=True); p.add_argument('--output',type=Path,required=True); p.add_argument('--sampling',action='store_true')
-    p=sub.add_parser('measure'); p.add_argument('--build',type=Path,required=True); p.add_argument('--prepared',type=Path,required=True); p.add_argument('--output',type=Path,required=True); p.add_argument('--cpus',required=True); p.add_argument('--probe',action='store_true')
+    p=sub.add_parser('build'); p.add_argument('--codec-source',type=Path,required=True); p.add_argument('--output',type=Path,required=True); p.add_argument('--sampling',action='store_true'); p.add_argument('--execution-diagnostics',action='store_true'); p.add_argument('--allocation-diagnostics',action='store_true')
+    p=sub.add_parser('measure'); p.add_argument('--build',type=Path,required=True); p.add_argument('--prepared',type=Path,required=True); p.add_argument('--output',type=Path,required=True); p.add_argument('--cpus',required=True); p.add_argument('--probe',action='store_true'); p.add_argument('--encode-only',action='store_true'); p.add_argument('--streams',type=Path)
     p=sub.add_parser('analyse'); p.add_argument('--output',type=Path,required=True); p.add_argument('--estimator',type=Path,required=True)
     p=sub.add_parser('estimator'); p.add_argument('--output',type=Path,required=True)
     args=parser.parse_args()
-    for key in ('output','build','prepared','codec_source','estimator'):
+    for key in ('output','build','prepared','codec_source','estimator','streams'):
         if getattr(args,key,None) is not None:
             setattr(args,key,getattr(args,key).resolve())
-    if args.command=='build': build(args.codec_source,args.output,args.sampling)
+    if args.command=='build': build(args.codec_source,args.output,args.sampling,args.execution_diagnostics,args.allocation_diagnostics)
     elif args.command=='measure': return measure(args)
     elif args.command=='analyse': analyse(args.output,args.estimator)
     elif args.command=='estimator': classic.estimator_build(ROOT,args.output)

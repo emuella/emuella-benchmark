@@ -1,5 +1,10 @@
 # Conservative timing comparisons
 
+The later [finite scheduling study](classic-parallel-execution-results.md)
+rejected its selected 4W policy at fixed confirmation and retained the original
+W-batch scheduler. Its complete internal, resource and encode-only external
+evidence is separate from the historical results and scopes below.
+
 Compare completed runs only. Schema, protocol, case coverage/order, input and
 reference digests/provenance, semantic settings, output geometry, thread budgets,
 machine/environment and harness binary identity must match. Worker implementation,
