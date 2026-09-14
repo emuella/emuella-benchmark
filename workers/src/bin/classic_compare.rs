@@ -79,7 +79,9 @@ impl Sampling {
         self.acknowledgement
             .read_line(&mut acknowledgement)
             .map_err(err)?;
-        if acknowledgement.trim() != "ack" {
+        // perf's FIFO acknowledgement may include a trailing NUL after its
+        // newline; read_line leaves that byte for the following acknowledgement.
+        if acknowledgement.trim_matches(|c: char| c.is_ascii_whitespace() || c == '\0') != "ack" {
             return Err("perf did not acknowledge sampling control".into());
         }
         Ok(())
