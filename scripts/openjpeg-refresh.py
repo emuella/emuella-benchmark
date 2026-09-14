@@ -66,7 +66,8 @@ def build(source, output, sampling=False):
     if classic.clean_source(ROOT) != benchmark or classic.clean_source(source) != codec or configs != build_support.cargo_config_files(snapshot, env):
         raise ValueError('source/configuration changed during build')
     libraries = {str(p): sha(p) for p in build_support.libraries(binary)}
-    write(output / 'build.json', dict(benchmark=benchmark, codec=codec, sampling=sampling, binary=str(binary), binary_sha256=sha(binary),
+    write(output / 'build.json', dict(benchmark=benchmark, codec=codec, sampling=sampling,
+          encoder_backend=env.get('EMUELLA_TIER1_ENCODER', 'default'), binary=str(binary), binary_sha256=sha(binary),
           libraries=libraries, rustc=subprocess.check_output(['rustc', '-vV'], text=True),
           openjpeg=subprocess.check_output(['pkg-config', '--modversion', 'libopenjp2'], text=True).strip(),
           command=command, environment=build_support.build_environment(env), cargo_configs=configs,

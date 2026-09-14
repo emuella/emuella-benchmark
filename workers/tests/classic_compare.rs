@@ -1,4 +1,9 @@
-#![cfg(all(feature = "emuella", feature = "openjpeg", feature = "classic-compare"))]
+#![cfg(all(
+    feature = "emuella",
+    feature = "openjpeg",
+    feature = "classic-compare",
+    not(feature = "classic-encode-sampling")
+))]
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::process::Command;

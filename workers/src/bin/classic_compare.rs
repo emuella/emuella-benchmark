@@ -87,6 +87,40 @@ impl Sampling {
         Ok(())
     }
 }
+
+#[cfg(all(test, feature = "classic-encode-sampling"))]
+mod sampling_tests {
+    use super::Sampling;
+    use std::io::{Read, Seek, Write};
+
+    fn control(ack: &[u8]) -> Sampling {
+        let mut acknowledgement = tempfile::tempfile().unwrap();
+        acknowledgement.write_all(ack).unwrap();
+        acknowledgement.rewind().unwrap();
+        Sampling {
+            control: tempfile::tempfile().unwrap(),
+            acknowledgement: std::io::BufReader::new(acknowledgement),
+        }
+    }
+
+    #[test]
+    fn perf_acknowledgement_accepts_consecutive_nul_terminated_lines() {
+        let mut sampling = control(b"ack\n\0ack\n\0");
+        sampling.command(b"enable\n").unwrap();
+        sampling.command(b"disable\n").unwrap();
+        sampling.control.rewind().unwrap();
+        let mut commands = String::new();
+        sampling.control.read_to_string(&mut commands).unwrap();
+        assert_eq!(commands, "enable\ndisable\n");
+    }
+
+    #[test]
+    fn missing_or_invalid_acknowledgement_fails_closed() {
+        for ack in [b"".as_slice(), b"error\n", b"ack extra\n"] {
+            assert!(control(ack).command(b"enable\n").is_err());
+        }
+    }
+}
 struct Request {
     codec: String,
     operation: String,
