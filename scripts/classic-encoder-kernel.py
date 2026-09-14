@@ -164,7 +164,7 @@ def analyse(args):
         comparisons.append(entry)
     write(args.output/'report.json',dict(phase=manifest['phase'],complete=measurement['complete'],
         manifest_sha256=sha(args.output/'manifest.json'),measurement_sha256=sha(args.output/'measurement.json'),
-        estimator_sha256=sha(args.estimator),comparisons=comparisons,
+        estimator_sha256=None if manifest['phase']=='screen' else sha(args.estimator),comparisons=comparisons,
         interpretation='Packed/reference minus one; conservative 99% per-case intervals, 5% practical gate. Three-round screens cannot promote. RSS/CPU are whole-process metrics. No outlier removal.'))
     print(json.dumps([{k:v for k,v in c.items() if k!='arms'} for c in comparisons],indent=2))
 
