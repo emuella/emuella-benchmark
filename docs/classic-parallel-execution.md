@@ -128,3 +128,15 @@ headline cohort. Driver `--study parallel` selects the finite 72-call screen and
 fixed three-chip SpaceNet coverage; the historical kernel study remains its
 default. Build receipts record the finite geometry selector separately from the
 unchanged packed encoder selector and compiler/affinity settings.
+
+The matched external anchor uses `openjpeg-refresh.py measure --encode-only`
+with the selected build, the fixed prepared store, eight supplied CPUs and
+`--streams` pointing at the previously verified immutable stream owner. It runs
+36 encode contrasts × 20 pairs, retaining every per-process receipt; it performs
+no fresh preparation or external decode study. The driver binds existing stream
+hashes and their original manifest/measurement/preparation records, checks them
+again at completion and marks those preparations as reused. Each new timed
+encode still verifies its own complete stream hash and every native sample.
+The driver preserves historical full-refresh behaviour when `--encode-only`
+is absent. `analyse` passes the same twenty-round estimator the fixed encode-only
+coverage, preserving its 99% interval and 5% gate.

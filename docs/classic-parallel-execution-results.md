@@ -70,8 +70,44 @@ its corrected explicit D2/raw/lossless fixture passed. A codec compilation expos
 private observer helper visibility and was repaired. These setup failures are
 retained separately and consumed no protected diagnostic calls.
 
-Next is the predeclared two-variant finite screen, contingent on authored
-correctness/resource probes. No candidate has yet been selected or qualified.
+## Finite screen and frozen selection
+
+Both predeclared variants completed all 72 fresh-process calls with exact
+streams: three alternating baseline/candidate pairs for every development
+product/style at one and eight workers. Both passed authored correctness and
+resource probes and the fixed screening eligibility rules. The geometric mean
+of six eight-worker candidate/baseline ratios was 0.903174 for 2W and 0.882386
+for 4W. The latter is 2.30% lower, beyond the 1% tie band, selecting **4W**.
+
+| Product | Style | 2W one-worker ratio | 2W eight-worker ratio | 4W one-worker ratio | 4W eight-worker ratio |
+|---|---|---:|---:|---:|---:|
+| PAN16 | 0 | 1.0066 | 0.9093 | 1.0040 | 0.8620 |
+| PAN16 | bypass | 0.9988 | 0.9467 | 0.9940 | 0.8642 |
+| MS16 | 0 | 0.9996 | 0.8076 | 0.9977 | 0.8990 |
+| MS16 | bypass | 1.0007 | 0.9112 | 0.9719 | 0.8573 |
+| RGB8 | 0 | 0.9926 | 0.9040 | 1.0038 | 0.9186 |
+| RGB8 | bypass | 0.9946 | 0.9478 | 1.0025 | 0.8951 |
+
+The 2W screen had lower ratios for eight-worker MS16/style zero and RGB8/style
+zero. Selection follows the frozen aggregate rule, not every-case superiority.
+These are separate three-pair screens, without confidence or a direct paired
+2W-versus-4W claim. No development mean regression exceeded 5%; both styles
+improved a high-bit-depth eight-worker mean by at least 5%.
+
+The measured variant source is codec
+`56c6c863716a476ea18c05da5e86f0ff6174f662`, with explicit geometry selectors 2
+and 4; both use benchmark `c2c955c99d8fdddadff57e1f5b2cc865e8f4063e` and leave
+the packed encoder selector unset. Screen report SHA-256 identities are
+`e81495a70dc068904e472128c5f78fe4769b8717107610ccc7b3f61e7ec9f45d` (2W) and
+`50314aba28ec75e3c045fa927ad39df32de499a9027a6f1fb2ed0be163a0cb9d` (4W).
+
+Before confirmation, codec `8aca0cde9031c9e81f5cec33b3f09a8d2a330128` freezes
+4W as a constant and removes the experimental geometry selector. The same
+geometry-only policy funds each extra result slot with 4 MiB after choosing the
+unchanged W; insufficient residual memory shrinks N or retains W batches.
+The one-worker branch remains serial. Canonical/CI coverage now includes the
+new deterministic scheduler and diagnostic tests. No confirmation-driven policy
+retuning is permitted. Full confirmation and remaining qualification are pending.
 
 RarePlanes Dataset, June 2020: J. Shermeyer et al.; In-Q-Tel – CosmiQ Works and
 AI.Reverie, CC BY-SA 4.0. Original notices and source lineage remain with the
