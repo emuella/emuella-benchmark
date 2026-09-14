@@ -140,3 +140,11 @@ encode still verifies its own complete stream hash and every native sample.
 The driver preserves historical full-refresh behaviour when `--encode-only`
 is absent. `analyse` passes the same twenty-round estimator the fixed encode-only
 coverage, preserving its 99% interval and 5% gate.
+
+A complete fixed confirmation that fails a promotion gate rejects the policy
+under this finite protocol; remove the failed production experiment and retain
+its complete evidence. An inconclusive interval is neither equivalence nor a
+proved regression, but it can leave the policy unqualified against the stated
+gate. Missing or invalid mandatory observations are blockers, not rejection
+evidence. Do not retune, relax a bound, replace samples or relabel uncertainty
+after seeing confirmation.
