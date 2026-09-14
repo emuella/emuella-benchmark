@@ -1,5 +1,9 @@
 # Refreshed Emuella–OpenJPEG results
 
+For the subsequent packed encoder qualification, see the
+[separate results](classic-encoder-kernel-results.md). The measurements below
+retain their original source and build identities.
+
 The matched comparison completed on 13 September 2026. OpenJPEG was faster in
 all 36 encoding comparisons under the conservative 99% interval / 5% practical
 gate. Decode was closer: 28 slower Emuella comparisons, 42 inconclusive and two

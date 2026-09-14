@@ -49,6 +49,78 @@ fn hash(bytes: &[u8]) -> String {
 fn err(e: impl std::fmt::Debug) -> String {
     format!("{e:?}")
 }
+
+// Compile this control into a separate diagnostic executable only. The ordinary
+// facade worker performs no environment lookup, control IO or sampling branch.
+#[cfg(feature = "classic-encode-sampling")]
+struct Sampling {
+    control: std::fs::File,
+    acknowledgement: std::io::BufReader<std::fs::File>,
+}
+#[cfg(feature = "classic-encode-sampling")]
+impl Sampling {
+    fn open() -> Result<Self> {
+        let path = |key| std::env::var_os(key).ok_or_else(|| format!("missing {key}"));
+        Ok(Self {
+            control: std::fs::OpenOptions::new()
+                .write(true)
+                .open(path("EMUELLA_PERF_CONTROL")?)
+                .map_err(err)?,
+            acknowledgement: std::io::BufReader::new(
+                std::fs::File::open(path("EMUELLA_PERF_ACK")?).map_err(err)?,
+            ),
+        })
+    }
+    fn command(&mut self, command: &[u8]) -> Result<()> {
+        use std::io::BufRead;
+        self.control.write_all(command).map_err(err)?;
+        self.control.flush().map_err(err)?;
+        let mut acknowledgement = String::new();
+        self.acknowledgement
+            .read_line(&mut acknowledgement)
+            .map_err(err)?;
+        // perf's FIFO acknowledgement may include a trailing NUL after its
+        // newline; read_line leaves that byte for the following acknowledgement.
+        if acknowledgement.trim_matches(|c: char| c.is_ascii_whitespace() || c == '\0') != "ack" {
+            return Err("perf did not acknowledge sampling control".into());
+        }
+        Ok(())
+    }
+}
+
+#[cfg(all(test, feature = "classic-encode-sampling"))]
+mod sampling_tests {
+    use super::Sampling;
+    use std::io::{Read, Seek, Write};
+
+    fn control(ack: &[u8]) -> Sampling {
+        let mut acknowledgement = tempfile::tempfile().unwrap();
+        acknowledgement.write_all(ack).unwrap();
+        acknowledgement.rewind().unwrap();
+        Sampling {
+            control: tempfile::tempfile().unwrap(),
+            acknowledgement: std::io::BufReader::new(acknowledgement),
+        }
+    }
+
+    #[test]
+    fn perf_acknowledgement_accepts_consecutive_nul_terminated_lines() {
+        let mut sampling = control(b"ack\n\0ack\n\0");
+        sampling.command(b"enable\n").unwrap();
+        sampling.command(b"disable\n").unwrap();
+        sampling.control.rewind().unwrap();
+        let mut commands = String::new();
+        sampling.control.read_to_string(&mut commands).unwrap();
+        assert_eq!(commands, "enable\ndisable\n");
+    }
+
+    #[test]
+    fn missing_or_invalid_acknowledgement_fails_closed() {
+        for ack in [b"".as_slice(), b"error\n", b"ack extra\n"] {
+            assert!(control(ack).command(b"enable\n").is_err());
+        }
+    }
+}
 struct Request {
     codec: String,
     operation: String,
@@ -457,6 +529,15 @@ fn run(r: Request) -> Result<Value> {
     if let Some(bytes) = &input {
         inspect(&r, bytes)?;
     }
+    #[cfg(feature = "classic-encode-sampling")]
+    let mut sampling = {
+        if r.operation != "encode" || r.codec != "emuella" || r.workers != 1 {
+            return Err("sampling requires one-worker Emuella encode".into());
+        }
+        let mut sampling = Sampling::open()?;
+        sampling.command(b"enable\n")?;
+        sampling
+    };
     let start = Instant::now();
     let output = if r.operation == "decode" {
         decode(&r, input.as_ref().unwrap())?
@@ -464,6 +545,8 @@ fn run(r: Request) -> Result<Value> {
         encode(&r, &raw)?
     };
     let ns = u64::try_from(start.elapsed().as_nanos()).map_err(err)?;
+    #[cfg(feature = "classic-encode-sampling")]
+    sampling.command(b"disable\n")?;
     let (stream, pixels) = if r.operation == "decode" {
         (input.unwrap(), output)
     } else {
@@ -492,7 +575,8 @@ fn run(r: Request) -> Result<Value> {
     Ok(
         json!({"codec":r.codec,"operation":r.operation,"case_id":r.case_id,"round":r.round,"style":r.style,"workers":r.workers,
         "boundary":"owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes", "profile":profile,
-        "exact":true,"samples_ns":if r.operation=="prepare" {vec![]} else {vec![ns]},"raw_sha256":r.raw_sha256,
+        "exact":true,"diagnostic_sampling":cfg!(feature = "classic-encode-sampling"),
+        "samples_ns":if r.operation=="prepare" || cfg!(feature = "classic-encode-sampling") {vec![]} else {vec![ns]},"raw_sha256":r.raw_sha256,
         "stream_sha256":hash(&stream),"binary_sha256":binary_sha256,"stream_bytes":stream.len()}),
     )
 }

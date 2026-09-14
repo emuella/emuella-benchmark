@@ -44,6 +44,7 @@ pixel payloads or secrets.
 [Multi-run series](docs/series.md) describes factual rate/distortion and progress extracts.
 [Corpus integration](docs/corpus.md) describes runtime catalogue identities.
 [Refreshed Emuella–OpenJPEG results](docs/openjpeg-refresh-results.md) compare matched classic profiles and CPU budgets.
+[Packed encoder qualification](docs/classic-encoder-kernel-results.md) compares the retained reference with the qualified encoder and a fresh OpenJPEG anchor.
 [RarePlanes calibration](docs/rareplanes-calibration.md) describes the bounded
 full-location real-scene probe.
 
