@@ -13,9 +13,23 @@ refresh = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(refresh)
 sha, write = refresh.sha, refresh.write
 ARMS = ('reference', 'packed')
+SPACENET_MANIFEST = '209eb97c250f108c4ff0aff9a226db6dc6e4ecd68b10bc074e844b60b89e406e'
+
+
+def assets(prepared, phase):
+    if phase != 'spacenet':
+        return refresh.classic.assets(prepared)
+    if sha(prepared/'prepared.json') != SPACENET_MANIFEST:
+        raise ValueError('frozen SpaceNet input manifest differs')
+    helper=refresh.module('kernel_spacenet', 'spacenet-classic.py')
+    return [a for a in helper.assets(prepared) if a['role']=='development']
 
 
 def contrasts(assets, phase):
+    if phase == 'spacenet':
+        if len(assets)!=12 or any(a.get('role')!='development' or 'Khartoum' in a['id'] for a in assets):
+            raise ValueError('SpaceNet regression requires twelve development chips, excluding Khartoum')
+        return [(a,s,1,'encode','emuella') for a in assets for s in (0,1)]
     selected = assets
     if phase == 'screen':
         selected = [a for a in assets if a['id'].startswith('94_') and a['product'] in ('PAN16', 'RGB8', 'MS16')]
@@ -44,24 +58,30 @@ def measure(args):
     for field in ('rustc','openjpeg','libraries','environment','cargo_configs'):
         if builds['reference'][field] != builds['packed'][field]:
             raise ValueError('matched build configuration differs: '+field)
-    if builds['reference']['benchmark']['source_files_sha256'] != builds['packed']['benchmark']['source_files_sha256']:
+    worker_source=lambda b: {p:d for p,d in b['benchmark']['source_files_sha256'].items()
+                            if p.startswith(('workers/','src/','.cargo/')) or p in ('Cargo.toml','Cargo.lock','build.rs','rust-toolchain.toml')}
+    if worker_source(builds['reference']) != worker_source(builds['packed']):
         raise ValueError('treatment workers must have identical benchmark source')
-    selected = refresh.classic.assets(args.prepared)
+    selected = assets(args.prepared,args.phase)
     cases = contrasts(selected, args.phase)
     store = args.prepared.parent.resolve()
     if args.output.parent.resolve() != store or args.streams.parent.resolve() != store:
         raise ValueError('outputs and reference stream owner must remain in the approved store')
     cpus = list(range(8))
     machine = refresh.cpu_identity(cpus)
-    notice = store / 'source/LICENSE.txt'
-    if sha(notice) != 'f627ad059128fa5246a21e25759c1d33e35c4bb6287d636c4b970f7df57e7eba':
+    notice = store / ('source/LICENSE.md' if args.phase=='spacenet' else 'source/LICENSE.txt')
+    expected_notice = ('ebeaa5a46058cce9e893f42d601e1155bae27aa538f2854c79c626e297356c35' if args.phase=='spacenet'
+                       else 'f627ad059128fa5246a21e25759c1d33e35c4bb6287d636c4b970f7df57e7eba')
+    if sha(notice) != expected_notice:
         raise ValueError('reviewed notice differs')
-    stream_hashes = {str(args.streams/'streams'/f"{a['id']}-{origin}-s{s}.j2k"):
-                     sha(args.streams/'streams'/f"{a['id']}-{origin}-s{s}.j2k")
+    stream_path=lambda a,s,origin: args.streams/'streams'/(f"{a['id']}-style{s}.j2k" if args.phase=='spacenet' else f"{a['id']}-{origin}-s{s}.j2k")
+    stream_hashes = {str(stream_path(a,s,origin)): sha(stream_path(a,s,origin))
                      for a,s,w,op,origin in cases}
     args.output.mkdir(exist_ok=False)
     (args.output/'LICENSE.txt').write_bytes(notice.read_bytes())
-    (args.output/'NOTICE.txt').write_text('RarePlanes Dataset, June 2020. J. Shermeyer et al.; In-Q-Tel - CosmiQ Works and AI.Reverie. CC BY-SA 4.0. Local lossless encoder observations; unchanged inputs and reference streams remain with the source lineage. No imagery redistribution.\n')
+    attribution=('SpaceNet Dataset, SpaceNet Partners and DigitalGlobe imagery; Van Etten, Lindenbaum and Bacastow (2018). '
+                 if args.phase=='spacenet' else 'RarePlanes Dataset, June 2020. J. Shermeyer et al.; In-Q-Tel - CosmiQ Works and AI.Reverie. ')
+    (args.output/'NOTICE.txt').write_text(attribution+'CC BY-SA 4.0. Local lossless encoder observations; unchanged inputs and reference streams remain with the source lineage. No imagery redistribution.\n')
     rounds = 3 if args.phase == 'screen' else 20
     manifest = dict(phase=args.phase,rounds=rounds,builds=builds,owner=owner,
                     machine=machine,assets=selected,prepared_sha256=sha(args.prepared/'prepared.json'),
@@ -77,7 +97,8 @@ def measure(args):
         for a,style,workers,operation,origin in cases:
             for arm in ARMS if round_id % 2 == 0 else ARMS[::-1]:
                 name=f"r{round_id:02}-{a['id']}-s{style}-w{workers}-{operation}-{arm}"
-                request=refresh.make_request(a,args.prepared,args.streams,origin,'emuella',style,workers,operation,round_id)
+                request=refresh.make_request(a,args.prepared,args.streams,origin,'emuella',style,workers,'prepare',round_id)
+                request.update(operation=operation,stream_path=str(stream_path(a,style,origin)),stream_sha256=sha(stream_path(a,style,origin)))
                 result=refresh.run_process(builds[arm]['binary'],request,args.output/name,cpus[:workers])
                 rows.append(dict(case_id=a['id'],style=style,workers=workers,operation=operation,origin=origin,round=round_id,arm=arm,result=result,path=name))
                 # Preserve each completed observation even if the driver later fails.
@@ -86,7 +107,7 @@ def measure(args):
     for arm in ARMS:
         if refresh.bind(getattr(args,arm)) != builds[arm]:
             raise ValueError('build changed during measurement')
-    if refresh.classic.clean_source(refresh.ROOT) != owner or refresh.classic.assets(args.prepared) != selected:
+    if refresh.classic.clean_source(refresh.ROOT) != owner or assets(args.prepared,args.phase) != selected:
         raise ValueError('runner or inputs changed during measurement')
     if any(sha(path)!=digest for path,digest in stream_hashes.items()):
         raise ValueError('reference stream changed')
@@ -98,7 +119,7 @@ def measure(args):
 
 def validate_rows(manifest, rows):
     cases=manifest['contrasts']; rounds=manifest['rounds']
-    if manifest['phase'] not in ('screen','confirm') or rounds != (3 if manifest['phase']=='screen' else 20):
+    if manifest['phase'] not in ('screen','confirm','spacenet') or rounds != (3 if manifest['phase']=='screen' else 20):
         raise ValueError('phase and finite round budget differ')
     frozen=[dict(case_id=a['id'],style=s,workers=w,operation=op,origin=o)
             for a,s,w,op,o in contrasts(manifest['assets'],manifest['phase'])]
@@ -146,7 +167,7 @@ def analyse(args):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__); sub=p.add_subparsers(dest='command',required=True)
-    m=sub.add_parser('measure'); m.add_argument('--phase',choices=('screen','confirm'),required=True)
+    m=sub.add_parser('measure'); m.add_argument('--phase',choices=('screen','confirm','spacenet'),required=True)
     for name in ('reference','packed','prepared','streams','output'):
         m.add_argument('--'+name,type=Path,required=True)
     m.add_argument('--reference-revision',required=True)

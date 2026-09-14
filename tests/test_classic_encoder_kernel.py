@@ -44,5 +44,12 @@ class KernelCoverageTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             kernel.validate_rows(manifest,rows[1:])
 
+    def test_geographic_reserve_cannot_enter_spacenet_timing(self):
+        assets=[dict(id=f'RGB-PanSharpen_AOI_2_Vegas_img{i}',role='development') for i in range(12)]
+        self.assertEqual(len(kernel.contrasts(assets,'spacenet')),24)
+        for delta in [dict(role='reserved'),dict(id='RGB-PanSharpen_AOI_5_Khartoum_img1')]:
+            changed=[dict(a) for a in assets];changed[0].update(delta)
+            with self.assertRaises(ValueError):kernel.contrasts(changed,'spacenet')
+
 
 if __name__=='__main__':unittest.main()
