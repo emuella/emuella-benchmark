@@ -2,7 +2,8 @@
     feature = "emuella",
     feature = "openjpeg",
     feature = "classic-compare",
-    not(feature = "classic-encode-sampling")
+    not(feature = "classic-encode-sampling"),
+    not(feature = "classic-execution-diagnostics")
 ))]
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};

@@ -1,10 +1,16 @@
 //! One fresh-process sample with matching owned interleaved buffer boundaries.
+#[cfg(feature = "classic-execution-diagnostics")]
+#[path = "../classic_execution_diagnostics.rs"]
+mod execution_diagnostics;
+
 // Link the worker library so Cargo carries its native adapter link directives.
 use emuella_benchmark_workers as _;
 use emuella_j2k as codec;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
-use std::{ffi::c_void, io::Write, path::PathBuf, ptr, time::Instant};
+#[cfg(not(feature = "classic-execution-diagnostics"))]
+use std::time::Instant;
+use std::{ffi::c_void, io::Write, path::PathBuf, ptr};
 
 type Result<T> = std::result::Result<T, String>;
 unsafe extern "C" {
@@ -538,13 +544,27 @@ fn run(r: Request) -> Result<Value> {
         sampling.command(b"enable\n")?;
         sampling
     };
+    #[cfg(not(feature = "classic-execution-diagnostics"))]
     let start = Instant::now();
+    #[cfg(feature = "classic-execution-diagnostics")]
+    let (output, diagnostic, ns) = {
+        if r.operation != "encode" || r.codec != "emuella" {
+            return Err("execution diagnostics require Emuella encode".into());
+        }
+        execution_diagnostics::encode(|| encode(&r, &raw))
+    };
+    #[cfg(not(feature = "classic-execution-diagnostics"))]
     let output = if r.operation == "decode" {
         decode(&r, input.as_ref().unwrap())?
     } else {
         encode(&r, &raw)?
     };
+    #[cfg(feature = "classic-execution-diagnostics")]
+    let output = output?;
+    #[cfg(not(feature = "classic-execution-diagnostics"))]
     let ns = u64::try_from(start.elapsed().as_nanos()).map_err(err)?;
+    #[cfg(not(feature = "classic-execution-diagnostics"))]
+    let diagnostic = Value::Null;
     #[cfg(feature = "classic-encode-sampling")]
     sampling.command(b"disable\n")?;
     let (stream, pixels) = if r.operation == "decode" {
@@ -576,7 +596,8 @@ fn run(r: Request) -> Result<Value> {
         json!({"codec":r.codec,"operation":r.operation,"case_id":r.case_id,"round":r.round,"style":r.style,"workers":r.workers,
         "boundary":"owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes", "profile":profile,
         "exact":true,"diagnostic_sampling":cfg!(feature = "classic-encode-sampling"),
-        "samples_ns":if r.operation=="prepare" || cfg!(feature = "classic-encode-sampling") {vec![]} else {vec![ns]},"raw_sha256":r.raw_sha256,
+        "execution_diagnostic":diagnostic,"diagnostic_facade_ns":if cfg!(feature = "classic-execution-diagnostics") {Some(ns)} else {None},
+        "samples_ns":if r.operation=="prepare" || cfg!(feature = "classic-encode-sampling") || cfg!(feature = "classic-execution-diagnostics") {vec![]} else {vec![ns]},"raw_sha256":r.raw_sha256,
         "stream_sha256":hash(&stream),"binary_sha256":binary_sha256,"stream_bytes":stream.len()}),
     )
 }

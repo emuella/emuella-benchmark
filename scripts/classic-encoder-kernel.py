@@ -49,7 +49,7 @@ def contrasts(assets, phase):
 def measure(args):
     owner = refresh.classic.clean_source(refresh.ROOT)
     builds = {arm: refresh.bind(getattr(args, arm)) for arm in ARMS}
-    if any(b.get('sampling') for b in builds.values()):
+    if any(b.get('sampling') or b.get('execution_diagnostics') for b in builds.values()):
         raise ValueError('diagnostic builds cannot supply treatment timings')
     if builds['reference']['codec']['source_revision'] != args.reference_revision:
         raise ValueError('reference revision differs from declared baseline')
@@ -169,6 +169,47 @@ def analyse(args):
     print(json.dumps([{k:v for k,v in c.items() if k!='arms'} for c in comparisons],indent=2))
 
 
+def diagnose(args):
+    """Twelve finite facade observations; never enter the timing estimator."""
+    owner = refresh.classic.clean_source(refresh.ROOT)
+    build = refresh.bind(args.build)
+    if not build.get('execution_diagnostics') or build.get('sampling') or build.get('encoder_backend') != 'default':
+        raise ValueError('requires a separate execution diagnostic build with encoder selector unset')
+    selected = [a for a in assets(args.prepared, 'screen') if a['id'].startswith('94_') and a['product'] in ('PAN16', 'RGB8', 'MS16')]
+    if len(selected) != 3:
+        raise ValueError('fixed diagnostic cohort differs')
+    store = args.prepared.parent.resolve()
+    if args.output.parent.resolve() != store or args.streams.parent.resolve() != store:
+        raise ValueError('diagnostics and streams must stay in the approved input store')
+    notice = store/'source/LICENSE.txt'
+    if sha(notice) != 'f627ad059128fa5246a21e25759c1d33e35c4bb6287d636c4b970f7df57e7eba':
+        raise ValueError('reviewed notice differs')
+    requests = [refresh.make_request(a,args.prepared,args.streams,'emuella','emuella',style,workers,'encode',0)
+                for workers in (8,1) for a in selected for style in (0,1)]
+    stream_hashes = {r['stream_path']:r['stream_sha256'] for r in requests}
+    args.output.mkdir(exist_ok=False)
+    (args.output/'LICENSE.txt').write_bytes(notice.read_bytes())
+    (args.output/'NOTICE.txt').write_text('RarePlanes Dataset, June 2020. J. Shermeyer et al.; In-Q-Tel - CosmiQ Works and AI.Reverie. CC BY-SA 4.0. Local execution observations; unchanged input and stream lineage stays in this store. No imagery redistribution.\n')
+    manifest = dict(kind='separate_execution_diagnostic',arm=args.arm,build=build,owner=owner,
+                    requests=requests,prepared_sha256=sha(args.prepared/'prepared.json'),
+                    machine=refresh.cpu_identity(list(range(8))),diagnostic_call_budget=12,
+                    campaign_cap=36,headline_samples=False)
+    write(args.output/'manifest.json',manifest)
+    rows=[]
+    for request in requests:
+        name=f"{request['case_id']}-s{request['style']}-w{request['workers']}"
+        result=refresh.run_process(build['binary'],request,args.output/name,list(range(request['workers'])),execution_diagnostics=True)
+        rows.append(dict(request=request,result=result,path=name))
+        write(args.output/(name+'-receipt.json'),rows[-1])
+        print(name,result['status'],flush=True)
+    if refresh.bind(args.build)!=build or refresh.classic.clean_source(refresh.ROOT)!=owner:
+        raise ValueError('diagnostic source/build changed')
+    if any(sha(path)!=digest for path,digest in stream_hashes.items()) or sha(args.prepared/'prepared.json')!=manifest['prepared_sha256']:
+        raise ValueError('diagnostic input/stream identity changed')
+    write(args.output/'measurement.json',dict(manifest_sha256=sha(args.output/'manifest.json'),rows=rows,
+          complete=all(r['result']['status']==0 for r in rows),end_machine=refresh.cpu_identity(list(range(8)))))
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__); sub=p.add_subparsers(dest='command',required=True)
     m=sub.add_parser('measure'); m.add_argument('--phase',choices=('screen','confirm','spacenet'),required=True)
@@ -176,10 +217,13 @@ def main():
         m.add_argument('--'+name,type=Path,required=True)
     m.add_argument('--reference-revision',required=True)
     a=sub.add_parser('analyse'); a.add_argument('--output',type=Path,required=True); a.add_argument('--estimator',type=Path,required=True)
+    d=sub.add_parser('diagnose'); d.add_argument('--arm',choices=('baseline','selected','attribution'),required=True)
+    for name in ('build','prepared','streams','output'):
+        d.add_argument('--'+name,type=Path,required=True)
     args=p.parse_args()
     for key,value in vars(args).items():
         if isinstance(value,Path):setattr(args,key,value.resolve())
-    (measure if args.command=='measure' else analyse)(args)
+    {'measure':measure,'analyse':analyse,'diagnose':diagnose}[args.command](args)
 
 
 if __name__=='__main__':main()

@@ -34,7 +34,9 @@ def git(source, *args):
     return subprocess.check_output(['git', '-C', str(source), *args], text=True).strip()
 
 
-def build(source, output, sampling=False):
+def build(source, output, sampling=False, execution_diagnostics=False):
+    if sampling and execution_diagnostics:
+        raise ValueError("diagnostic build modes are exclusive")
     benchmark = classic.clean_source(ROOT)
     codec = classic.clean_source(source)
     output.mkdir(parents=True, exist_ok=False)
@@ -46,7 +48,7 @@ def build(source, output, sampling=False):
     if archive.wait():
         raise ValueError('source archive failed')
     command = ['cargo', 'build', '--profile', 'perf', '--manifest-path', str(snapshot / 'workers/Cargo.toml'),
-               '--bin', 'classic-compare-worker', '--features', 'classic-encode-sampling' if sampling else 'classic-compare', '--target-dir', str(output / 'target'), '--message-format=json', '-vv']
+               '--bin', 'classic-compare-worker', '--features', 'classic-encode-sampling' if sampling else ('classic-execution-diagnostics' if execution_diagnostics else 'classic-compare'), '--target-dir', str(output / 'target'), '--message-format=json', '-vv']
     for package in ('emuella-j2k', 'emuella-j2k-codestream'):
         command += ['--config', 'patch."https://github.com/emuella/emuella-j2k".' + package + '.path=' + json.dumps(str(source / 'crates' / package))]
     env = dict(os.environ)
@@ -66,7 +68,7 @@ def build(source, output, sampling=False):
     if classic.clean_source(ROOT) != benchmark or classic.clean_source(source) != codec or configs != build_support.cargo_config_files(snapshot, env):
         raise ValueError('source/configuration changed during build')
     libraries = {str(p): sha(p) for p in build_support.libraries(binary)}
-    write(output / 'build.json', dict(benchmark=benchmark, codec=codec, sampling=sampling,
+    write(output / 'build.json', dict(benchmark=benchmark, codec=codec, sampling=sampling, execution_diagnostics=execution_diagnostics,
           encoder_backend=env.get('EMUELLA_TIER1_ENCODER', 'default'), binary=str(binary), binary_sha256=sha(binary),
           libraries=libraries, rustc=subprocess.check_output(['rustc', '-vV'], text=True),
           openjpeg=subprocess.check_output(['pkg-config', '--modversion', 'libopenjp2'], text=True).strip(),
@@ -93,7 +95,7 @@ def cpu_identity(cpus):
                 topology={str(c):{k:Path(f'/sys/devices/system/cpu/cpu{c}/topology/{k}').read_text().strip() for k in ('physical_package_id','core_id','thread_siblings_list')} for c in cpus})
 
 
-def run_process(binary, request, directory, cpus):
+def run_process(binary, request, directory, cpus, execution_diagnostics=False):
     directory.mkdir()
     write(directory / 'request.json', request)
     command = ['taskset','-c',','.join(map(str,cpus)), 'prlimit','--as='+str(classic.BUDGET),'--',
@@ -120,6 +122,11 @@ def run_process(binary, request, directory, cpus):
             if request['operation'] == 'prepare':
                 if samples != [] or value['stream_sha256'] != sha(request['stream_path']):
                     raise ValueError('prepare response differs')
+            elif execution_diagnostics:
+                if samples != [] or not isinstance(value.get('execution_diagnostic'), dict) or value.get('stream_sha256') != request['stream_sha256']:
+                    raise ValueError('execution diagnostic/stream identity differs')
+            elif value.get('execution_diagnostic') is not None:
+                raise ValueError('diagnostic response cannot supply headline timings')
             elif (not isinstance(samples,list) or len(samples)!=1 or type(samples[0]) is not int or samples[0]<=0 or value.get('stream_sha256') != request['stream_sha256']):
                 raise ValueError('timing/stream identity differs')
             user, system, rss = (directory/'resources.txt').read_text().split()
@@ -164,7 +171,7 @@ def validate_rows(rows, case_ids, rounds):
 def measure(args):
     owner = classic.clean_source(ROOT)
     build_record = bind(args.build)
-    if build_record.get('sampling'):
+    if build_record.get('sampling') or build_record.get('execution_diagnostics'):
         raise ValueError('sampling builds cannot supply headline measurements')
     # Source identity is fixed by committed bytes, including hidden index changes.
     if build_record['benchmark']['source_files_sha256'] != owner['source_files_sha256']:
@@ -286,7 +293,7 @@ def analyse(folder, estimator):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     sub=parser.add_subparsers(dest='command',required=True)
-    p=sub.add_parser('build'); p.add_argument('--codec-source',type=Path,required=True); p.add_argument('--output',type=Path,required=True); p.add_argument('--sampling',action='store_true')
+    p=sub.add_parser('build'); p.add_argument('--codec-source',type=Path,required=True); p.add_argument('--output',type=Path,required=True); p.add_argument('--sampling',action='store_true'); p.add_argument('--execution-diagnostics',action='store_true')
     p=sub.add_parser('measure'); p.add_argument('--build',type=Path,required=True); p.add_argument('--prepared',type=Path,required=True); p.add_argument('--output',type=Path,required=True); p.add_argument('--cpus',required=True); p.add_argument('--probe',action='store_true')
     p=sub.add_parser('analyse'); p.add_argument('--output',type=Path,required=True); p.add_argument('--estimator',type=Path,required=True)
     p=sub.add_parser('estimator'); p.add_argument('--output',type=Path,required=True)
@@ -294,7 +301,7 @@ def main():
     for key in ('output','build','prepared','codec_source','estimator'):
         if getattr(args,key,None) is not None:
             setattr(args,key,getattr(args,key).resolve())
-    if args.command=='build': build(args.codec_source,args.output,args.sampling)
+    if args.command=='build': build(args.codec_source,args.output,args.sampling,args.execution_diagnostics)
     elif args.command=='measure': return measure(args)
     elif args.command=='analyse': analyse(args.output,args.estimator)
     elif args.command=='estimator': classic.estimator_build(ROOT,args.output)
