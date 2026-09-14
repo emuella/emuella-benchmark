@@ -12,7 +12,7 @@ emuella = ["dep:emuella-j2k", "dep:emuella-j2k-codestream", "dep:rayon"]
 openjpeg = []
 classic-compare = []
 classic-encode-sampling = ["classic-compare"]
-classic-execution-diagnostics = ["classic-compare", "emuella-j2k-codestream/classic-execution-diagnostics"]
+classic-execution-diagnostics = ["classic-compare"]
 simd = ["emuella", "emuella-j2k/simd", "emuella-j2k-codestream/simd"]
 
 [profile.perf]

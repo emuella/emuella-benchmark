@@ -48,7 +48,7 @@ def build(source, output, sampling=False, execution_diagnostics=False):
     if archive.wait():
         raise ValueError('source archive failed')
     command = ['cargo', 'build', '--profile', 'perf', '--manifest-path', str(snapshot / 'workers/Cargo.toml'),
-               '--bin', 'classic-compare-worker', '--features', 'classic-encode-sampling' if sampling else ('classic-execution-diagnostics' if execution_diagnostics else 'classic-compare'), '--target-dir', str(output / 'target'), '--message-format=json', '-vv']
+               '--bin', 'classic-compare-worker', '--features', 'classic-encode-sampling' if sampling else ('classic-execution-diagnostics,emuella-j2k-codestream/classic-execution-diagnostics' if execution_diagnostics else 'classic-compare'), '--target-dir', str(output / 'target'), '--message-format=json', '-vv']
     for package in ('emuella-j2k', 'emuella-j2k-codestream'):
         command += ['--config', 'patch."https://github.com/emuella/emuella-j2k".' + package + '.path=' + json.dumps(str(source / 'crates' / package))]
     env = dict(os.environ)

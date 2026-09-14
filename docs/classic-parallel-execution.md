@@ -19,7 +19,8 @@ and CPUs 0–7 for eight, D2/style zero and bypass, RGB RCT and PAN/MSI without 
 
 Build the separate worker with `openjpeg-refresh.py build
 --execution-diagnostics`. It activates the codec's feature-only observer around
-the actual facade call. The ordinary build contains none of this instrumentation.
+the actual facade call. The build driver enables the matching codestream feature
+explicitly, so ordinary builds still resolve the historical dependency pin. The ordinary build contains none of this instrumentation.
 The observer uses the existing writer and serial route; worker slots capture
 start/end timestamps and the caller aggregates at most two endpoints per slot
 after joining. Durations include block geometry and the existing Tier-1 call,
