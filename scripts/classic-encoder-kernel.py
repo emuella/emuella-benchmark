@@ -229,12 +229,9 @@ def diagnose(args):
     if bool(build.get('execution_diagnostics')) != (kind == 'diagnose') or bool(build.get('allocation_diagnostics')) != (kind == 'resources'):
         raise ValueError('observation mode differs from build instrumentation')
     selected = assets(args.prepared, 'screen')
-    entropy = args.study == 'entropy'
-    if entropy and kind != 'resources':
-        raise ValueError('entropy resource mode supports allocation-only observations')
-    if kind == 'diagnose' or entropy:
+    if kind == 'diagnose':
         selected = [a for a in selected if a['id'].startswith('94_') and a['product'] in ('PAN16', 'RGB8', 'MS16')]
-    if len(selected) != (3 if kind == 'diagnose' or entropy else 9):
+    if len(selected) != (3 if kind == 'diagnose' else 9):
         raise ValueError('fixed observation cohort differs')
     store = args.prepared.parent.resolve()
     if args.output.parent.resolve() != store or args.streams.parent.resolve() != store:
@@ -243,16 +240,14 @@ def diagnose(args):
     if sha(notice) != 'f627ad059128fa5246a21e25759c1d33e35c4bb6287d636c4b970f7df57e7eba':
         raise ValueError('reviewed notice differs')
     worker_counts = (8,1) if kind == 'diagnose' else ((1,2,4,8) if kind == 'resources' else (2,4))
-    if entropy:
-        worker_counts = (1,8)
     rounds = 3 if kind == 'scaling' else 1
-    requests = [refresh.make_request(a,args.prepared,args.streams,'openjpeg' if entropy else 'emuella','emuella',style,workers,'decode' if entropy else 'encode',round_id)
+    requests = [refresh.make_request(a,args.prepared,args.streams,'emuella','emuella',style,workers,'encode',round_id)
                 for round_id in range(rounds) for workers in worker_counts for a in selected for style in (0,1)]
     stream_hashes = {r['stream_path']:r['stream_sha256'] for r in requests}
     args.output.mkdir(exist_ok=False)
     (args.output/'LICENSE.txt').write_bytes(notice.read_bytes())
     (args.output/'NOTICE.txt').write_text('RarePlanes Dataset, June 2020. J. Shermeyer et al.; In-Q-Tel - CosmiQ Works and AI.Reverie. CC BY-SA 4.0. Local execution observations; unchanged input and stream lineage stays in this store. No imagery redistribution.\n')
-    manifest = dict(kind=kind,study=args.study,arm=args.arm,build=build,owner=owner,
+    manifest = dict(kind=kind,arm=args.arm,build=build,owner=owner,
                     requests=requests,prepared_sha256=sha(args.prepared/'prepared.json'),
                     machine=refresh.cpu_identity(list(range(8))),calls=len(requests),rounds=rounds,
                     attribution_campaign_cap=36,headline_samples=False)
@@ -280,7 +275,7 @@ def main():
     m.add_argument('--reference-revision',required=True); m.add_argument('--study',choices=('kernel','parallel','entropy'),default='kernel')
     a=sub.add_parser('analyse'); a.add_argument('--output',type=Path,required=True); a.add_argument('--estimator',type=Path,required=True)
     for command in ('diagnose','resources','scaling'):
-        d=sub.add_parser(command); d.add_argument('--study',choices=('kernel','entropy'),default='kernel'); d.add_argument('--arm',choices=('baseline','selected','attribution'),required=True)
+        d=sub.add_parser(command); d.add_argument('--arm',choices=('baseline','selected','attribution'),required=True)
         for name in ('build','prepared','streams','output'):
             d.add_argument('--'+name,type=Path,required=True)
     args=p.parse_args()

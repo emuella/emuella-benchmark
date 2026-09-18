@@ -590,16 +590,10 @@ fn run(r: Request) -> Result<Value> {
     };
     #[cfg(feature = "classic-allocation-diagnostics")]
     let (output, diagnostic, ns) = {
-        if !matches!(r.operation.as_str(), "encode" | "decode") || r.codec != "emuella" {
-            return Err("allocation diagnostics require Emuella encode or decode".into());
+        if r.operation != "encode" || r.codec != "emuella" {
+            return Err("allocation diagnostics require Emuella encode".into());
         }
-        execution_diagnostics::allocation(&r.operation, || {
-            if r.operation == "decode" {
-                decode(&r, input.as_ref().unwrap())
-            } else {
-                encode(&r, &raw)
-            }
-        })
+        execution_diagnostics::allocation(|| encode(&r, &raw))
     };
     #[cfg(any(
         feature = "classic-execution-diagnostics",
