@@ -44,11 +44,11 @@ support symbol is internal cross-crate plumbing; existing signatures remain inta
 This is complexity/source acceptance only; canonical, resources, screen and
 confirmation remain mandatory. Runtime freeze records bind review and builds.
 
-V1 is the sole screened and selected candidate. Its exact committed canonical
-gate, ordinary/diagnostic worker contracts and 32 initial allocation/exactness
+V1 was the sole candidate selected by the development screen. Its exact committed
+canonical gate, ordinary/diagnostic worker contracts and 32 initial allocation/exactness
 calls passed before timing. The fixed screen completed all 24 calls and met its
 descriptive eligibility predicates. No second or third variant was developed.
-Freeze that same source for fresh confirmation; the screen cannot supply any
+That same source was frozen for fresh confirmation; the screen supplies no
 confirmation sample or performance confidence claim.
 
 At most three related development variants, each three alternating pairs over
@@ -159,3 +159,22 @@ redistribution, external implementation-source consultation or publication.
 RarePlanes Dataset, June 2020: J. Shermeyer et al.; In-Q-Tel – CosmiQ Works and
 AI.Reverie, CC BY-SA 4.0. SpaceNet Dataset, SpaceNet Partners and DigitalGlobe
 imagery, CC BY-SA 4.0; Van Etten, Lindenbaum and Bacastow (2018).
+
+## Recorded final state
+
+The prospective rules above are retained without changing the primary, estimator,
+sample size or gates. The confirmation freeze at benchmark
+`78c816fa54df207a9aec479c9dbc7ce133c01337` binds protocol SHA-256
+`394d23375e0bd577f9657f7b0ae62cc6d2a6d77e059062a093643520e0e58691`.
+All 1,288 started observation calls completed: 32 baseline, 24 screen,
+112 resources and 1,120 confirmation. All exactness and resource predicates passed.
+The four initial contrasts passed, including the sole Route A primary; 22 of 24
+conditional contrasts did not establish the required 99% upper bound <=+1%.
+All conditional intervals include zero, so none establishes a slowdown.
+
+V1 is **not selected for production**. The 160-call external anchor and sixteen
+selected-candidate diagnostic calls remain unrun under the conditional rule;
+no further timing, source retuning or primary substitution followed. Production
+retains the pre-candidate path with feature-only diagnostics, and the measured
+candidate is archived. [Final observations](classic-encode-front-end-results.md)
+record the full comparisons, resource evidence and remaining bottleneck uncertainty.
