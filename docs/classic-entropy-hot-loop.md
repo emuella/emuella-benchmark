@@ -33,14 +33,100 @@ source and disassembly are excluded.
 
 ## Mechanism and directional freeze
 
-Diagnosis is in progress. No candidate timing is authorised by this provisional
-protocol. Before candidate timing, this section will fix one mechanism family,
-at most three related variants, finite screen and replay budgets, target
-direction/style, primary cases, non-regression coverage and stopping conditions.
-Before arithmetic editing, retain the unchanged implementation including affected
-byte IO and termination as an independent test-only reference. It must never
-call the candidate helper. Encoder-backend agreement and a changed round trip
-are not independent arithmetic proof.
+The twelve completed baseline samples identify decoder decision/state work as
+30.97% of PAN16, 31.19% of MS16 and 26.05% of RGB8 style-zero sampled cycles.
+Renormalisation shares are 5.71%, 4.94% and 4.31%; unresolved MQ boundaries stay
+separate. Emuella-generated instructions show eager successor-field loads before
+the fast return and early register writeback. Out-of-line calls occupy only
+1.1–4.7%, so a blanket-inline intervention is not justified. These are sampled
+shares with attribution uncertainty, not predicted recovered time.
+
+Freeze **decoder MQ decision-local registers and transition access** as the only
+family, targeting one-worker style-zero decode. At most two variants:
+D1 holds interval/code/context locally and delays successor access while
+preserving exchange branches; D2 factors duplicate exchange into Boolean-selected
+successor/writeback within that same local decision family. Preserve the fast
+MPS return, probability data, renormalisation, byte IO, raw coding and termination.
+No encoder arithmetic change, state/traversal rewrite or new generic coder.
+
+The independent test-only full MQ/raw reference was committed before arithmetic
+editing at codec `32ccc21ece484651de8b38a2186ebd618b3bc85a`; its body is unchanged
+from the merged baseline. Candidate tests must compare decisions, all contexts,
+registers and byte-boundary state at equivalent checkpoints, consumed prefix
+accounting, termination, bytes and pass/segment metadata. Use bounded authored
+traces, deterministic reachable-state sequences, feasible exhaustive small
+domains and block replays; malformed inputs test rejection. The oracle cannot
+call candidate helpers. Preserve restart/reset, carry/stuffing, ordinary and
+predictable termination, raw/MQ transitions and synthetic end-input semantics.
+
+Each variant receives at most four alternating authored replay pairs and three
+alternating full-image pairs over Mansfield PAN16/MS16/RGB8, both styles at one
+worker on common OpenJPEG streams: 36 facade calls per variant. Screen eligibility
+requires at least one high-bit-depth style-zero mean ratio below 0.95, every
+six-case decode ratio at most 1.05, and exactness/focused correctness passing.
+Select the eligible variant with lowest geometric mean style-zero decode ratio
+across the three products; a difference within 1% favours simpler D1. No eligible
+variant means finite rejection, not an invitation to another family. Candidate
+changes and performance observations stop at two variants. Fix one candidate
+source before confirmation, and build a fresh uninstrumented baseline from
+`bc747f86907aff09e09278e4444ad5932ef4669d` using identical compiled worker sources.
+
+Before confirmation, collect three descriptive alternating pairs for selected
+versus baseline decode of the same six development cases at eight workers
+(36 calls). This checks consequences without scheduler changes; it supplies no
+confidence or promotion claim and does not change the frozen choice. If discovery
+rejects both variants, collect this bounded eight-worker description for the
+lower style-zero geometric-mean variant without promoting it.
+
+## Sequential confirmation matrix and stopping rules
+
+The following matrix is frozen before any candidate timing. All confirmation
+contrasts use twenty pairs and all required upper non-regression bounds are +5%.
+
+1. **Primary stage:** Boca Raton PAN16 and MS16, style 0, one-worker decode,
+   common OpenJPEG-origin streams: two contrasts, 80 calls. Complete both.
+   At least one primary must have a 99% upper change bound below −5%, and both
+   must have upper bounds at most +5%. If either predicate fails with complete
+   valid observations, reject and stop before stage 2. Missing/invalid mandatory
+   observations are blockers, not rejection. No extra primary samples or tuning.
+2. **Internal regression stage, only if stage 1 passes:** complete the remaining
+   contrasts in the 44-contrast matrix below (1,680 additional calls). Every
+   upper change bound must be at most +5%; keep inconclusive classifications.
+   Complete the fixed stage before disposition; it cannot rescue a failed stage 1.
+3. **External anchor, only after all internal and correctness/resource gates
+   pass:** fresh matched OpenJPEG-versus-selected decode on the two Boca primaries,
+   style 0, one/eight workers, each common Emuella/OpenJPEG origin: eight contrasts,
+   twenty pairs (320 calls). Anchor rankings do not alter internal acceptance.
+
+| Required internal coverage | Contrasts |
+|---|---:|
+| All nine RarePlanes products, decode, both styles, one worker, OpenJPEG origin (includes stage 1) | 18 |
+| Boca PAN16/MS16 and Tok RGB8, decode, both styles, eight workers, OpenJPEG origin | 6 |
+| Boca PAN16/MS16, decode, style 0, one/eight workers, Emuella origin | 4 |
+| Mansfield PAN16/MS16/RGB8, encode, both styles, one worker | 6 |
+| Mansfield PAN16, encode, both styles, eight workers | 2 |
+| SpaceNet Vegas img1454, Paris img235 and Shanghai img1196, decode, both styles, one worker, Emuella origin | 6 |
+| SpaceNet Vegas img1454, decode, both styles, eight workers, Emuella origin | 2 |
+
+This proportionate matrix covers full product classes/acquisitions at one worker,
+eight-worker high-bit/RGB consequences, opposite-direction effects and the
+separate supplier RGB16 class. Origin coverage beyond these timed contrasts is
+an exactness requirement. No claim is made for unmeasured performance cells.
+
+Before stage 1, establish authored 1/2/4/8-worker parity and failure gates and
+separate allocation-only baseline/selected decode on the three development
+products, both styles, one/eight workers (24 points). If internally surviving,
+complete fresh exactness for all nine RarePlanes products, both styles and
+1/2/4/8 workers: encoded bytes/metadata and changed-decoder native samples from
+both origins. Complete corresponding three-chip SpaceNet Emuella-origin coverage.
+Compare resource bounds/peaks with baseline and existing admissible limits;
+allocation measurements for each affected operation stay outside headline runs.
+Unchanged baseline resource evidence may be reused when all identities apply.
+A primary rejection needs no expensive unrelated cohort; the removed production
+experiment cannot support a default improvement claim. Retain oracle tests and
+canonical correctness for the delivered source. Re-profile the selected decoder
+on all six development cases (six operation samples) after its fixed choice,
+regardless of stage-1 disposition, without headline inference or further tuning.
 
 ## Fixed constraints on qualification
 
