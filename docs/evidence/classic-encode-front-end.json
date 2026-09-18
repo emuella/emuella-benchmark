@@ -3596,6 +3596,12 @@
       "store_child": "classic-encode-front-end-binding",
       "file": "confirmation-freeze.json",
       "sha256": "9957683740ac976b7546f7f88986391e84b60b1be57f6a0ff5030a78845fa50e"
+    },
+    "final_platform_and_observer": {
+      "store": "rareplanes-expanded-v1",
+      "store_child": "classic-encode-front-end-binding",
+      "file": "checks/final-platform-and-observer.json",
+      "sha256": "cf072ffcc19f6604c4f152e06d5bd82bcfbd5fde51012cc02b60f403871ce933"
     }
   },
   "screen_v1": [
@@ -9830,5 +9836,26 @@
     "unrun_conditional_total": 176,
     "observation_call_cap": 1600
   },
-  "interpretation": "Ratios use arithmetic means, candidate/reference minus one, with unchanged conservative 99% per-case intervals. The verdict field is the separate legacy +/-5% timing label; gate_passed applies the frozen incremental policy. reference/packed mean baseline/candidate, both with the default encoder selector. RSS and CPU are whole-process measurements, distinct from codec allocation. No family-wide confidence or post-selection timing claim."
+  "interpretation": "Ratios use arithmetic means, candidate/reference minus one, with unchanged conservative 99% per-case intervals. The verdict field is the separate legacy +/-5% timing label; gate_passed applies the frozen incremental policy. reference/packed mean baseline/candidate, both with the default encoder selector. RSS and CPU are whole-process measurements, distinct from codec allocation. No family-wide confidence or post-selection timing claim.",
+  "platform_verification": {
+    "timing": "After confirmation; explicit WASM verification was missing before timing.",
+    "pre_timing_scope": "Canonical native/no-std checks; no pre-timing WASM claim.",
+    "final_revision": "ab55794e91377e9c322105dddc8bbb4218c28eb4",
+    "final_tree": "cea1ed5dd73b11bfaf3ee1260629fab6d3e4919e",
+    "candidate_revision": "21033ea890b4393e8c7f6791cf4a89d866d2dfd3",
+    "wasm_command": "cargo check -p emuella-j2k-codestream -p emuella-j2k-transform --no-default-features --target wasm32-unknown-unknown",
+    "diagnostic_command": "cargo test -p emuella-j2k-codestream -p emuella-j2k-transform --features classic-execution-diagnostics,parallel diagnostics::tests",
+    "exit_codes": [
+      0,
+      0,
+      0
+    ],
+    "diagnostic_tests": 7,
+    "warning_scope": "seven pre-existing HT dead-code warnings in no-std builds",
+    "logs": {
+      "candidate-wasm.log": "eb73556fadb5d2cfa28f4af0051ee66fc6a518cf166af35b2e64df739d9db4cf",
+      "restored-wasm.log": "e75587dc5c9bf4b3c5315724843e06e330384d5e4219b398fc9f6f4b55f54666",
+      "codec-restored-diagnostic-tests.log": "cfa5689e7e024e312bcdb07945cd9fd4e4063bcd3abb2c5dfd23d281d2962679"
+    }
+  }
 }

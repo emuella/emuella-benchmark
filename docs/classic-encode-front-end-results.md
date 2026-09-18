@@ -61,8 +61,14 @@ this candidate. The fresh facade confirmation below supplied the decision eviden
 ## Correctness-cleared development selection
 
 Candidate `21033ea890b4393e8c7f6791cf4a89d866d2dfd3` passed independent pre-timing
-Route A source review and its exact-commit canonical gate, including platform,
-malformed/failure, independent coefficient and complete-stream reference checks.
+Route A source review and its exact-commit canonical gate before timing, including
+native/no-std, malformed/failure, independent coefficient and complete-stream
+reference checks. Explicit WASM verification was missing before confirmation;
+after confirmation, the archived exact candidate and restored production head
+each passed `cargo check` for codestream/transform with `--no-default-features`
+and `--target wasm32-unknown-unknown`. The retained logs record seven pre-existing
+HT dead-code warnings. This later check supplies platform evidence, not a
+pre-timing WASM clearance or browser performance result.
 Ordinary and diagnostic worker contract tests passed. The mechanism reuses the
 previously unused input scratch line; the original per-column lifting/scatter,
 odd remainder and horizontal pass remain unchanged. Other encoder profiles keep
@@ -86,8 +92,10 @@ V1 remained frozen throughout fresh confirmation, with no further variant or sou
 ## Fresh confirmation and disposition
 
 Twenty adjacent alternating AB/BA pairs per contrast used one operation per fresh
-process, zero warmups and the frozen candidate. The ordinary worker was built
-from benchmark `5b1426cd10d3845ea97fd7e24ecbe5838010f9a1`; the confirmation
+process, zero warmups and the frozen candidate. The baseline ordinary worker was
+built from benchmark `5b1426cd10d3845ea97fd7e24ecbe5838010f9a1`; the candidate
+ordinary worker used `0dd1cbd250581e4cbb438da4256e13e818bd358b`. The compiled
+worker source was unchanged between these benchmark revisions. The confirmation
 driver and protocol were frozen at `78c816fa54df207a9aec479c9dbc7ce133c01337`.
 Allocation workers used benchmark `0dd1cbd250581e4cbb438da4256e13e818bd358b`.
 Receipts bind the baseline and candidate binaries to their exact codec sources.

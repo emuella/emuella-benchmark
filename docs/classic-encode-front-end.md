@@ -171,6 +171,9 @@ All 1,288 started observation calls completed: 32 baseline, 24 screen,
 The four initial contrasts passed, including the sole Route A primary; 22 of 24
 conditional contrasts did not establish the required 99% upper bound <=+1%.
 All conditional intervals include zero, so none establishes a slowdown.
+The pre-timing canonical gate covered native/no-std checks; explicit WASM checks
+were missing then and passed only after confirmation for the archived exact
+candidate and restored production head. This timing gap remains recorded.
 
 V1 is **not selected for production**. The 160-call external anchor and sixteen
 selected-candidate diagnostic calls remain unrun under the conditional rule;
