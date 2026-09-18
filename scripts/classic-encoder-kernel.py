@@ -81,7 +81,75 @@ def incremental_contrasts(assets, phase):
     return cases
 
 
+def front_end_contrasts(assets, phase):
+    """Frozen front-end stages, preserving acquisition and stream origin."""
+    if phase == 'spacenet':
+        eligible = entropy_contrasts(assets, phase)
+        chip = {c[0]['id']: c[0] for c in eligible
+                if c[0]['id'].endswith('AOI_2_Vegas_img1454')}
+        return [(a,s,w,'encode','emuella') for a in chip.values()
+                for s in (0,1) for w in (1,8)]
+    # Validate the inherited nine-product cohort before selecting a finite subset.
+    entropy_contrasts(assets, 'primary')
+    def select(prefix, products):
+        selected = [a for a in assets if a['id'].startswith(prefix) and a['product'] in products]
+        if sorted(a['product'] for a in selected) != sorted(products):
+            raise ValueError('fixed front-end acquisition/products differ')
+        return selected
+    mansfield = select('94_', ('PAN16','MS16','RGB8','RGB16'))
+    boca = select('106_', ('PAN16','MS16','RGB8','RGB16'))
+    tok = select('105_', ('RGB8',))
+    operation, origin = 'encode', 'emuella'
+    if phase == 'screen':
+        selected = [a for a in mansfield if a['product'] == 'RGB8']
+    elif phase == 'primary':
+        selected = [a for a in boca if a['product'] == 'RGB8']
+    elif phase == 'confirm':
+        selected = [a for a in mansfield if a['product'] != 'RGB8'] + tok
+    else:
+        raise ValueError('unknown front-end timing phase')
+    cases = [(a,s,w,operation,origin) for a in selected for s in (0,1) for w in (1,8)]
+    if phase == 'confirm':
+        cases += [(a,s,w,'decode','openjpeg') for a in mansfield if a['product'] == 'RGB8'
+                  for s in (0,1) for w in (1,8)]
+    return cases
+
+
+def observation_budget(study, path):
+    policies = {'incremental':'mq-d2-incremental-confirmation/v1',
+                'front-end':'classic-encode-front-end/v1'}
+    if study not in policies:
+        return None
+    if path is None:
+        raise ValueError(study+' observations require the shared finite budget ledger')
+    return refresh.module('finite_budget', 'mq-d2-budget.py').Budget(path, policies[study])
+
+
+FRONT_END_FIELDS = ('conversion_level_shift', 'forward_rct', 'dwt_scratch_resize',
+                    'dwt_scratch_drop', 'dwt_validation', 'dwt_vertical_gather',
+                    'dwt_vertical_lifting', 'dwt_vertical_store',
+                    'dwt_horizontal_lifting', 'dwt_horizontal_copy')
+
+
+def validate_front_end_diagnostic(observation):
+    detail = observation.get('execution_diagnostic', {}).get('front_end_ns')
+    if observation.get('samples_ns') != [] or not isinstance(detail, dict):
+        raise ValueError('front-end diagnostic fields missing or headline samples present')
+    if set(detail) != set(FRONT_END_FIELDS) or any(type(v) is not int or v < 0 for v in detail.values()):
+        raise ValueError('front-end diagnostic intervals differ')
+
+
+def front_end_observation_cases(selected, kind):
+    front_end_contrasts(selected, 'screen')
+    if kind not in ('diagnose', 'describe'):
+        raise ValueError('front-end observations require diagnose or describe')
+    return [(a,s,w,'encode','emuella') for w in (8,1) for a in selected
+            if a['id'].startswith('94_') for s in (0,1)]
+
+
 def contrasts(assets, phase, study="kernel"):
+    if study == "front-end":
+        return front_end_contrasts(assets, phase)
     if study == "incremental":
         return incremental_contrasts(assets, phase)
     if study == "entropy":
@@ -116,24 +184,24 @@ def contrasts(assets, phase, study="kernel"):
 
 
 def observation_name(study, round_id, case_id, style, workers, operation, origin, arm):
-    origin_suffix = '-'+origin if study in ('entropy','incremental') else ''
+    origin_suffix = '-'+origin if study in ('entropy','incremental','front-end') else ''
     return f"r{round_id:02}-{case_id}-s{style}-w{workers}-{operation}{origin_suffix}-{arm}"
 
 
 def measure(args):
-    budget = None
-    if args.study == "incremental":
-        if args.budget is None:
-            raise ValueError("incremental observations require the shared finite budget ledger")
-        budget = refresh.module("incremental_budget", "mq-d2-budget.py").Budget(args.budget)
+    budget = observation_budget(args.study, args.budget)
     owner = refresh.classic.clean_source(refresh.ROOT)
     builds = {arm: refresh.bind(getattr(args, arm)) for arm in ARMS}
     if any(b.get('sampling') or b.get('execution_diagnostics') or b.get('allocation_diagnostics') for b in builds.values()):
         raise ValueError('diagnostic builds cannot supply treatment timings')
     if builds['reference']['codec']['source_revision'] != args.reference_revision:
         raise ValueError('reference revision differs from declared baseline')
-    if args.study in ('parallel','entropy','incremental') and any(b.get('encoder_backend') != 'default' for b in builds.values()):
+    if args.study in ('parallel','entropy','incremental','front-end') and any(b.get('encoder_backend') != 'default' for b in builds.values()):
         raise ValueError('treatment requires packed-default dispatch with selector unset in both arms')
+    if args.study == 'front-end' and any(b.get('scheduling_window') != 'default' for b in builds.values()):
+        raise ValueError('front-end timings require the unchanged scheduling window')
+    if args.study == 'front-end' and (not args.candidate_revision or builds['packed']['codec']['source_revision'] != args.candidate_revision):
+        raise ValueError('front-end candidate source differs from declared binding')
     if builds['packed'].get('encoder_backend') not in ('packed', 'default'):
         raise ValueError('candidate build forces the reference')
     for field in ('rustc','openjpeg','libraries','environment','cargo_configs'):
@@ -255,16 +323,26 @@ def analyse(args):
 def diagnose(args):
     """Finite attribution/resource/scaling processes; never headline inference."""
     kind = args.command
+    study = args.study
+    if kind == 'describe' and study != 'front-end':
+        raise ValueError('single-process descriptive observations require the front-end study')
+    budget = observation_budget(study, args.budget)
     owner = refresh.classic.clean_source(refresh.ROOT)
     build = refresh.bind(args.build)
     if build.get('sampling') or build.get('encoder_backend') != 'default':
         raise ValueError('requires packed-default dispatch without sampling')
     if bool(build.get('execution_diagnostics')) != (kind == 'diagnose') or bool(build.get('allocation_diagnostics')) != (kind == 'resources'):
         raise ValueError('observation mode differs from build instrumentation')
+    if study == 'front-end' and build.get('scheduling_window') != 'default':
+        raise ValueError('front-end observations require the unchanged scheduling window')
+    if study == 'front-end' and (not args.source_revision or build['codec']['source_revision'] != args.source_revision):
+        raise ValueError('front-end observation source differs from declared binding')
     selected = assets(args.prepared, 'screen')
-    if kind == 'diagnose':
+    if study == 'front-end':
+        cases = front_end_observation_cases(selected, kind)
+    elif kind == 'diagnose':
         selected = [a for a in selected if a['id'].startswith('94_') and a['product'] in ('PAN16', 'RGB8', 'MS16')]
-    if len(selected) != (3 if kind == 'diagnose' else 9):
+    if study != 'front-end' and len(selected) != (3 if kind == 'diagnose' else 9):
         raise ValueError('fixed observation cohort differs')
     store = args.prepared.parent.resolve()
     if args.output.parent.resolve() != store or args.streams.parent.resolve() != store:
@@ -274,21 +352,30 @@ def diagnose(args):
         raise ValueError('reviewed notice differs')
     worker_counts = (8,1) if kind == 'diagnose' else ((1,2,4,8) if kind == 'resources' else (2,4))
     rounds = 3 if kind == 'scaling' else 1
+    if study != 'front-end':
+        cases = [(a,s,w,'encode','emuella') for w in worker_counts for a in selected for s in (0,1)]
     requests = [refresh.make_request(a,args.prepared,args.streams,'emuella','emuella',style,workers,'encode',round_id)
-                for round_id in range(rounds) for workers in worker_counts for a in selected for style in (0,1)]
+                for round_id in range(rounds) for a,style,workers,_,_ in cases]
     stream_hashes = {r['stream_path']:r['stream_sha256'] for r in requests}
     args.output.mkdir(exist_ok=False)
     (args.output/'LICENSE.txt').write_bytes(notice.read_bytes())
     (args.output/'NOTICE.txt').write_text('RarePlanes Dataset, June 2020. J. Shermeyer et al.; In-Q-Tel - CosmiQ Works and AI.Reverie. CC BY-SA 4.0. Local execution observations; unchanged input and stream lineage stays in this store. No imagery redistribution.\n')
-    manifest = dict(kind=kind,arm=args.arm,build=build,owner=owner,
+    manifest = dict(kind=kind,study=study,arm=args.arm,build=build,owner=owner,
                     requests=requests,prepared_sha256=sha(args.prepared/'prepared.json'),
                     machine=refresh.cpu_identity(list(range(8))),calls=len(requests),rounds=rounds,
-                    attribution_campaign_cap=36,headline_samples=False)
+                    attribution_campaign_cap=32 if study == 'front-end' else 36,headline_samples=False)
     write(args.output/'manifest.json',manifest)
     rows=[]
     for request in requests:
         name=f"{request['case_id']}-s{request['style']}-w{request['workers']}-r{request['round']}"
+        if budget is not None:
+            budget.before_call()
         result=refresh.run_process(build['binary'],request,args.output/name,list(range(request['workers'])),execution_diagnostics=kind == 'diagnose',allocation_diagnostics=kind == 'resources')
+        if study == 'front-end' and kind == 'diagnose' and result['status'] == 0:
+            try:
+                validate_front_end_diagnostic(result['observation'])
+            except (ValueError, AttributeError) as error:
+                result.update(status='invalid_response', reason=str(error))
         rows.append(dict(request=request,result=result,path=name))
         write(args.output/(name+'-receipt.json'),rows[-1])
         print(name,result['status'],flush=True)
@@ -305,16 +392,18 @@ def main():
     m=sub.add_parser('measure'); m.add_argument('--phase',choices=('screen','describe','primary','confirm','spacenet'),required=True)
     for name in ('reference','packed','prepared','streams','output'):
         m.add_argument('--'+name,type=Path,required=True)
-    m.add_argument('--budget',type=Path); m.add_argument('--reference-revision',required=True); m.add_argument('--study',choices=('kernel','parallel','entropy','incremental'),default='kernel')
+    m.add_argument('--budget',type=Path); m.add_argument('--candidate-revision'); m.add_argument('--reference-revision',required=True); m.add_argument('--study',choices=('kernel','parallel','entropy','incremental','front-end'),default='kernel')
     a=sub.add_parser('analyse'); a.add_argument('--output',type=Path,required=True); a.add_argument('--estimator',type=Path,required=True)
-    for command in ('diagnose','resources','scaling'):
+    for command in ('diagnose','resources','scaling','describe'):
         d=sub.add_parser(command); d.add_argument('--arm',choices=('baseline','selected','attribution'),required=True)
+        d.add_argument('--study',choices=('parallel','front-end'),default='parallel')
+        d.add_argument('--budget',type=Path); d.add_argument('--source-revision')
         for name in ('build','prepared','streams','output'):
             d.add_argument('--'+name,type=Path,required=True)
     args=p.parse_args()
     for key,value in vars(args).items():
         if isinstance(value,Path):setattr(args,key,value.resolve())
-    {'measure':measure,'analyse':analyse,'diagnose':diagnose,'resources':diagnose,'scaling':diagnose}[args.command](args)
+    {'measure':measure,'analyse':analyse,'diagnose':diagnose,'resources':diagnose,'scaling':diagnose,'describe':diagnose}[args.command](args)
 
 
 if __name__=='__main__':main()

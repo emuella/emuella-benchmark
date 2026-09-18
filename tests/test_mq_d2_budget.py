@@ -34,3 +34,24 @@ class BudgetTests(unittest.TestCase):
             with patch.object(budget,'size',return_value=2*1024**3), self.assertRaises(ValueError):
                 b.before_call()
             self.assertFalse(b.state_path.exists())
+
+
+class FrontEndBudgetTests(unittest.TestCase):
+    def test_frozen_front_end_caps_and_shared_restart_state(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); config = root/'budget.json'
+            config.write_text(json.dumps(dict(policy='classic-encode-front-end/v1',protected_output_roots=[str(root/'protected')],scratch_root=str(root/'scratch'))))
+            b = budget.Budget(config, 'classic-encode-front-end/v1')
+            self.assertEqual((b.calls,b.seconds,b.protected_bytes,b.scratch_bytes),(1600,14400,4*1024**3,30*1024**3))
+            b.before_call(); budget.Budget(config).before_call()
+            self.assertEqual(json.loads(b.state_path.read_text())['started_calls'],2)
+            for calls,elapsed in [(1600,0),(0,14400-119)]:
+                b.state_path.write_text(json.dumps(dict(started_calls=calls,started_unix=time.time()-elapsed)))
+                with self.assertRaisesRegex(ValueError,'incomplete'): b.before_call()
+            b.state_path.unlink()
+            for protected,scratch in [(4*1024**3,0),(0,30*1024**3)]:
+                with patch.object(budget,'size',side_effect=lambda p: protected if p.endswith('protected') else scratch):
+                    with self.assertRaisesRegex(ValueError,'incomplete'): b.before_call()
+                    self.assertFalse(b.state_path.exists())
+            with self.assertRaisesRegex(ValueError,'policy differs'):
+                budget.Budget(config,'mq-d2-incremental-confirmation/v1')

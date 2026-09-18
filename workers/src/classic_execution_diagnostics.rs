@@ -43,6 +43,18 @@ pub fn encode<T>(call: impl FnOnce() -> T) -> (T, Value, u64) {
                 "forward_dwt":t.forward_dwt_ns as u64,"block_preparation":t.block_preparation_ns as u64,
                 "tier1_invocation":t.tier1_ns as u64,"packet_headers":t.packet_headers_ns as u64,
                 "assembly":t.assembly_ns as u64},
+            "front_end_ns":{
+                "conversion_level_shift":d.conversion_level_shift_ns as u64,
+                "forward_rct":d.forward_rct_ns as u64,
+                "dwt_scratch_resize":d.dwt_scratch_resize_ns as u64,
+                "dwt_scratch_drop":d.dwt_scratch_drop_ns as u64,
+                "dwt_validation":d.dwt_validation_ns as u64,
+                "dwt_vertical_gather":d.dwt_vertical_gather_ns as u64,
+                "dwt_vertical_lifting":d.dwt_vertical_lifting_ns as u64,
+                "dwt_vertical_store":d.dwt_vertical_store_ns as u64,
+                "dwt_horizontal_lifting":d.dwt_horizontal_lifting_ns as u64,
+                "dwt_horizontal_copy":d.dwt_horizontal_copy_ns as u64},
+            "front_end_boundary_note":"Nested intervals within existing conversion/RCT and forward DWT stages; do not add these to stage totals. Diagnostic clocks perturb the shared operation body.",
             "stage_boundary_note":"Serial bypass tier1_invocation includes preparation and appends. Block durations include the existing Tier-1 call and internal preparation, with histogram aggregation afterwards. Parallel duration brackets include geometry; invocation/join is not pure kernel time.",
             "overhead_note":"Clock reads, post-join endpoint aggregation, profiled bookkeeping and atomic allocation metering perturb execution. No headline samples. Retained capacities exclude transient growth, which the separate allocation peak conservatively includes."
         }),
