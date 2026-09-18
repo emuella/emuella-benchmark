@@ -51,7 +51,7 @@ pub fn encode<T>(call: impl FnOnce() -> T) -> (T, Value, u64) {
 }
 
 #[cfg(feature = "classic-allocation-diagnostics")]
-pub fn allocation<T>(call: impl FnOnce() -> T) -> (T, Value, u64) {
+pub fn allocation<T>(operation: &str, call: impl FnOnce() -> T) -> (T, Value, u64) {
     let baseline = allocation_meter::reset();
     let start = std::time::Instant::now();
     let result = call();
@@ -61,7 +61,8 @@ pub fn allocation<T>(call: impl FnOnce() -> T) -> (T, Value, u64) {
         result,
         json!({"allocation_peak_additional_requested_bytes":peak,
         "includes_output_and_reallocation_overlap":true,
-        "boundary":"facade_encode_allocation_only_no_block_observer",
+        "boundary":if operation == "decode" { "facade_decode_allocation_only_no_block_observer" } else { "facade_encode_allocation_only_no_block_observer" },
+        "queried_requirements":"Encoder admission only; working_bytes and output_capacity_limit are not decoder allocation limits",
         "overhead_note":"Atomic allocation metering perturbs this separate resource process; samples_ns remains empty. Peak is requested allocation, not RSS."}),
         ns,
     )
