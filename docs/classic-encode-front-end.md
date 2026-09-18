@@ -44,6 +44,13 @@ support symbol is internal cross-crate plumbing; existing signatures remain inta
 This is complexity/source acceptance only; canonical, resources, screen and
 confirmation remain mandatory. Runtime freeze records bind review and builds.
 
+V1 is the sole screened and selected candidate. Its exact committed canonical
+gate, ordinary/diagnostic worker contracts and 32 initial allocation/exactness
+calls passed before timing. The fixed screen completed all 24 calls and met its
+descriptive eligibility predicates. No second or third variant was developed.
+Freeze that same source for fresh confirmation; the screen cannot supply any
+confirmation sample or performance confidence claim.
+
 At most three related development variants, each three alternating pairs over
 Mansfield RGB8 in both styles at one/eight workers (24 calls). First clear
 authored correctness/resources. Screen eligibility requires >=2% bypass

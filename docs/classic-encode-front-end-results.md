@@ -49,6 +49,31 @@ locality mechanism. The measured gather interval is headroom, not a recoverable
 saving prediction. Fusion and new parallel transform execution are not part of
 this candidate. Fresh facade confirmation remains necessary.
 
+## Correctness-cleared development selection
+
+Candidate `21033ea890b4393e8c7f6791cf4a89d866d2dfd3` passed independent pre-timing
+Route A source review and its exact-commit canonical gate, including platform,
+malformed/failure, independent coefficient and complete-stream reference checks.
+Ordinary and diagnostic worker contract tests passed. The mechanism reuses the
+previously unused input scratch line; the original per-column lifting/scatter,
+odd remainder and horizontal pass remain unchanged. Other encoder profiles keep
+their original entry. No allocation, runtime option, scheduler or ISA was added.
+
+All 32 initial resource calls passed: full Boca/Mansfield RGB8, both styles, both
+arms and 1/2/4/8 workers. Streams match the immutable baseline and every native
+sample reconstructs. Every pair has equal working queries, output capacities,
+allocation peaks and observed allocation counts. The largest requested peak is
+366,357,664 bytes, within its 602,189,308-byte query and the 768 MiB application
+working limit. This is codec allocation, distinct from whole-process RSS/CPU.
+Equality of these observed counts is not a scheduling guarantee.
+
+The sole V1 screen completed all 24 calls, three alternating pairs per cell.
+Mansfield RGB8 candidate/reference mean ratios were 0.997660/0.996657 at one
+worker and 0.948432/0.941691 at eight, for style zero/bypass respectively.
+Eight-worker estimates are therefore −5.157%/−5.831%; all screen non-regression
+predicates pass. These are descriptive results without confidence intervals.
+V1 is frozen for fresh confirmation, with no further variant or source tuning.
+
 Protected observations and independent receipts remain in the approved
 RarePlanes store; public evidence contains factual measurements and identities.
 RarePlanes Dataset, June 2020: J. Shermeyer et al.; In-Q-Tel – CosmiQ Works and
