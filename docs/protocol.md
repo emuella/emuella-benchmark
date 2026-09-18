@@ -106,3 +106,7 @@ CPUs, affinity, observed CPU governors and a hash of selected performance-relate
 environment variables. Environment tags capture additional operator-controlled
 conditions. This is factual provenance, not isolation from competing workloads,
 thermal drift, turbo variation or every possible environment dependency.
+
+[Prospective precision investigation](paired-precision.md) documents a test-only
+pair-aware candidate and its calibration requirements; the current method and
+protocol remain unchanged.

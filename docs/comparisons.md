@@ -44,3 +44,7 @@ encoded bits per spatial pixel (encode only), aggregate exactness/MSE/PSNR and
 observed peak process RSS with observation count. Lossy timing improvements do
 not by themselves establish a better rate/distortion trade-off. Static HTML
 escapes all dynamic strings and makes no network requests.
+
+[Prospective precision investigation](paired-precision.md) documents a test-only
+pair-aware candidate and its calibration requirements; the current method and
+protocol remain unchanged.
