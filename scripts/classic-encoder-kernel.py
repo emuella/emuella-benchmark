@@ -57,7 +57,33 @@ def entropy_contrasts(assets, phase):
     return [c for c in cases if c not in primaries]
 
 
+def incremental_contrasts(assets, phase):
+    """Prospective MQ D2 matrix; no development screening or extra rounds."""
+    if phase == 'spacenet':
+        # Reuse existing cohort/role validation before narrowing the fixed chip.
+        eligible = entropy_contrasts(assets, phase)
+        return [c for c in eligible if c[0]['id'].endswith('AOI_2_Vegas_img1454') and c[2] == 1]
+    primary = entropy_contrasts(assets, 'primary')
+    if phase == 'primary':
+        return primary
+    if phase != 'confirm':
+        raise ValueError('incremental confirmation has no screening or descriptive phase')
+    boca = [c[0] for c in primary]
+    tok = [a for a in assets if a['id'].startswith('105_') and a['product'] == 'RGB8']
+    pan = [a for a in assets if a['id'].startswith('94_') and a['product'] == 'PAN16']
+    if len(tok) != 1 or len(pan) != 1:
+        raise ValueError('incremental regression cohort differs')
+    cases = [(a,1,1,'decode','openjpeg') for a in boca]
+    cases += [(a,s,w,'decode','openjpeg') for a in tok for w in (1,8) for s in (0,1)]
+    cases += [(a,0,8,'decode','openjpeg') for a in boca]
+    cases += [(a,0,1,'decode','emuella') for a in boca]
+    cases += [(a,s,1,'encode','emuella') for a in pan for s in (0,1)]
+    return cases
+
+
 def contrasts(assets, phase, study="kernel"):
+    if study == "incremental":
+        return incremental_contrasts(assets, phase)
     if study == "entropy":
         return entropy_contrasts(assets, phase)
     if phase in ("describe", "primary"):
@@ -90,18 +116,23 @@ def contrasts(assets, phase, study="kernel"):
 
 
 def observation_name(study, round_id, case_id, style, workers, operation, origin, arm):
-    origin_suffix = '-'+origin if study == 'entropy' else ''
+    origin_suffix = '-'+origin if study in ('entropy','incremental') else ''
     return f"r{round_id:02}-{case_id}-s{style}-w{workers}-{operation}{origin_suffix}-{arm}"
 
 
 def measure(args):
+    budget = None
+    if args.study == "incremental":
+        if args.budget is None:
+            raise ValueError("incremental observations require the shared finite budget ledger")
+        budget = refresh.module("incremental_budget", "mq-d2-budget.py").Budget(args.budget)
     owner = refresh.classic.clean_source(refresh.ROOT)
     builds = {arm: refresh.bind(getattr(args, arm)) for arm in ARMS}
     if any(b.get('sampling') or b.get('execution_diagnostics') or b.get('allocation_diagnostics') for b in builds.values()):
         raise ValueError('diagnostic builds cannot supply treatment timings')
     if builds['reference']['codec']['source_revision'] != args.reference_revision:
         raise ValueError('reference revision differs from declared baseline')
-    if args.study in ('parallel','entropy') and any(b.get('encoder_backend') != 'default' for b in builds.values()):
+    if args.study in ('parallel','entropy','incremental') and any(b.get('encoder_backend') != 'default' for b in builds.values()):
         raise ValueError('treatment requires packed-default dispatch with selector unset in both arms')
     if builds['packed'].get('encoder_backend') not in ('packed', 'default'):
         raise ValueError('candidate build forces the reference')
@@ -149,6 +180,8 @@ def measure(args):
                 name=observation_name(args.study,round_id,a['id'],style,workers,operation,origin,arm)
                 request=refresh.make_request(a,args.prepared,args.streams,origin,'emuella',style,workers,'prepare',round_id)
                 request.update(operation=operation,stream_path=str(stream_path(a,style,origin)),stream_sha256=sha(stream_path(a,style,origin)))
+                if budget is not None:
+                    budget.before_call()
                 result=refresh.run_process(builds[arm]['binary'],request,args.output/name,cpus[:workers])
                 rows.append(dict(case_id=a['id'],style=style,workers=workers,operation=operation,origin=origin,round=round_id,arm=arm,result=result,path=name))
                 # Preserve each completed observation even if the driver later fails.
@@ -272,7 +305,7 @@ def main():
     m=sub.add_parser('measure'); m.add_argument('--phase',choices=('screen','describe','primary','confirm','spacenet'),required=True)
     for name in ('reference','packed','prepared','streams','output'):
         m.add_argument('--'+name,type=Path,required=True)
-    m.add_argument('--reference-revision',required=True); m.add_argument('--study',choices=('kernel','parallel','entropy'),default='kernel')
+    m.add_argument('--budget',type=Path); m.add_argument('--reference-revision',required=True); m.add_argument('--study',choices=('kernel','parallel','entropy','incremental'),default='kernel')
     a=sub.add_parser('analyse'); a.add_argument('--output',type=Path,required=True); a.add_argument('--estimator',type=Path,required=True)
     for command in ('diagnose','resources','scaling'):
         d=sub.add_parser(command); d.add_argument('--arm',choices=('baseline','selected','attribution'),required=True)

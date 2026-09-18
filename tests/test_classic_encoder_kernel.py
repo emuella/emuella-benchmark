@@ -116,6 +116,28 @@ class KernelCoverageTests(unittest.TestCase):
         self.assertNotEqual(kernel.observation_name('entropy',*args),
                             kernel.observation_name('entropy',0,'case',0,1,'decode','emuella','reference'))
 
+    def test_incremental_matrix_is_finite_and_has_no_screen(self):
+        assets = self.fixture('screen')[0]['assets']
+        primary = kernel.contrasts(assets, 'primary', 'incremental')
+        regression = kernel.contrasts(assets, 'confirm', 'incremental')
+        self.assertEqual((len(primary), len(regression)), (2, 12))
+        self.assertEqual({c[0]['product'] for c in primary}, {'PAN16', 'MS16'})
+        for phase in ('screen', 'describe'):
+            with self.assertRaises(ValueError): kernel.contrasts(assets, phase, 'incremental')
+        chips = ['AOI_2_Vegas_img1454','AOI_3_Paris_img235','AOI_4_Shanghai_img1196'] + [f'AOI_2_Vegas_img{i}' for i in range(9)]
+        sn = [dict(id='RGB-PanSharpen_'+chip, role='development') for chip in chips]
+        cases = kernel.contrasts(sn, 'spacenet', 'incremental')
+        self.assertEqual(len(cases), 2)
+        self.assertEqual({c[1:] for c in cases}, {(0,1,'decode','emuella'), (1,1,'decode','emuella')})
+        for phase, selected in [('primary', assets), ('confirm', assets), ('spacenet', sn)]:
+            contrasts = [dict(case_id=a['id'],style=s,workers=w,operation=op,origin=o)
+                         for a,s,w,op,o in kernel.contrasts(selected,phase,'incremental')]
+            manifest = dict(study='incremental',phase=phase,rounds=20,assets=selected,contrasts=contrasts)
+            rows = [dict(c,round=r,arm=arm) for c in contrasts for r in range(20) for arm in kernel.ARMS]
+            kernel.validate_rows(manifest, rows)
+            with self.assertRaises(ValueError): kernel.validate_rows(manifest, rows[:-1])
+            with self.assertRaises(ValueError): kernel.validate_rows(dict(manifest,rounds=21),rows)
+
     def test_three_round_screen_never_calls_twenty_round_estimator(self):
         manifest,rows=self.fixture('screen')
         for row in rows:
