@@ -45,6 +45,7 @@ pixel payloads or secrets.
 [Corpus integration](docs/corpus.md) describes runtime catalogue identities.
 [Refreshed Emuella–OpenJPEG results](docs/openjpeg-refresh-results.md) compare matched classic profiles and CPU budgets.
 [Packed encoder qualification](docs/classic-encoder-kernel-results.md) compares the retained reference with the qualified encoder and a fresh OpenJPEG anchor.
+[Finite entropy result](docs/classic-entropy-hot-loop-results.md) records the rejected decoder decision-path variants and retained independent oracle.
 [RarePlanes calibration](docs/rareplanes-calibration.md) describes the bounded
 full-location real-scene probe.
 

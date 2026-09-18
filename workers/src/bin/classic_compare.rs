@@ -71,6 +71,13 @@ struct Sampling {
 }
 #[cfg(feature = "classic-encode-sampling")]
 impl Sampling {
+    fn admit(operation: &str, codec: &str, workers: u8) -> Result<()> {
+        if !matches!(operation, "encode" | "decode") || codec != "emuella" || workers != 1 {
+            return Err("sampling requires one-worker Emuella encode or decode".into());
+        }
+        Ok(())
+    }
+
     fn open() -> Result<Self> {
         let path = |key| std::env::var_os(key).ok_or_else(|| format!("missing {key}"));
         Ok(Self {
@@ -113,6 +120,18 @@ mod sampling_tests {
             control: tempfile::tempfile().unwrap(),
             acknowledgement: std::io::BufReader::new(acknowledgement),
         }
+    }
+
+    #[test]
+    fn sampling_admits_only_single_worker_emuella_operations() {
+        for operation in ["encode", "decode"] {
+            assert!(Sampling::admit(operation, "emuella", 1).is_ok());
+            assert!(Sampling::admit(operation, "openjpeg", 1).is_err());
+            for workers in [0, 2, 4, 8] {
+                assert!(Sampling::admit(operation, "emuella", workers).is_err());
+            }
+        }
+        assert!(Sampling::admit("prepare", "emuella", 1).is_err());
     }
 
     #[test]
@@ -543,9 +562,7 @@ fn run(r: Request) -> Result<Value> {
     }
     #[cfg(feature = "classic-encode-sampling")]
     let mut sampling = {
-        if r.operation != "encode" || r.codec != "emuella" || r.workers != 1 {
-            return Err("sampling requires one-worker Emuella encode".into());
-        }
+        Sampling::admit(&r.operation, &r.codec, r.workers)?;
         let mut sampling = Sampling::open()?;
         sampling.command(b"enable\n")?;
         sampling

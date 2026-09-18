@@ -67,7 +67,8 @@ It compiles `classic-encode-sampling` and requires `perf record -D -1` with
 to those FIFOs. The worker enables samples immediately before the existing
 facade operation and disables them before hashing/profile inspection and full
 reconstruction. Small control/clock overhead at the edges remains in the sampled
-interval. This build accepts only one-worker Emuella encoding and emits no timing
+interval. The retained `classic-encode-sampling` feature also admits one-worker
+Emuella decode at that same operation boundary. Both modes emit no timing
 samples. Headline drivers reject its receipt. The ordinary binary compiles no
 sampling control, environment lookup or control IO into its operation.
 

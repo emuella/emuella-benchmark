@@ -73,6 +73,49 @@ class KernelCoverageTests(unittest.TestCase):
         self.assertEqual({c[0]['id'] for c in contrasts},{'RGB-PanSharpen_'+c for c in chips[:3]})
         with self.assertRaises(ValueError):kernel.contrasts(assets[1:]+[assets[-1]],'spacenet','parallel')
 
+    def test_entropy_stages_partition_the_frozen_matrix(self):
+        manifest, _ = self.fixture('screen')
+        assets = manifest['assets']
+        stages = {phase:kernel.contrasts(assets,phase,'entropy')
+                  for phase in ('screen','describe','primary','confirm')}
+        self.assertEqual({p:len(c) for p,c in stages.items()},
+                         dict(screen=6,describe=6,primary=2,confirm=34))
+        self.assertTrue(all(c[2:] == (1,'decode','openjpeg') for c in stages['screen']))
+        self.assertTrue(all(c[2:] == (8,'decode','openjpeg') for c in stages['describe']))
+        self.assertTrue(all(c[0]['id'].startswith('106_') and c[1:]==(0,1,'decode','openjpeg')
+                            for c in stages['primary']))
+        key=lambda c:(c[0]['id'],*c[1:])
+        combined=list(map(key,stages['primary']+stages['confirm']))
+        self.assertEqual(len(set(combined)),36)
+        chips=['AOI_2_Vegas_img1454','AOI_3_Paris_img235','AOI_4_Shanghai_img1196']+[f'AOI_2_Vegas_img{i}' for i in range(9)]
+        sn=[dict(id='RGB-PanSharpen_'+chip,role='development') for chip in chips]
+        cases=kernel.contrasts(sn,'spacenet','entropy')
+        self.assertEqual(len(cases),8)
+        self.assertTrue(all(c[3:] == ('decode','emuella') for c in cases))
+        self.assertEqual({c[0]['id'] for c in cases if c[2]==8},{'RGB-PanSharpen_'+chips[0]})
+
+    def test_entropy_row_validation_rejects_missing_origin_and_budget_changes(self):
+        manifest, _ = self.fixture('screen')
+        for phase,rounds in [('screen',3),('describe',3),('primary',20),('confirm',20)]:
+            cases=[dict(case_id=a['id'],style=s,workers=w,operation=op,origin=o)
+                   for a,s,w,op,o in kernel.contrasts(manifest['assets'],phase,'entropy')]
+            frozen=dict(manifest,phase=phase,study='entropy',rounds=rounds,contrasts=cases)
+            rows=[dict(c,round=r,arm=arm,result=dict(status=0))
+                  for c in cases for r in range(rounds) for arm in kernel.ARMS]
+            kernel.validate_rows(frozen,rows)
+            for changed in [rows[:-1],rows+[rows[0]]]:
+                with self.assertRaises(ValueError):kernel.validate_rows(frozen,changed)
+            with self.assertRaises(ValueError):kernel.validate_rows(dict(frozen,rounds=rounds+1),rows)
+        with self.assertRaises(ValueError):kernel.contrasts(manifest['assets'],'primary','kernel')
+
+    def test_entropy_origins_have_distinct_paths_without_changing_legacy_paths(self):
+        args=(0,'case',0,1,'decode','openjpeg','reference')
+        for study in ('kernel','parallel'):
+            self.assertEqual(kernel.observation_name(study,*args), 'r00-case-s0-w1-decode-reference')
+        self.assertEqual(kernel.observation_name('entropy',*args), 'r00-case-s0-w1-decode-openjpeg-reference')
+        self.assertNotEqual(kernel.observation_name('entropy',*args),
+                            kernel.observation_name('entropy',0,'case',0,1,'decode','emuella','reference'))
+
     def test_three_round_screen_never_calls_twenty_round_estimator(self):
         manifest,rows=self.fixture('screen')
         for row in rows:

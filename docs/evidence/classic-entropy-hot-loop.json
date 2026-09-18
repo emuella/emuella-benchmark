@@ -1,0 +1,1376 @@
+{
+  "schema_version": 1,
+  "disposition": "rejected_at_finite_development_screen",
+  "protocol_revision": "103b259953787205e2fc45ca6cb0ac419dd39ef7",
+  "family": "Decoder MQ decision-local registers and transition access",
+  "variants": {
+    "D1": "Local arithmetic/context values and delayed transition access, preserving exchange branches",
+    "D2": "Local values with factored Boolean-selected exchange and successor writeback"
+  },
+  "production": "Original merged MQ arithmetic restored; only test oracle and diagnostic support retained",
+  "counts": {
+    "initial_operation_samples": 12,
+    "d1_screen_calls": 36,
+    "d2_screen_calls": 36,
+    "d2_eight_worker_calls": 36,
+    "d2_operation_samples": 6,
+    "timed_authored_replay_pairs": 0,
+    "successful_facade_calls": 126,
+    "repeated_observations": 0
+  },
+  "conditional_stages_not_started": [
+    "Primary confirmation",
+    "Internal regression",
+    "Promotion allocation-only cohort",
+    "Expanded both-origin and 1/2/4/8-worker corpus parity",
+    "SpaceNet performance",
+    "External anchor"
+  ],
+  "configuration": {
+    "profile": "perf",
+    "optimisation": 3,
+    "lto": "thin",
+    "codegen_units": 1,
+    "parallel": true,
+    "optional_simd": false,
+    "encoder_selector": "unset",
+    "scheduler": "W joined batches",
+    "execution": "direct process-global pool",
+    "cpus_one_worker": [
+      0
+    ],
+    "cpus_eight_workers": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "working_bytes": 805306368,
+    "output_bytes": 67108864,
+    "process_timeout_seconds": 120,
+    "address_space_bytes": 8589934592,
+    "layout": "interleaved",
+    "decomposition_levels": 2,
+    "styles": [
+      0,
+      1
+    ],
+    "rgb_mct": "reversible_colour_transform",
+    "pan_msi_mct": "none",
+    "warmups": 0,
+    "samples_per_process": 1
+  },
+  "machine": {
+    "model": "AMD Ryzen 9 9950X3D 16-Core Processor",
+    "platform": "Linux-7.1.3-arch1-1-x86_64-with-glibc2.43",
+    "governors": {
+      "0": "powersave",
+      "1": "powersave",
+      "2": "powersave",
+      "3": "powersave",
+      "4": "powersave",
+      "5": "powersave",
+      "6": "powersave",
+      "7": "powersave"
+    },
+    "topology": {
+      "0": {
+        "physical_package_id": "0",
+        "core_id": "0",
+        "thread_siblings_list": "0,16"
+      },
+      "1": {
+        "physical_package_id": "0",
+        "core_id": "1",
+        "thread_siblings_list": "1,17"
+      },
+      "2": {
+        "physical_package_id": "0",
+        "core_id": "2",
+        "thread_siblings_list": "2,18"
+      },
+      "3": {
+        "physical_package_id": "0",
+        "core_id": "3",
+        "thread_siblings_list": "3,19"
+      },
+      "4": {
+        "physical_package_id": "0",
+        "core_id": "4",
+        "thread_siblings_list": "4,20"
+      },
+      "5": {
+        "physical_package_id": "0",
+        "core_id": "5",
+        "thread_siblings_list": "5,21"
+      },
+      "6": {
+        "physical_package_id": "0",
+        "core_id": "6",
+        "thread_siblings_list": "6,22"
+      },
+      "7": {
+        "physical_package_id": "0",
+        "core_id": "7",
+        "thread_siblings_list": "7,23"
+      }
+    }
+  },
+  "inputs": [
+    {
+      "id": "94_104001000B823500-PAN16",
+      "product": "PAN16",
+      "image": {
+        "components": 1,
+        "height": 2752,
+        "precision": 16,
+        "signed": false,
+        "width": 4851
+      },
+      "sha256": "6d2a3d930510b887641bff4c7aec491181828e5eabe950447088cb481f13e90c",
+      "source_sha256": "328ec70ec0227effb92f25605b64df9bcf42fdd2ab142555a3e70ec543881aa3",
+      "bytes": 26699904
+    },
+    {
+      "id": "94_104001000B823500-MS16",
+      "product": "MS16",
+      "image": {
+        "components": 8,
+        "height": 688,
+        "precision": 16,
+        "signed": false,
+        "width": 1213
+      },
+      "sha256": "aa82d48ac75adc0424759a8522f94ae93a58559917a66ea0d2d63bb93d5aa687",
+      "source_sha256": "f26c61bcb3e6c750619993bcd77ba3cbe4f1fd13ee53e50c137896c5ed46391e",
+      "bytes": 13352704
+    },
+    {
+      "id": "94_104001000B823500-RGB8",
+      "product": "RGB8",
+      "image": {
+        "components": 3,
+        "height": 2752,
+        "precision": 8,
+        "signed": false,
+        "width": 4851
+      },
+      "sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+      "source_sha256": "a3d8c33b1fc1ba32212be7296bba8d47c1165ed51b322dc8277115bc6ff39e9e",
+      "bytes": 40049856
+    }
+  ],
+  "prepared_manifest_sha256": "6c37b54bf75af0c17c1b67c5ad7bd2d56b5d34d45de9737ddb50d0fc1fe10e7b",
+  "builds": {
+    "sampling-baseline": {
+      "codec_revision": "bc747f86907aff09e09278e4444ad5932ef4669d",
+      "codec_tree": "138634fec5d3b7818b95c85d34881dc0807214a7",
+      "benchmark_revision": "4dfac6d3b70ea14ec7a9bec27ce5e456a5ad5721",
+      "benchmark_tree": "bbccb262e2b68ada5b24a1e7b100fd676de537e1",
+      "binary_sha256": "419a405abb87ce525f6e2e1070365177f7c26dac4472b847c39ad8b650fca15e",
+      "build_receipt_sha256": "0ad2600dc9d1d54af3bec50065b198303d18d8cd2ba3bba633a7c4247bfe0023",
+      "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.97.1\nLLVM version: 22.1.6\n",
+      "openjpeg": "2.5.4",
+      "sampling": true,
+      "encoder_backend": "default"
+    },
+    "baseline-ordinary": {
+      "codec_revision": "bc747f86907aff09e09278e4444ad5932ef4669d",
+      "codec_tree": "138634fec5d3b7818b95c85d34881dc0807214a7",
+      "benchmark_revision": "64b250144986d103b5a96f5afa914349d5b3cebf",
+      "benchmark_tree": "6771a1755f6114be5ea9b7e9db4cbe7f6c0127d6",
+      "binary_sha256": "05fb07d5c8dba4cb84755bf56d5318899e9e9d68a98487dc04a7953b07609e8a",
+      "build_receipt_sha256": "789a4bab21a64954a173b113918ef4d0bf942790c634dfe480557c6cf22fd0eb",
+      "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.97.1\nLLVM version: 22.1.6\n",
+      "openjpeg": "2.5.4",
+      "sampling": false,
+      "encoder_backend": "default"
+    },
+    "d1-ordinary": {
+      "codec_revision": "1e0e920c1096671b04863f81a254720df1d66866",
+      "codec_tree": "da49733b249e75be730b38c30bf27303a15d74f1",
+      "benchmark_revision": "64b250144986d103b5a96f5afa914349d5b3cebf",
+      "benchmark_tree": "6771a1755f6114be5ea9b7e9db4cbe7f6c0127d6",
+      "binary_sha256": "265b437daaf97b6814042da1e8d9db1b39cfed765017e277daea78be98be4d5e",
+      "build_receipt_sha256": "b5d89c231dde009848ad1b0c7484a7522a2878315da021342a8e2214e1615759",
+      "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.97.1\nLLVM version: 22.1.6\n",
+      "openjpeg": "2.5.4",
+      "sampling": false,
+      "encoder_backend": "default"
+    },
+    "d2-ordinary": {
+      "codec_revision": "78534e6ebad9ad5bbec35529ff315d3900f69b8a",
+      "codec_tree": "ada31becf548c53773ae66f893000526dac9426f",
+      "benchmark_revision": "64b250144986d103b5a96f5afa914349d5b3cebf",
+      "benchmark_tree": "6771a1755f6114be5ea9b7e9db4cbe7f6c0127d6",
+      "binary_sha256": "39a2e018d4c22aa6eabe05275d6a92fa904ef2a963915222d33f61d58212850c",
+      "build_receipt_sha256": "34511f87db2f36ea84a2724b03d1bc52eb7184911076403e2f4764f26bae449d",
+      "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.97.1\nLLVM version: 22.1.6\n",
+      "openjpeg": "2.5.4",
+      "sampling": false,
+      "encoder_backend": "default"
+    },
+    "d2-sampling": {
+      "codec_revision": "78534e6ebad9ad5bbec35529ff315d3900f69b8a",
+      "codec_tree": "ada31becf548c53773ae66f893000526dac9426f",
+      "benchmark_revision": "824bbfc1ec108b9833f364d4b83522d80b8888b8",
+      "benchmark_tree": "4ca62bb8d7afc6c7a76494801ecb8af159474dd6",
+      "binary_sha256": "11bc830a77ceadba8f0092bbd2912c72c5daa28be318ee01091c7c9a7fb3b95c",
+      "build_receipt_sha256": "cdcd27edb8dfa4dfd63ef0cfc1a43322e80a4b6dc3548d670560e87cd504b107",
+      "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.97.1\nLLVM version: 22.1.6\n",
+      "openjpeg": "2.5.4",
+      "sampling": true,
+      "encoder_backend": "default"
+    }
+  },
+  "descriptive_results": {
+    "d1_screen": {
+      "phase": "screen",
+      "complete": true,
+      "manifest_sha256": "5abc996a44b58f9d66ad8e405fdfcbf271e90e207afd04de77229639ff13e1ba",
+      "measurement_sha256": "567096b7a6c71474450a8a92c72b24877721d0e04ad2755bbaf2627279b9b840",
+      "estimator_sha256": null,
+      "comparisons": [
+        {
+          "case_id": "94_104001000B823500-PAN16",
+          "style": 0,
+          "workers": 1,
+          "operation": "decode",
+          "origin": "openjpeg",
+          "verdict": "development_screen_only",
+          "descriptive_ratio": 0.9764945806588073,
+          "arms": {
+            "reference": {
+              "mean_ms": 1338.0663643333332,
+              "samples_ns": [
+                1337425451,
+                1336453480,
+                1340320162
+              ],
+              "stream_bytes": [
+                13860855
+              ],
+              "maximum_process_rss_bytes": 126414848,
+              "mean_process_cpu_seconds": 1.36
+            },
+            "packed": {
+              "mean_ms": 1306.6145533333333,
+              "samples_ns": [
+                1308130851,
+                1309077110,
+                1302635699
+              ],
+              "stream_bytes": [
+                13860855
+              ],
+              "maximum_process_rss_bytes": 126349312,
+              "mean_process_cpu_seconds": 1.3266666666666667
+            }
+          }
+        },
+        {
+          "case_id": "94_104001000B823500-PAN16",
+          "style": 1,
+          "workers": 1,
+          "operation": "decode",
+          "origin": "openjpeg",
+          "verdict": "development_screen_only",
+          "descriptive_ratio": 0.9597424115776074,
+          "arms": {
+            "reference": {
+              "mean_ms": 684.0261363333334,
+              "samples_ns": [
+                680731864,
+                689399179,
+                681947366
+              ],
+              "stream_bytes": [
+                13801197
+              ],
+              "maximum_process_rss_bytes": 127266816,
+              "mean_process_cpu_seconds": 0.7066666666666667
+            },
+            "packed": {
+              "mean_ms": 656.4888936666666,
+              "samples_ns": [
+                656567271,
+                656707536,
+                656191874
+              ],
+              "stream_bytes": [
+                13801197
+              ],
+              "maximum_process_rss_bytes": 127287296,
+              "mean_process_cpu_seconds": 0.68
+            }
+          }
+        },
+        {
+          "case_id": "94_104001000B823500-MS16",
+          "style": 0,
+          "workers": 1,
+          "operation": "decode",
+          "origin": "openjpeg",
+          "verdict": "development_screen_only",
+          "descriptive_ratio": 0.977462491006258,
+          "arms": {
+            "reference": {
+              "mean_ms": 713.527628,
+              "samples_ns": [
+                714119517,
+                712129712,
+                714333655
+              ],
+              "stream_bytes": [
+                7414446
+              ],
+              "maximum_process_rss_bytes": 67448832,
+              "mean_process_cpu_seconds": 0.7233333333333333
+            },
+            "packed": {
+              "mean_ms": 697.4464926666666,
+              "samples_ns": [
+                699625048,
+                692442016,
+                700272414
+              ],
+              "stream_bytes": [
+                7414446
+              ],
+              "maximum_process_rss_bytes": 67575808,
+              "mean_process_cpu_seconds": 0.7066666666666667
+            }
+          }
+        },
+        {
+          "case_id": "94_104001000B823500-MS16",
+          "style": 1,
+          "workers": 1,
+          "operation": "decode",
+          "origin": "openjpeg",
+          "verdict": "development_screen_only",
+          "descriptive_ratio": 0.9706786779045551,
+          "arms": {
+            "reference": {
+              "mean_ms": 331.0741003333333,
+              "samples_ns": [
+                330268173,
+                329654958,
+                333299170
+              ],
+              "stream_bytes": [
+                7399832
+              ],
+              "maximum_process_rss_bytes": 68194304,
+              "mean_process_cpu_seconds": 0.3433333333333334
+            },
+            "packed": {
+              "mean_ms": 321.36657,
+              "samples_ns": [
+                322125692,
+                319091504,
+                322882514
+              ],
+              "stream_bytes": [
+                7399832
+              ],
+              "maximum_process_rss_bytes": 68214784,
+              "mean_process_cpu_seconds": 0.33
+            }
+          }
+        },
+        {
+          "case_id": "94_104001000B823500-RGB8",
+          "style": 0,
+          "workers": 1,
+          "operation": "decode",
+          "origin": "openjpeg",
+          "verdict": "development_screen_only",
+          "descriptive_ratio": 0.9454916510594371,
+          "arms": {
+            "reference": {
+              "mean_ms": 1749.502254,
+              "samples_ns": [
+                1761501371,
+                1751922039,
+                1735083352
+              ],
+              "stream_bytes": [
+                12399735
+              ],
+              "maximum_process_rss_bytes": 262168576,
+              "mean_process_cpu_seconds": 1.78
+            },
+            "packed": {
+              "mean_ms": 1654.1397746666667,
+              "samples_ns": [
+                1651207082,
+                1653257178,
+                1657955064
+              ],
+              "stream_bytes": [
+                12399735
+              ],
+              "maximum_process_rss_bytes": 261976064,
+              "mean_process_cpu_seconds": 1.6833333333333333
+            }
+          }
+        },
+        {
+          "case_id": "94_104001000B823500-RGB8",
+          "style": 1,
+          "workers": 1,
+          "operation": "decode",
+          "origin": "openjpeg",
+          "verdict": "development_screen_only",
+          "descriptive_ratio": 0.9394317936451964,
+          "arms": {
+            "reference": {
+              "mean_ms": 1563.9069136666667,
+              "samples_ns": [
+                1554163548,
+                1568620636,
+                1568936557
+              ],
+              "stream_bytes": [
+                12445962
+              ],
+              "maximum_process_rss_bytes": 263639040,
+              "mean_process_cpu_seconds": 1.5933333333333335
+            },
+            "packed": {
+              "mean_ms": 1469.183877,
+              "samples_ns": [
+                1471549260,
+                1469504534,
+                1466497837
+              ],
+              "stream_bytes": [
+                12445962
+              ],
+              "maximum_process_rss_bytes": 259567616,
+              "mean_process_cpu_seconds": 1.5
+            }
+          }
+        }
+      ],
+      "interpretation": "Three-round fresh-process means are descriptive only; no confidence intervals or promotion claim. Legacy reference/packed keys denote baseline/candidate treatments, not encoder selectors. RSS/CPU include whole-process setup and verification; no candidate allocation-only claim."
+    },
+    "d2_screen": {
+      "phase": "screen",
+      "complete": true,
+      "manifest_sha256": "a837d8593c19e3a43854db50ec21922e74cec5eec33c79ff9d1e81e5acd5cf45",
+      "measurement_sha256": "7282b57290d8e2ff5936ae5c3a1889b89797925cebf822caad2173dbc9cf6f5e",
+      "estimator_sha256": null,
+      "comparisons": [
+        {
+          "case_id": "94_104001000B823500-PAN16",
+          "style": 0,
+          "workers": 1,
+          "operation": "decode",
+          "origin": "openjpeg",
+          "verdict": "development_screen_only",
+          "descriptive_ratio": 0.9632627445155214,
+          "arms": {
+            "reference": {
+              "mean_ms": 1356.276102,
+              "samples_ns": [
+                1355533966,
+                1357932912,
+                1355361428
+              ],
+              "stream_bytes": [
+                13860855
+              ],
+              "maximum_process_rss_bytes": 126345216,
+              "mean_process_cpu_seconds": 1.3800000000000001
+            },
+            "packed": {
+              "mean_ms": 1306.4502403333333,
+              "samples_ns": [
+                1308112935,
+                1304452347,
+                1306785439
+              ],
+              "stream_bytes": [
+                13860855
+              ],
+              "maximum_process_rss_bytes": 126332928,
+              "mean_process_cpu_seconds": 1.3333333333333335
+            }
+          }
+        },
+        {
+          "case_id": "94_104001000B823500-PAN16",
+          "style": 1,
+          "workers": 1,
+          "operation": "decode",
+          "origin": "openjpeg",
+          "verdict": "development_screen_only",
+          "descriptive_ratio": 0.9913728491583819,
+          "arms": {
+            "reference": {
+              "mean_ms": 681.0775393333333,
+              "samples_ns": [
+                682841201,
+                679824132,
+                680567285
+              ],
+              "stream_bytes": [
+                13801197
+              ],
+              "maximum_process_rss_bytes": 127221760,
+              "mean_process_cpu_seconds": 0.7033333333333333
+            },
+            "packed": {
+              "mean_ms": 675.2017806666667,
+              "samples_ns": [
+                681090868,
+                665086845,
+                679427629
+              ],
+              "stream_bytes": [
+                13801197
+              ],
+              "maximum_process_rss_bytes": 127270912,
+              "mean_process_cpu_seconds": 0.7033333333333334
+            }
+          }
+        },
+        {
+          "case_id": "94_104001000B823500-MS16",
+          "style": 0,
+          "workers": 1,
+          "operation": "decode",
+          "origin": "openjpeg",
+          "verdict": "development_screen_only",
+          "descriptive_ratio": 0.9728520183789797,
+          "arms": {
+            "reference": {
+              "mean_ms": 718.3591376666666,
+              "samples_ns": [
+                716426520,
+                720912106,
+                717738787
+              ],
+              "stream_bytes": [
+                7414446
+              ],
+              "maximum_process_rss_bytes": 67731456,
+              "mean_process_cpu_seconds": 0.73
+            },
+            "packed": {
+              "mean_ms": 698.857137,
+              "samples_ns": [
+                698594922,
+                698080546,
+                699895943
+              ],
+              "stream_bytes": [
+                7414446
+              ],
+              "maximum_process_rss_bytes": 67661824,
+              "mean_process_cpu_seconds": 0.71
+            }
+          }
+        },
+        {
+          "case_id": "94_104001000B823500-MS16",
+          "style": 1,
+          "workers": 1,
+          "operation": "decode",
+          "origin": "openjpeg",
+          "verdict": "development_screen_only",
+          "descriptive_ratio": 0.9756786438174354,
+          "arms": {
+            "reference": {
+              "mean_ms": 330.2293646666667,
+              "samples_ns": [
+                329725220,
+                329799641,
+                331163233
+              ],
+              "stream_bytes": [
+                7399832
+              ],
+              "maximum_process_rss_bytes": 68382720,
+              "mean_process_cpu_seconds": 0.34
+            },
+            "packed": {
+              "mean_ms": 322.1977386666667,
+              "samples_ns": [
+                321104268,
+                322507521,
+                322981427
+              ],
+              "stream_bytes": [
+                7399832
+              ],
+              "maximum_process_rss_bytes": 68153344,
+              "mean_process_cpu_seconds": 0.33
+            }
+          }
+        },
+        {
+          "case_id": "94_104001000B823500-RGB8",
+          "style": 0,
+          "workers": 1,
+          "operation": "decode",
+          "origin": "openjpeg",
+          "verdict": "development_screen_only",
+          "descriptive_ratio": 0.9578555043477086,
+          "arms": {
+            "reference": {
+              "mean_ms": 1745.705978,
+              "samples_ns": [
+                1740554916,
+                1744975184,
+                1751587834
+              ],
+              "stream_bytes": [
+                12399735
+              ],
+              "maximum_process_rss_bytes": 262074368,
+              "mean_process_cpu_seconds": 1.7766666666666666
+            },
+            "packed": {
+              "mean_ms": 1672.13408,
+              "samples_ns": [
+                1673071363,
+                1658299921,
+                1685030956
+              ],
+              "stream_bytes": [
+                12399735
+              ],
+              "maximum_process_rss_bytes": 258117632,
+              "mean_process_cpu_seconds": 1.7
+            }
+          }
+        },
+        {
+          "case_id": "94_104001000B823500-RGB8",
+          "style": 1,
+          "workers": 1,
+          "operation": "decode",
+          "origin": "openjpeg",
+          "verdict": "development_screen_only",
+          "descriptive_ratio": 0.9648815005081464,
+          "arms": {
+            "reference": {
+              "mean_ms": 1548.1163713333333,
+              "samples_ns": [
+                1548879593,
+                1546667235,
+                1548802286
+              ],
+              "stream_bytes": [
+                12445962
+              ],
+              "maximum_process_rss_bytes": 261246976,
+              "mean_process_cpu_seconds": 1.5733333333333335
+            },
+            "packed": {
+              "mean_ms": 1493.7488473333333,
+              "samples_ns": [
+                1478417597,
+                1497407862,
+                1505421083
+              ],
+              "stream_bytes": [
+                12445962
+              ],
+              "maximum_process_rss_bytes": 263753728,
+              "mean_process_cpu_seconds": 1.52
+            }
+          }
+        }
+      ],
+      "interpretation": "Three-round fresh-process means are descriptive only; no confidence intervals or promotion claim. Legacy reference/packed keys denote baseline/candidate treatments, not encoder selectors. RSS/CPU include whole-process setup and verification; no candidate allocation-only claim."
+    },
+    "d2_eight_worker": {
+      "phase": "describe",
+      "complete": true,
+      "manifest_sha256": "c517f6fcbd8d548cf6a631b14508cb5ca451fc1a51f94865bc3dd91fae7e1220",
+      "measurement_sha256": "4c09b19f66481574cb29bb6602b76c1bc707928fb591b716f312ffe930839e08",
+      "estimator_sha256": null,
+      "comparisons": [
+        {
+          "case_id": "94_104001000B823500-PAN16",
+          "style": 0,
+          "workers": 8,
+          "operation": "decode",
+          "origin": "openjpeg",
+          "verdict": "eight_worker_description_only",
+          "descriptive_ratio": 0.9714163216416101,
+          "arms": {
+            "reference": {
+              "mean_ms": 205.56703466666664,
+              "samples_ns": [
+                203801834,
+                206652523,
+                206246747
+              ],
+              "stream_bytes": [
+                13860855
+              ],
+              "maximum_process_rss_bytes": 180350976,
+              "mean_process_cpu_seconds": 1.4166666666666665
+            },
+            "packed": {
+              "mean_ms": 199.69117266666666,
+              "samples_ns": [
+                198737916,
+                199892854,
+                200442748
+              ],
+              "stream_bytes": [
+                13860855
+              ],
+              "maximum_process_rss_bytes": 180899840,
+              "mean_process_cpu_seconds": 1.3833333333333335
+            }
+          }
+        },
+        {
+          "case_id": "94_104001000B823500-PAN16",
+          "style": 1,
+          "workers": 8,
+          "operation": "decode",
+          "origin": "openjpeg",
+          "verdict": "eight_worker_description_only",
+          "descriptive_ratio": 0.960482278485717,
+          "arms": {
+            "reference": {
+              "mean_ms": 122.341652,
+              "samples_ns": [
+                121617452,
+                122029869,
+                123377635
+              ],
+              "stream_bytes": [
+                13801197
+              ],
+              "maximum_process_rss_bytes": 181571584,
+              "mean_process_cpu_seconds": 0.74
+            },
+            "packed": {
+              "mean_ms": 117.50698866666667,
+              "samples_ns": [
+                117370836,
+                117896738,
+                117253392
+              ],
+              "stream_bytes": [
+                13801197
+              ],
+              "maximum_process_rss_bytes": 181403648,
+              "mean_process_cpu_seconds": 0.7166666666666667
+            }
+          }
+        },
+        {
+          "case_id": "94_104001000B823500-MS16",
+          "style": 0,
+          "workers": 8,
+          "operation": "decode",
+          "origin": "openjpeg",
+          "verdict": "eight_worker_description_only",
+          "descriptive_ratio": 1.0024182823233405,
+          "arms": {
+            "reference": {
+              "mean_ms": 104.120873,
+              "samples_ns": [
+                104276566,
+                104163171,
+                103922882
+              ],
+              "stream_bytes": [
+                7414446
+              ],
+              "maximum_process_rss_bytes": 68120576,
+              "mean_process_cpu_seconds": 0.7466666666666667
+            },
+            "packed": {
+              "mean_ms": 104.37266666666667,
+              "samples_ns": [
+                103412580,
+                103653220,
+                106052200
+              ],
+              "stream_bytes": [
+                7414446
+              ],
+              "maximum_process_rss_bytes": 68427776,
+              "mean_process_cpu_seconds": 0.7366666666666667
+            }
+          }
+        },
+        {
+          "case_id": "94_104001000B823500-MS16",
+          "style": 1,
+          "workers": 8,
+          "operation": "decode",
+          "origin": "openjpeg",
+          "verdict": "eight_worker_description_only",
+          "descriptive_ratio": 0.9687680661103817,
+          "arms": {
+            "reference": {
+              "mean_ms": 55.494098,
+              "samples_ns": [
+                55409708,
+                55640047,
+                55432539
+              ],
+              "stream_bytes": [
+                7399832
+              ],
+              "maximum_process_rss_bytes": 68829184,
+              "mean_process_cpu_seconds": 0.36
+            },
+            "packed": {
+              "mean_ms": 53.76091,
+              "samples_ns": [
+                53752830,
+                53551941,
+                53977959
+              ],
+              "stream_bytes": [
+                7399832
+              ],
+              "maximum_process_rss_bytes": 68403200,
+              "mean_process_cpu_seconds": 0.3466666666666667
+            }
+          }
+        },
+        {
+          "case_id": "94_104001000B823500-RGB8",
+          "style": 0,
+          "workers": 8,
+          "operation": "decode",
+          "origin": "openjpeg",
+          "verdict": "eight_worker_description_only",
+          "descriptive_ratio": 0.9489293590385004,
+          "arms": {
+            "reference": {
+              "mean_ms": 277.801735,
+              "samples_ns": [
+                266636190,
+                298601970,
+                268167045
+              ],
+              "stream_bytes": [
+                12399735
+              ],
+              "maximum_process_rss_bytes": 259338240,
+              "mean_process_cpu_seconds": 1.8633333333333333
+            },
+            "packed": {
+              "mean_ms": 263.6142223333333,
+              "samples_ns": [
+                274623599,
+                256987692,
+                259231376
+              ],
+              "stream_bytes": [
+                12399735
+              ],
+              "maximum_process_rss_bytes": 263229440,
+              "mean_process_cpu_seconds": 1.78
+            }
+          }
+        },
+        {
+          "case_id": "94_104001000B823500-RGB8",
+          "style": 1,
+          "workers": 8,
+          "operation": "decode",
+          "origin": "openjpeg",
+          "verdict": "eight_worker_description_only",
+          "descriptive_ratio": 0.9494662204169152,
+          "arms": {
+            "reference": {
+              "mean_ms": 248.57779166666666,
+              "samples_ns": [
+                244830719,
+                243498966,
+                257403690
+              ],
+              "stream_bytes": [
+                12445962
+              ],
+              "maximum_process_rss_bytes": 263094272,
+              "mean_process_cpu_seconds": 1.67
+            },
+            "packed": {
+              "mean_ms": 236.01621633333335,
+              "samples_ns": [
+                233727551,
+                239488950,
+                234832148
+              ],
+              "stream_bytes": [
+                12445962
+              ],
+              "maximum_process_rss_bytes": 261419008,
+              "mean_process_cpu_seconds": 1.5866666666666667
+            }
+          }
+        }
+      ],
+      "interpretation": "Three-round fresh-process means are descriptive only; no confidence intervals or promotion claim. Legacy reference/packed keys denote baseline/candidate treatments, not encoder selectors. RSS/CPU include whole-process setup and verification; no candidate allocation-only claim."
+    }
+  },
+  "selection": {
+    "d1_style_zero_geometric_mean": 0.9663680112798252,
+    "d2_style_zero_geometric_mean": 0.9646368516206385,
+    "eligible_variants": [],
+    "description_variant": "D2",
+    "reason": "Neither variant has a PAN16 or MS16 style-zero mean ratio below 0.95; all six ratios in each variant are at most 1.05"
+  },
+  "sampling": {
+    "baseline": [
+      {
+        "name": "MS16-s0-decode",
+        "samples": 361,
+        "period_total": 3965212087,
+        "percent": {
+          "outside_tier1": 3.66,
+          "mq_unresolved_boundary": 8.73,
+          "tier1_traversal_context_or_preparation": 48.98,
+          "mq_renormalisation": 4.94,
+          "mq_decision_state": 31.19,
+          "mq_byte_io_termination": 2.51
+        },
+        "sample_counts": {
+          "outside_tier1": 19,
+          "mq_unresolved_boundary": 28,
+          "tier1_traversal_context_or_preparation": 175,
+          "mq_renormalisation": 17,
+          "mq_decision_state": 113,
+          "mq_byte_io_termination": 9
+        }
+      },
+      {
+        "name": "MS16-s0-encode",
+        "samples": 350,
+        "period_total": 3877051307,
+        "percent": {
+          "outside_tier1": 2.28,
+          "mq_renormalisation": 8.9,
+          "tier1_traversal_context_or_preparation": 51.49,
+          "mq_decision_state": 34.5,
+          "mq_byte_io_termination": 2.84
+        },
+        "sample_counts": {
+          "outside_tier1": 8,
+          "mq_renormalisation": 29,
+          "tier1_traversal_context_or_preparation": 181,
+          "mq_decision_state": 122,
+          "mq_byte_io_termination": 10
+        }
+      },
+      {
+        "name": "MS16-s1-decode",
+        "samples": 161,
+        "period_total": 1790806532,
+        "percent": {
+          "outside_tier1": 6.96,
+          "tier1_traversal_context_or_preparation": 66.11,
+          "mq_decision_state": 13.49,
+          "mq_unresolved_boundary": 2.45,
+          "mq_renormalisation": 5.5,
+          "raw_io": 4.27,
+          "mq_byte_io_termination": 1.22
+        },
+        "sample_counts": {
+          "outside_tier1": 17,
+          "tier1_traversal_context_or_preparation": 101,
+          "mq_decision_state": 21,
+          "mq_unresolved_boundary": 4,
+          "mq_renormalisation": 9,
+          "raw_io": 7,
+          "mq_byte_io_termination": 2
+        }
+      },
+      {
+        "name": "MS16-s1-encode",
+        "samples": 175,
+        "period_total": 1943075408,
+        "percent": {
+          "outside_tier1": 4.94,
+          "tier1_traversal_context_or_preparation": 65.12,
+          "raw_io": 13.59,
+          "mq_decision_state": 12.98,
+          "mq_byte_io_termination": 0.56,
+          "mq_renormalisation": 2.81
+        },
+        "sample_counts": {
+          "outside_tier1": 9,
+          "tier1_traversal_context_or_preparation": 113,
+          "raw_io": 24,
+          "mq_decision_state": 23,
+          "mq_byte_io_termination": 1,
+          "mq_renormalisation": 5
+        }
+      },
+      {
+        "name": "PAN16-s0-decode",
+        "samples": 684,
+        "period_total": 7374702930,
+        "percent": {
+          "outside_tier1": 2.36,
+          "mq_renormalisation": 5.71,
+          "tier1_traversal_context_or_preparation": 50.13,
+          "mq_decision_state": 30.97,
+          "mq_byte_io_termination": 3.36,
+          "mq_unresolved_boundary": 7.48
+        },
+        "sample_counts": {
+          "outside_tier1": 22,
+          "mq_renormalisation": 37,
+          "tier1_traversal_context_or_preparation": 340,
+          "mq_decision_state": 211,
+          "mq_byte_io_termination": 23,
+          "mq_unresolved_boundary": 51
+        }
+      },
+      {
+        "name": "PAN16-s0-encode",
+        "samples": 682,
+        "period_total": 7420965767,
+        "percent": {
+          "outside_tier1": 2.91,
+          "tier1_traversal_context_or_preparation": 54.94,
+          "mq_decision_state": 29.05,
+          "mq_renormalisation": 8.97,
+          "mq_byte_io_termination": 3.68,
+          "mq_unresolved_boundary": 0.44
+        },
+        "sample_counts": {
+          "outside_tier1": 23,
+          "tier1_traversal_context_or_preparation": 373,
+          "mq_decision_state": 197,
+          "mq_renormalisation": 61,
+          "mq_byte_io_termination": 25,
+          "mq_unresolved_boundary": 3
+        }
+      },
+      {
+        "name": "PAN16-s1-decode",
+        "samples": 342,
+        "period_total": 3760976766,
+        "percent": {
+          "outside_tier1": 4.6,
+          "tier1_traversal_context_or_preparation": 67.23,
+          "mq_decision_state": 18.9,
+          "raw_io": 3.77,
+          "mq_byte_io_termination": 0.87,
+          "mq_renormalisation": 4.05,
+          "mq_unresolved_boundary": 0.57
+        },
+        "sample_counts": {
+          "outside_tier1": 21,
+          "tier1_traversal_context_or_preparation": 224,
+          "mq_decision_state": 65,
+          "raw_io": 13,
+          "mq_byte_io_termination": 3,
+          "mq_renormalisation": 14,
+          "mq_unresolved_boundary": 2
+        }
+      },
+      {
+        "name": "PAN16-s1-encode",
+        "samples": 367,
+        "period_total": 4059129310,
+        "percent": {
+          "outside_tier1": 4.95,
+          "tier1_traversal_context_or_preparation": 65.91,
+          "mq_decision_state": 14.29,
+          "raw_io": 7.82,
+          "mq_byte_io_termination": 2.16,
+          "mq_renormalisation": 4.86
+        },
+        "sample_counts": {
+          "outside_tier1": 15,
+          "tier1_traversal_context_or_preparation": 244,
+          "mq_decision_state": 53,
+          "raw_io": 29,
+          "mq_byte_io_termination": 8,
+          "mq_renormalisation": 18
+        }
+      },
+      {
+        "name": "RGB8-s0-decode",
+        "samples": 862,
+        "period_total": 9404812767,
+        "percent": {
+          "outside_tier1": 6.45,
+          "mq_decision_state": 26.05,
+          "tier1_traversal_context_or_preparation": 58.41,
+          "mq_renormalisation": 4.31,
+          "mq_unresolved_boundary": 3.37,
+          "mq_byte_io_termination": 1.4
+        },
+        "sample_counts": {
+          "outside_tier1": 63,
+          "mq_decision_state": 220,
+          "tier1_traversal_context_or_preparation": 501,
+          "mq_renormalisation": 37,
+          "mq_unresolved_boundary": 29,
+          "mq_byte_io_termination": 12
+        }
+      },
+      {
+        "name": "RGB8-s0-encode",
+        "samples": 882,
+        "period_total": 9681064736,
+        "percent": {
+          "outside_tier1": 7.57,
+          "tier1_traversal_context_or_preparation": 58.03,
+          "mq_decision_state": 24.9,
+          "mq_renormalisation": 6.22,
+          "mq_byte_io_termination": 2.94,
+          "mq_unresolved_boundary": 0.34
+        },
+        "sample_counts": {
+          "outside_tier1": 66,
+          "tier1_traversal_context_or_preparation": 512,
+          "mq_decision_state": 220,
+          "mq_renormalisation": 55,
+          "mq_byte_io_termination": 26,
+          "mq_unresolved_boundary": 3
+        }
+      },
+      {
+        "name": "RGB8-s1-decode",
+        "samples": 768,
+        "period_total": 8391680715,
+        "percent": {
+          "outside_tier1": 6.7,
+          "tier1_traversal_context_or_preparation": 59.95,
+          "mq_byte_io_termination": 2.35,
+          "mq_decision_state": 24.61,
+          "mq_renormalisation": 3.66,
+          "mq_unresolved_boundary": 1.95,
+          "raw_io": 0.78
+        },
+        "sample_counts": {
+          "outside_tier1": 59,
+          "tier1_traversal_context_or_preparation": 453,
+          "mq_byte_io_termination": 18,
+          "mq_decision_state": 189,
+          "mq_renormalisation": 28,
+          "mq_unresolved_boundary": 15,
+          "raw_io": 6
+        }
+      },
+      {
+        "name": "RGB8-s1-encode",
+        "samples": 800,
+        "period_total": 8760200853,
+        "percent": {
+          "outside_tier1": 9.04,
+          "tier1_traversal_context_or_preparation": 61.46,
+          "mq_decision_state": 19.74,
+          "mq_renormalisation": 6.25,
+          "raw_io": 0.88,
+          "mq_byte_io_termination": 2.38,
+          "mq_unresolved_boundary": 0.25
+        },
+        "sample_counts": {
+          "outside_tier1": 72,
+          "tier1_traversal_context_or_preparation": 492,
+          "mq_decision_state": 158,
+          "mq_renormalisation": 50,
+          "raw_io": 7,
+          "mq_byte_io_termination": 19,
+          "mq_unresolved_boundary": 2
+        }
+      }
+    ],
+    "d2": [
+      {
+        "name": "MS16-s0-decode",
+        "samples": 348,
+        "period_total": 3840588828,
+        "percent": {
+          "outside_tier1": 3.54,
+          "mq_decision_state": 40.3,
+          "tier1_traversal_context_or_preparation": 43.15,
+          "mq_unresolved_boundary": 4.97,
+          "mq_byte_io_termination": 3.49,
+          "mq_renormalisation": 4.56
+        },
+        "sample_counts": {
+          "outside_tier1": 19,
+          "mq_decision_state": 134,
+          "tier1_traversal_context_or_preparation": 150,
+          "mq_unresolved_boundary": 17,
+          "mq_byte_io_termination": 12,
+          "mq_renormalisation": 16
+        }
+      },
+      {
+        "name": "MS16-s1-decode",
+        "samples": 155,
+        "period_total": 1715351759,
+        "percent": {
+          "outside_tier1": 8.52,
+          "tier1_traversal_context_or_preparation": 66.73,
+          "raw_io": 6.02,
+          "mq_decision_state": 13.6,
+          "mq_renormalisation": 4.5,
+          "mq_byte_io_termination": 0.63
+        },
+        "sample_counts": {
+          "outside_tier1": 19,
+          "tier1_traversal_context_or_preparation": 98,
+          "raw_io": 9,
+          "mq_decision_state": 21,
+          "mq_renormalisation": 7,
+          "mq_byte_io_termination": 1
+        }
+      },
+      {
+        "name": "PAN16-s0-decode",
+        "samples": 667,
+        "period_total": 7193350574,
+        "percent": {
+          "outside_tier1": 3.01,
+          "tier1_traversal_context_or_preparation": 44.58,
+          "mq_byte_io_termination": 6.08,
+          "mq_unresolved_boundary": 6.75,
+          "mq_decision_state": 34.5,
+          "mq_renormalisation": 5.08
+        },
+        "sample_counts": {
+          "outside_tier1": 26,
+          "tier1_traversal_context_or_preparation": 295,
+          "mq_byte_io_termination": 38,
+          "mq_unresolved_boundary": 44,
+          "mq_decision_state": 230,
+          "mq_renormalisation": 34
+        }
+      },
+      {
+        "name": "PAN16-s1-decode",
+        "samples": 326,
+        "period_total": 3606075950,
+        "percent": {
+          "outside_tier1": 5.15,
+          "tier1_traversal_context_or_preparation": 61.72,
+          "mq_decision_state": 23.13,
+          "mq_byte_io_termination": 1.82,
+          "raw_io": 5.16,
+          "mq_unresolved_boundary": 1.52,
+          "mq_renormalisation": 1.52
+        },
+        "sample_counts": {
+          "outside_tier1": 23,
+          "tier1_traversal_context_or_preparation": 194,
+          "mq_decision_state": 76,
+          "mq_byte_io_termination": 6,
+          "raw_io": 17,
+          "mq_unresolved_boundary": 5,
+          "mq_renormalisation": 5
+        }
+      },
+      {
+        "name": "RGB8-s0-decode",
+        "samples": 828,
+        "period_total": 9068828883,
+        "percent": {
+          "outside_tier1": 6.66,
+          "tier1_traversal_context_or_preparation": 61.55,
+          "mq_decision_state": 24.94,
+          "mq_byte_io_termination": 2.02,
+          "mq_unresolved_boundary": 1.7,
+          "mq_renormalisation": 3.14
+        },
+        "sample_counts": {
+          "outside_tier1": 63,
+          "tier1_traversal_context_or_preparation": 504,
+          "mq_decision_state": 205,
+          "mq_byte_io_termination": 16,
+          "mq_unresolved_boundary": 14,
+          "mq_renormalisation": 26
+        }
+      },
+      {
+        "name": "RGB8-s1-decode",
+        "samples": 740,
+        "period_total": 8059548797,
+        "percent": {
+          "outside_tier1": 7.54,
+          "tier1_traversal_context_or_preparation": 62.55,
+          "mq_decision_state": 23.2,
+          "mq_renormalisation": 2.89,
+          "mq_unresolved_boundary": 1.65,
+          "mq_byte_io_termination": 1.23,
+          "raw_io": 0.95
+        },
+        "sample_counts": {
+          "outside_tier1": 63,
+          "tier1_traversal_context_or_preparation": 458,
+          "mq_decision_state": 170,
+          "mq_renormalisation": 21,
+          "mq_unresolved_boundary": 12,
+          "mq_byte_io_termination": 9,
+          "raw_io": 7
+        }
+      }
+    ],
+    "method": "Leaf instruction period weighting with Emuella-only inline source and assembly; unresolved optimised boundaries remain separate. One operation per point, 499 Hz cycles:u. Shares are not recovered time or statistical treatment estimates.",
+    "baseline_attribution_sha256": "1e69a993f811c1ee95a9400b404f541672df25c65dd48034a8960e141bac4d4b",
+    "d2_attribution_sha256": "fcd37c0c56c86b8bc41c26a0dd600392c444c0ecd8ca307b336507a1f86ba0ee"
+  },
+  "verification": {
+    "tier1_tests": 31,
+    "exhaustive_two_byte_inputs": 65536,
+    "reachable_probability_states": 47,
+    "independent_snapshot_revision": "32ccc21ece484651de8b38a2186ebd618b3bc85a",
+    "d1_no_std": true,
+    "d1_wasm": true,
+    "d2_no_std": true,
+    "d2_wasm": true,
+    "authored_coverage": "Decisions, all contexts, arithmetic/byte-boundary state, consumed prefixes, predictable termination results, independent block bytes/segments, pass and missing-plane metadata; styles 0/1, RESET/TERMALL/PTERM/SEGSYM/VSC combinations; raw/MQ transitions and empty/truncated inputs",
+    "restored_codec_revision": "0869a5874babf2a739a46c9c1227192174215800",
+    "restored_codec_tree": "33b7451fcaef3d2ce4e8169992f81413b4c64e29",
+    "restored_codec_receipt_sha256": "28a52bff94bd3484b4279e57bfd4400ad28f29d0e4fd4b7f7205d0e331da56bf",
+    "restored_tier1_tests": 31,
+    "restored_no_std": true,
+    "restored_wasm": true,
+    "restored_production_mq_sha256": "32c513e039c2916951ba0dc66c78634b4d9902f0f728043f4724ed5e58c986e9",
+    "canonical_delivery": "Coordinator gate; not represented by these focused test receipts"
+  },
+  "retained_failures": [
+    "Initial sampling controller attempted an exclusive manifest overwrite after one exact encode; resumed only eleven unstarted calls",
+    "Initial test replay used a two-byte prefix offset for a one-byte prefix fixture; repaired before candidate screens",
+    "Initial deterministic distribution sweep missed states6\u201313; added a reachable secondary-state sequence before candidate screens"
+  ],
+  "interpretation": "Three-round fresh-process means are descriptive only; no confidence intervals or promotion claim. Legacy reference/packed keys denote baseline/candidate treatments, not encoder selectors. RSS/CPU include whole-process setup and verification; no candidate allocation-only claim.",
+  "evidence_records": {
+    "d1_screen": {
+      "manifest.json": "5abc996a44b58f9d66ad8e405fdfcbf271e90e207afd04de77229639ff13e1ba",
+      "measurement.json": "567096b7a6c71474450a8a92c72b24877721d0e04ad2755bbaf2627279b9b840",
+      "report.json": "a23497a510325d5d8ab253feae96767958ec209ac082dacfd67d3b14e061f1f2"
+    },
+    "d2_screen": {
+      "manifest.json": "a837d8593c19e3a43854db50ec21922e74cec5eec33c79ff9d1e81e5acd5cf45",
+      "measurement.json": "7282b57290d8e2ff5936ae5c3a1889b89797925cebf822caad2173dbc9cf6f5e",
+      "report.json": "dc0dda08776ed55eb759a8714765b6df7cdbcc396fa42ef5dffe6943b3797cdb"
+    },
+    "d2_eight_worker": {
+      "manifest.json": "c517f6fcbd8d548cf6a631b14508cb5ca451fc1a51f94865bc3dd91fae7e1220",
+      "measurement.json": "4c09b19f66481574cb29bb6602b76c1bc707928fb591b716f312ffe930839e08",
+      "report.json": "148aec4aa8bc18a041b9c5ac0c4835cdf15e903570fc62ce1fd069e736628275"
+    }
+  },
+  "attribution": "RarePlanes Dataset, June 2020. J. Shermeyer et al.; In-Q-Tel - CosmiQ Works and AI.Reverie. CC BY-SA 4.0. Fixed previously measured Mansfield acquisitions; authorised factual summaries only.",
+  "unexercised_support_removed": "Decoder allocation extension and entropy resource mode were removed after discovery rejection; historical encoder allocation mode is unchanged."
+}
