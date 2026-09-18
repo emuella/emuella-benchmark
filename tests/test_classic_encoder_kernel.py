@@ -108,6 +108,14 @@ class KernelCoverageTests(unittest.TestCase):
             with self.assertRaises(ValueError):kernel.validate_rows(dict(frozen,rounds=rounds+1),rows)
         with self.assertRaises(ValueError):kernel.contrasts(manifest['assets'],'primary','kernel')
 
+    def test_entropy_origins_have_distinct_paths_without_changing_legacy_paths(self):
+        args=(0,'case',0,1,'decode','openjpeg','reference')
+        for study in ('kernel','parallel'):
+            self.assertEqual(kernel.observation_name(study,*args), 'r00-case-s0-w1-decode-reference')
+        self.assertEqual(kernel.observation_name('entropy',*args), 'r00-case-s0-w1-decode-openjpeg-reference')
+        self.assertNotEqual(kernel.observation_name('entropy',*args),
+                            kernel.observation_name('entropy',0,'case',0,1,'decode','emuella','reference'))
+
     def test_three_round_screen_never_calls_twenty_round_estimator(self):
         manifest,rows=self.fixture('screen')
         for row in rows:

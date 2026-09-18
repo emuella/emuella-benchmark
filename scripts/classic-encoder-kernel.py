@@ -89,6 +89,11 @@ def contrasts(assets, phase, study="kernel"):
     return cases
 
 
+def observation_name(study, round_id, case_id, style, workers, operation, origin, arm):
+    origin_suffix = '-'+origin if study == 'entropy' else ''
+    return f"r{round_id:02}-{case_id}-s{style}-w{workers}-{operation}{origin_suffix}-{arm}"
+
+
 def measure(args):
     owner = refresh.classic.clean_source(refresh.ROOT)
     builds = {arm: refresh.bind(getattr(args, arm)) for arm in ARMS}
@@ -97,7 +102,7 @@ def measure(args):
     if builds['reference']['codec']['source_revision'] != args.reference_revision:
         raise ValueError('reference revision differs from declared baseline')
     if args.study in ('parallel','entropy') and any(b.get('encoder_backend') != 'default' for b in builds.values()):
-        raise ValueError('parallel treatment requires packed-default dispatch with selector unset in both arms')
+        raise ValueError('treatment requires packed-default dispatch with selector unset in both arms')
     if builds['packed'].get('encoder_backend') not in ('packed', 'default'):
         raise ValueError('candidate build forces the reference')
     for field in ('rustc','openjpeg','libraries','environment','cargo_configs'):
@@ -141,7 +146,7 @@ def measure(args):
     for round_id in range(rounds):
         for a,style,workers,operation,origin in cases:
             for arm in ARMS if round_id % 2 == 0 else ARMS[::-1]:
-                name=f"r{round_id:02}-{a['id']}-s{style}-w{workers}-{operation}-{origin}-{arm}"
+                name=observation_name(args.study,round_id,a['id'],style,workers,operation,origin,arm)
                 request=refresh.make_request(a,args.prepared,args.streams,origin,'emuella',style,workers,'prepare',round_id)
                 request.update(operation=operation,stream_path=str(stream_path(a,style,origin)),stream_sha256=sha(stream_path(a,style,origin)))
                 result=refresh.run_process(builds[arm]['binary'],request,args.output/name,cpus[:workers])
@@ -197,7 +202,7 @@ def analyse(args):
             arms={a:[r['result'] for r in subset if r['arm']==a] for a in ARMS}
             samples={a:[r['observation']['samples_ns'][0] for r in arm] for a,arm in arms.items()}
             if manifest['phase'] in ('screen','describe'):
-                entry.update(verdict='development_screen_only',
+                entry.update(verdict='development_screen_only' if manifest['phase']=='screen' else 'eight_worker_description_only',
                              descriptive_ratio=statistics.mean(samples['packed'])/statistics.mean(samples['reference']))
             else:
                 entry.update(json.loads(subprocess.check_output([str(args.estimator)],text=True,
@@ -210,7 +215,7 @@ def analyse(args):
     write(args.output/'report.json',dict(phase=manifest['phase'],complete=measurement['complete'],
         manifest_sha256=sha(args.output/'manifest.json'),measurement_sha256=sha(args.output/'measurement.json'),
         estimator_sha256=None if manifest['phase'] in ('screen','describe') else sha(args.estimator),comparisons=comparisons,
-        interpretation='Candidate/reference minus one; conservative 99% per-case intervals, 5% practical gate. Three-round screens cannot promote. RSS/CPU are whole-process metrics. No outlier removal.'))
+        interpretation=('Descriptive three-round means only; no confidence interval or promotion claim. ' if manifest['phase'] in ('screen','describe') else 'Candidate/reference minus one; conservative 99% per-case intervals, 5% practical gate. ') + 'Legacy reference/packed arm names identify baseline/candidate treatments, not encoder selectors. RSS/CPU are whole-process metrics. No outlier removal.'))
     print(json.dumps([{k:v for k,v in c.items() if k!='arms'} for c in comparisons],indent=2))
 
 
