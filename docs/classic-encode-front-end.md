@@ -24,6 +24,16 @@ parallel machinery uses the existing larger-change gate, regardless of diff size
 No assumption that SIMD or parallelism is required. If no mechanism has adequate
 headroom, record measured non-selection and a separate next proposal.
 
+Fresh baseline diagnosis selected **paired-column DWT gather locality**: gather
+two adjacent columns into the existing two input scratch lines, then execute
+unchanged bounded lifting/scatter using the third coefficient line. The original
+single-column path handles the odd remainder. This reuses the previously unused
+line within the existing three-line allocation; no new allocation or parallel
+execution. Scope is the classic scalable forward path through internal cross-crate
+plumbing; other encoder and decoder entry points retain their routing. Independent
+Route A classification and exact source binding remain prerequisites to timing.
+Conversion/RCT, horizontal work and arithmetic are not additional treatments.
+
 At most three related development variants, each three alternating pairs over
 Mansfield RGB8 in both styles at one/eight workers (24 calls). First clear
 authored correctness/resources. Screen eligibility requires >=2% bypass
