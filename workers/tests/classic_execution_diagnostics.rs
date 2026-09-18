@@ -48,8 +48,17 @@ fn diagnostic_process_preserves_bytes_and_cannot_emit_headline_samples() {
         .unwrap();
         let stream_path = root.path().join(format!("style{style}.j2k"));
         std::fs::write(&stream_path, &stream).unwrap();
-        for workers in [1, 8] {
-            let request = json!({"codec":"emuella","operation":"encode","case_id":"authored","round":0,
+        for (workers, operation) in [1, 2, 4, 8].into_iter().flat_map(|workers| {
+            let operations = if cfg!(feature = "classic-allocation-diagnostics") {
+                vec!["encode", "decode"]
+            } else {
+                vec!["encode"]
+            };
+            operations
+                .into_iter()
+                .map(move |operation| (workers, operation))
+        }) {
+            let request = json!({"codec":"emuella","operation":operation,"case_id":"authored","round":0,
                 "width":129,"height":131,"components":1,"bits":16,"style":style,"workers":workers,"layout":"interleaved",
                 "raw_path":raw_path,"raw_sha256":format!("{:x}", Sha256::digest(&raw)),"stream_path":stream_path,
                 "stream_sha256":format!("{:x}",Sha256::digest(&stream)),"max_working_bytes":limits.max_working_bytes,
@@ -69,7 +78,11 @@ fn diagnostic_process_preserves_bytes_and_cannot_emit_headline_samples() {
             assert_eq!(response["exact"], true);
             assert_eq!(response["samples_ns"], json!([]));
             assert_eq!(response["stream_sha256"], request["stream_sha256"]);
-            assert!(response["output_capacity"].as_u64().unwrap() <= limits.max_output_bytes);
+            if operation == "encode" {
+                assert!(response["output_capacity"].as_u64().unwrap() <= limits.max_output_bytes);
+            } else {
+                assert!(response["output_capacity"].is_null());
+            }
             let d = if cfg!(feature = "classic-execution-diagnostics") {
                 let d = &response["execution_diagnostic"];
                 assert_eq!(d["effective_workers"], workers);
@@ -86,7 +99,18 @@ fn diagnostic_process_preserves_bytes_and_cannot_emit_headline_samples() {
                 d
             } else {
                 assert!(response["execution_diagnostic"].is_null());
-                &response["allocation_diagnostic"]
+                let d = &response["allocation_diagnostic"];
+                assert_eq!(
+                    d["boundary"],
+                    format!("facade_{operation}_allocation_only_no_block_observer")
+                );
+                assert!(
+                    d["successful_allocation_or_reallocation_requests"]
+                        .as_u64()
+                        .unwrap()
+                        > 0
+                );
+                d
             };
             assert!(
                 d["allocation_peak_additional_requested_bytes"]
