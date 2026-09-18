@@ -34,6 +34,16 @@ plumbing; other encoder and decoder entry points retain their routing. Independe
 Route A classification and exact source binding remain prerequisites to timing.
 Conversion/RCT, horizontal work and arithmetic are not additional treatments.
 
+V1 source is `21033ea890b4393e8c7f6791cf4a89d866d2dfd3`, tree
+`19c26fe7f04f88ac8125fdd736916827e41c18a5`. Independent pre-timing source review
+classified it **Route A eligible**, with no blocking correctness findings:
+safe disjoint slices reuse the same allocation, the two columns have no arithmetic
+dependency, all non-scalable callers retain the original entry, and no production
+scheduler, state, options, unsafe code or ISA requirement is added. The hidden
+support symbol is internal cross-crate plumbing; existing signatures remain intact.
+This is complexity/source acceptance only; canonical, resources, screen and
+confirmation remain mandatory. Runtime freeze records bind review and builds.
+
 At most three related development variants, each three alternating pairs over
 Mansfield RGB8 in both styles at one/eight workers (24 calls). First clear
 authored correctness/resources. Screen eligibility requires >=2% bypass
