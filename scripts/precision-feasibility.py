@@ -99,7 +99,7 @@ def environment_issues(before, after):
     # Explicit process identities, not slow samples, determine competing-build contamination.
     for line in after.get('processes', '').splitlines()[1:]:
         fields = line.split()
-        if fields and fields[-1] in ('rustc', 'cargo', 'cc1', 'cc1plus', 'ninja', 'classic-compare-', 'emuella-worker', 'openjpeg-worker'):
+        if fields and fields[-1] in ('rustc', 'cargo', 'cc1', 'cc1plus', 'ninja', 'classic-compare', 'classic-compare-worker', 'emuella-worker', 'openjpeg-worker', 'openjph-worker'):
             issues.append('competing build/codec process at session boundary: '+line.strip())
     return issues
 
