@@ -48,3 +48,7 @@ escapes all dynamic strings and makes no network requests.
 [Prospective precision investigation](paired-precision.md) documents a test-only
 pair-aware candidate and its calibration requirements; the current method and
 protocol remain unchanged.
+
+The bounded [identical-binary precision feasibility study](precision-feasibility-results.md)
+retains eighteen real-workload sessions with the unchanged comparator. Its
+planning findings do not change the estimator, thresholds or candidate gates.
