@@ -1,0 +1,3197 @@
+{
+  "complete": true,
+  "valid": true,
+  "issues": [],
+  "raw_rows": [
+    {
+      "round": 0,
+      "arm": "B",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815811228,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 0,
+          "samples_ns": [
+            1745105684
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.77,
+        "process_peak_rss_bytes": 258019328
+      },
+      "started_monotonic_ns": 6123974847474279
+    },
+    {
+      "round": 0,
+      "arm": "A",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1866030597,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 0,
+          "samples_ns": [
+            1780425918
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.81,
+        "process_peak_rss_bytes": 258211840
+      },
+      "started_monotonic_ns": 6123976791600024
+    },
+    {
+      "round": 1,
+      "arm": "A",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815508601,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 1,
+          "samples_ns": [
+            1739208298
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.77,
+        "process_peak_rss_bytes": 258105344
+      },
+      "started_monotonic_ns": 6123978790940239
+    },
+    {
+      "round": 1,
+      "arm": "B",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815681747,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 1,
+          "samples_ns": [
+            1745152151
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.77,
+        "process_peak_rss_bytes": 262021120
+      },
+      "started_monotonic_ns": 6123980732526155
+    },
+    {
+      "round": 2,
+      "arm": "B",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815845013,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 2,
+          "samples_ns": [
+            1761633315
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.79,
+        "process_peak_rss_bytes": 258056192
+      },
+      "started_monotonic_ns": 6123982682095084
+    },
+    {
+      "round": 2,
+      "arm": "A",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815603690,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 2,
+          "samples_ns": [
+            1735455856
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.76,
+        "process_peak_rss_bytes": 260063232
+      },
+      "started_monotonic_ns": 6123984625440182
+    },
+    {
+      "round": 3,
+      "arm": "A",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815616548,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 3,
+          "samples_ns": [
+            1750292506
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.78,
+        "process_peak_rss_bytes": 257966080
+      },
+      "started_monotonic_ns": 6123986581667983
+    },
+    {
+      "round": 3,
+      "arm": "B",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815807975,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 3,
+          "samples_ns": [
+            1736372434
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.77,
+        "process_peak_rss_bytes": 262139904
+      },
+      "started_monotonic_ns": 6123988524358037
+    },
+    {
+      "round": 4,
+      "arm": "B",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1816400761,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 4,
+          "samples_ns": [
+            1738950918
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.77,
+        "process_peak_rss_bytes": 259776512
+      },
+      "started_monotonic_ns": 6123990475825610
+    },
+    {
+      "round": 4,
+      "arm": "A",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815726639,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 4,
+          "samples_ns": [
+            1746856809
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.78,
+        "process_peak_rss_bytes": 257847296
+      },
+      "started_monotonic_ns": 6123992430787915
+    },
+    {
+      "round": 5,
+      "arm": "A",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815493276,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 5,
+          "samples_ns": [
+            1739469799
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.77,
+        "process_peak_rss_bytes": 262078464
+      },
+      "started_monotonic_ns": 6123994378020394
+    },
+    {
+      "round": 5,
+      "arm": "B",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815960026,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 5,
+          "samples_ns": [
+            1748275480
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.78,
+        "process_peak_rss_bytes": 258072576
+      },
+      "started_monotonic_ns": 6123996317523686
+    },
+    {
+      "round": 6,
+      "arm": "B",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815903982,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 6,
+          "samples_ns": [
+            1742005600
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.77,
+        "process_peak_rss_bytes": 257798144
+      },
+      "started_monotonic_ns": 6123998268944716
+    },
+    {
+      "round": 6,
+      "arm": "A",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815685310,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 6,
+          "samples_ns": [
+            1739096069
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.77,
+        "process_peak_rss_bytes": 259928064
+      },
+      "started_monotonic_ns": 6124000209100723
+    },
+    {
+      "round": 7,
+      "arm": "A",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815962941,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 7,
+          "samples_ns": [
+            1743024803
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.77,
+        "process_peak_rss_bytes": 258002944
+      },
+      "started_monotonic_ns": 6124002178214667
+    },
+    {
+      "round": 7,
+      "arm": "B",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815706828,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 7,
+          "samples_ns": [
+            1745249331
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.77,
+        "process_peak_rss_bytes": 260100096
+      },
+      "started_monotonic_ns": 6124004122275012
+    },
+    {
+      "round": 8,
+      "arm": "B",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815561110,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 8,
+          "samples_ns": [
+            1737878872
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.77,
+        "process_peak_rss_bytes": 257949696
+      },
+      "started_monotonic_ns": 6124006071105148
+    },
+    {
+      "round": 8,
+      "arm": "A",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1816046040,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 8,
+          "samples_ns": [
+            1741573955
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.77,
+        "process_peak_rss_bytes": 258076672
+      },
+      "started_monotonic_ns": 6124008010689850
+    },
+    {
+      "round": 9,
+      "arm": "A",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1816084951,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 9,
+          "samples_ns": [
+            1761079623
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.79,
+        "process_peak_rss_bytes": 257966080
+      },
+      "started_monotonic_ns": 6124009957753723
+    },
+    {
+      "round": 9,
+      "arm": "B",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815734405,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 9,
+          "samples_ns": [
+            1735837939
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.76,
+        "process_peak_rss_bytes": 257986560
+      },
+      "started_monotonic_ns": 6124011897393393
+    },
+    {
+      "round": 10,
+      "arm": "B",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815793236,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 10,
+          "samples_ns": [
+            1741857425
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.77,
+        "process_peak_rss_bytes": 257941504
+      },
+      "started_monotonic_ns": 6124013846961823
+    },
+    {
+      "round": 10,
+      "arm": "A",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815649138,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 10,
+          "samples_ns": [
+            1749837931
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.78,
+        "process_peak_rss_bytes": 258121728
+      },
+      "started_monotonic_ns": 6124015789356432
+    },
+    {
+      "round": 11,
+      "arm": "A",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815723340,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 11,
+          "samples_ns": [
+            1734388523
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.76,
+        "process_peak_rss_bytes": 262172672
+      },
+      "started_monotonic_ns": 6124017745795964
+    },
+    {
+      "round": 11,
+      "arm": "B",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815778332,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 11,
+          "samples_ns": [
+            1746670918
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.78,
+        "process_peak_rss_bytes": 260206592
+      },
+      "started_monotonic_ns": 6124019693854781
+    },
+    {
+      "round": 12,
+      "arm": "B",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815716597,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 12,
+          "samples_ns": [
+            1761975908
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.79,
+        "process_peak_rss_bytes": 258072576
+      },
+      "started_monotonic_ns": 6124021660973714
+    },
+    {
+      "round": 12,
+      "arm": "A",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815749838,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 12,
+          "samples_ns": [
+            1742534602
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.77,
+        "process_peak_rss_bytes": 257970176
+      },
+      "started_monotonic_ns": 6124023605616285
+    },
+    {
+      "round": 13,
+      "arm": "A",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815730317,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 13,
+          "samples_ns": [
+            1743003153
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.77,
+        "process_peak_rss_bytes": 258174976
+      },
+      "started_monotonic_ns": 6124025561027393
+    },
+    {
+      "round": 13,
+      "arm": "B",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815861322,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 13,
+          "samples_ns": [
+            1736629760
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.76,
+        "process_peak_rss_bytes": 260247552
+      },
+      "started_monotonic_ns": 6124027501876262
+    },
+    {
+      "round": 14,
+      "arm": "B",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1816078410,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 14,
+          "samples_ns": [
+            1741605010
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.78,
+        "process_peak_rss_bytes": 262250496
+      },
+      "started_monotonic_ns": 6124029451581304
+    },
+    {
+      "round": 14,
+      "arm": "A",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815799467,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 14,
+          "samples_ns": [
+            1741013304
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.76,
+        "process_peak_rss_bytes": 258052096
+      },
+      "started_monotonic_ns": 6124031404482585
+    },
+    {
+      "round": 15,
+      "arm": "A",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815467821,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 15,
+          "samples_ns": [
+            1731185606
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.75,
+        "process_peak_rss_bytes": 257912832
+      },
+      "started_monotonic_ns": 6124033352932928
+    },
+    {
+      "round": 15,
+      "arm": "B",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815782385,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 15,
+          "samples_ns": [
+            1748425872
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.77,
+        "process_peak_rss_bytes": 258060288
+      },
+      "started_monotonic_ns": 6124035292893851
+    },
+    {
+      "round": 16,
+      "arm": "B",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815840997,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 16,
+          "samples_ns": [
+            1741305725
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.77,
+        "process_peak_rss_bytes": 258211840
+      },
+      "started_monotonic_ns": 6124037263467283
+    },
+    {
+      "round": 16,
+      "arm": "A",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815483669,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 16,
+          "samples_ns": [
+            1741305755
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.77,
+        "process_peak_rss_bytes": 262209536
+      },
+      "started_monotonic_ns": 6124039205681193
+    },
+    {
+      "round": 17,
+      "arm": "A",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815671747,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 17,
+          "samples_ns": [
+            1753066537
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.78,
+        "process_peak_rss_bytes": 262250496
+      },
+      "started_monotonic_ns": 6124041153948111
+    },
+    {
+      "round": 17,
+      "arm": "B",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815907228,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 17,
+          "samples_ns": [
+            1741747425
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.77,
+        "process_peak_rss_bytes": 258134016
+      },
+      "started_monotonic_ns": 6124043095338992
+    },
+    {
+      "round": 18,
+      "arm": "B",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815737500,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 18,
+          "samples_ns": [
+            1737034825
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.76,
+        "process_peak_rss_bytes": 257929216
+      },
+      "started_monotonic_ns": 6124045041944154
+    },
+    {
+      "round": 18,
+      "arm": "A",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1816304634,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 18,
+          "samples_ns": [
+            1745677439
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.78,
+        "process_peak_rss_bytes": 258023424
+      },
+      "started_monotonic_ns": 6124046980818751
+    },
+    {
+      "round": 19,
+      "arm": "A",
+      "position": 0,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815629524,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 19,
+          "samples_ns": [
+            1758154782
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.79,
+        "process_peak_rss_bytes": 257929216
+      },
+      "started_monotonic_ns": 6124048930474125
+    },
+    {
+      "round": 19,
+      "arm": "B",
+      "position": 1,
+      "result": {
+        "status": 0,
+        "process_wall_ns": 1815682986,
+        "observation": {
+          "allocation_diagnostic": null,
+          "binary_sha256": "ab1ab1d50991c41968721d60e522544f28a5cbe4b9bfab712c08fce2bd11e956",
+          "boundary": "owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes",
+          "case_id": "94_104001000B823500-RGB8",
+          "codec": "emuella",
+          "diagnostic_facade_ns": null,
+          "diagnostic_sampling": false,
+          "exact": true,
+          "execution_diagnostic": null,
+          "operation": "decode",
+          "output_capacity": null,
+          "output_capacity_limit": 67108864,
+          "profile": {
+            "bits": 8,
+            "code_block_height": 64,
+            "code_block_width": 64,
+            "coding": "classic",
+            "components": 3,
+            "decomposition_levels": 2,
+            "format": "raw_j2k",
+            "layers": 1,
+            "layout": "interleaved",
+            "mct": "reversible_colour_transform",
+            "precincts": "default",
+            "progression": "LRCP",
+            "style": 0,
+            "tiles": 1,
+            "transform": "reversible_5_3"
+          },
+          "raw_sha256": "4b3b0f7baf1b13d65fff072ad1f52c7861388463a9b349918b3324d494660fd1",
+          "round": 19,
+          "samples_ns": [
+            1733950978
+          ],
+          "stream_bytes": 12399735,
+          "stream_sha256": "e4f42a0238389c5e39037c229dc6b6660edc91910cdf3d26801dbf06cbd1d289",
+          "style": 0,
+          "workers": 1,
+          "working_bytes": 339760740
+        },
+        "process_cpu_seconds": 1.76,
+        "process_peak_rss_bytes": 259944448
+      },
+      "started_monotonic_ns": 6124050868903480
+    }
+  ],
+  "vectors_ns": {
+    "A": [
+      1780425918,
+      1739208298,
+      1735455856,
+      1750292506,
+      1746856809,
+      1739469799,
+      1739096069,
+      1743024803,
+      1741573955,
+      1761079623,
+      1749837931,
+      1734388523,
+      1742534602,
+      1743003153,
+      1741013304,
+      1731185606,
+      1741305755,
+      1753066537,
+      1745677439,
+      1758154782
+    ],
+    "B": [
+      1745105684,
+      1745152151,
+      1761633315,
+      1736372434,
+      1738950918,
+      1748275480,
+      1742005600,
+      1745249331,
+      1737878872,
+      1735837939,
+      1741857425,
+      1746670918,
+      1761975908,
+      1736629760,
+      1741605010,
+      1748425872,
+      1741305725,
+      1741747425,
+      1737034825,
+      1733950978
+    ]
+  },
+  "estimator": {
+    "B_over_A": {
+      "input": {
+        "baseline": [
+          1780425918,
+          1739208298,
+          1735455856,
+          1750292506,
+          1746856809,
+          1739469799,
+          1739096069,
+          1743024803,
+          1741573955,
+          1761079623,
+          1749837931,
+          1734388523,
+          1742534602,
+          1743003153,
+          1741013304,
+          1731185606,
+          1741305755,
+          1753066537,
+          1745677439,
+          1758154782
+        ],
+        "candidate": [
+          1745105684,
+          1745152151,
+          1761633315,
+          1736372434,
+          1738950918,
+          1748275480,
+          1742005600,
+          1745249331,
+          1737878872,
+          1735837939,
+          1741857425,
+          1746670918,
+          1761975908,
+          1736629760,
+          1741605010,
+          1748425872,
+          1741305725,
+          1741747425,
+          1737034825,
+          1733950978
+        ]
+      },
+      "returncode": 0,
+      "stdout": "{\"baseline_mean_ns\":1745832563.4,\"candidate_mean_ns\":1743383278.5,\"relative_change\":-0.0014029323036741648,\"relative_interval_99\":[-0.009228068092007158,0.006495696299965603],\"verdict\":\"equivalent\"}\n",
+      "stderr": "",
+      "output": {
+        "baseline_mean_ns": 1745832563.4,
+        "candidate_mean_ns": 1743383278.5,
+        "relative_change": -0.0014029323036741648,
+        "relative_interval_99": [
+          -0.009228068092007158,
+          0.006495696299965603
+        ],
+        "verdict": "equivalent"
+      },
+      "lower": -0.009228068092007158,
+      "upper": 0.006495696299965603,
+      "width": 0.01572376439197276,
+      "half_width": 0.00786188219598638,
+      "contains_zero": true,
+      "excludes_positive": {
+        "1%": true,
+        "2%": true,
+        "5%": true
+      },
+      "valid": true
+    },
+    "A_over_B": {
+      "input": {
+        "baseline": [
+          1745105684,
+          1745152151,
+          1761633315,
+          1736372434,
+          1738950918,
+          1748275480,
+          1742005600,
+          1745249331,
+          1737878872,
+          1735837939,
+          1741857425,
+          1746670918,
+          1761975908,
+          1736629760,
+          1741605010,
+          1748425872,
+          1741305725,
+          1741747425,
+          1737034825,
+          1733950978
+        ],
+        "candidate": [
+          1780425918,
+          1739208298,
+          1735455856,
+          1750292506,
+          1746856809,
+          1739469799,
+          1739096069,
+          1743024803,
+          1741573955,
+          1761079623,
+          1749837931,
+          1734388523,
+          1742534602,
+          1743003153,
+          1741013304,
+          1731185606,
+          1741305755,
+          1753066537,
+          1745677439,
+          1758154782
+        ]
+      },
+      "returncode": 0,
+      "stdout": "{\"baseline_mean_ns\":1743383278.5,\"candidate_mean_ns\":1745832563.4,\"relative_change\":0.0014049032878802326,\"relative_interval_99\":[-0.006453774540561619,0.009314018488832287],\"verdict\":\"equivalent\"}\n",
+      "stderr": "",
+      "output": {
+        "baseline_mean_ns": 1743383278.5,
+        "candidate_mean_ns": 1745832563.4,
+        "relative_change": 0.0014049032878802326,
+        "relative_interval_99": [
+          -0.006453774540561619,
+          0.009314018488832287
+        ],
+        "verdict": "equivalent"
+      },
+      "lower": -0.006453774540561619,
+      "upper": 0.009314018488832287,
+      "width": 0.015767793029393906,
+      "half_width": 0.007883896514696953,
+      "contains_zero": true,
+      "excludes_positive": {
+        "1%": true,
+        "2%": true,
+        "5%": true
+      },
+      "valid": true
+    }
+  },
+  "diagnostics": {
+    "interpretation": "Descriptive only; no significance, independence, stationarity or coverage claim.",
+    "arms": {
+      "A": {
+        "count": 20,
+        "mean_ns": 1745832563.4,
+        "sample_sd_ns": 11102128.255867522,
+        "sample_cv": 0.0063592170799278615,
+        "ordered_ns": [
+          1780425918,
+          1739208298,
+          1735455856,
+          1750292506,
+          1746856809,
+          1739469799,
+          1739096069,
+          1743024803,
+          1741573955,
+          1761079623,
+          1749837931,
+          1734388523,
+          1742534602,
+          1743003153,
+          1741013304,
+          1731185606,
+          1741305755,
+          1753066537,
+          1745677439,
+          1758154782
+        ],
+        "lag1_correlation": -0.029430394504024997,
+        "round_trend": {
+          "slope_ns_per_unit": -249800.622556391,
+          "correlation": -0.13311325349988798
+        },
+        "execution_order_trend": {
+          "slope_ns_per_unit": -123547.38147448015,
+          "correlation": -0.1312995817716537
+        },
+        "elapsed_time_trend": {
+          "slope_ns_per_unit": -63545.54323051422,
+          "correlation": -0.13162230323085183,
+          "unit": "second since first call start"
+        }
+      },
+      "B": {
+        "count": 20,
+        "mean_ns": 1743383278.5,
+        "sample_sd_ns": 7587342.929119172,
+        "sample_cv": 0.004352079673293236,
+        "ordered_ns": [
+          1745105684,
+          1745152151,
+          1761633315,
+          1736372434,
+          1738950918,
+          1748275480,
+          1742005600,
+          1745249331,
+          1737878872,
+          1735837939,
+          1741857425,
+          1746670918,
+          1761975908,
+          1736629760,
+          1741605010,
+          1748425872,
+          1741305725,
+          1741747425,
+          1737034825,
+          1733950978
+        ],
+        "lag1_correlation": -0.04991871116928609,
+        "round_trend": {
+          "slope_ns_per_unit": -346993.7067669173,
+          "correlation": -0.270561443267317
+        },
+        "execution_order_trend": {
+          "slope_ns_per_unit": -177661.87225325886,
+          "correlation": -0.2783555375636231
+        },
+        "elapsed_time_trend": {
+          "slope_ns_per_unit": -91123.04982765915,
+          "correlation": -0.2782548599227482,
+          "unit": "second since first call start"
+        }
+      }
+    },
+    "sample_covariance_ns2": -29732165015532.844,
+    "correlation": -0.3529641368068161,
+    "acquisition_order_ns": [
+      1745105684,
+      1780425918,
+      1739208298,
+      1745152151,
+      1761633315,
+      1735455856,
+      1750292506,
+      1736372434,
+      1738950918,
+      1746856809,
+      1739469799,
+      1748275480,
+      1742005600,
+      1739096069,
+      1743024803,
+      1745249331,
+      1737878872,
+      1741573955,
+      1761079623,
+      1735837939,
+      1741857425,
+      1749837931,
+      1734388523,
+      1746670918,
+      1761975908,
+      1742534602,
+      1743003153,
+      1736629760,
+      1741605010,
+      1741013304,
+      1731185606,
+      1748425872,
+      1741305725,
+      1741305755,
+      1753066537,
+      1741747425,
+      1737034825,
+      1745677439,
+      1758154782,
+      1733950978
+    ],
+    "acquisition_lag1_correlation": -0.22502294381885998,
+    "acquisition_order_trend": {
+      "slope_ns_per_unit": -150807.68311444655,
+      "correlation": -0.18621820774149747
+    },
+    "order_groups": {
+      "AB": {
+        "rounds": [
+          1,
+          3,
+          5,
+          7,
+          9,
+          11,
+          13,
+          15,
+          17,
+          19
+        ],
+        "A": {
+          "count": 10,
+          "mean_ns": 1745287363,
+          "sample_sd_ns": 9996183.11201584,
+          "sample_cv": 0.00572752849985303
+        },
+        "B": {
+          "count": 10,
+          "mean_ns": 1741831228.8,
+          "sample_sd_ns": 5637482.176815005,
+          "sample_cv": 0.0032365260672808332
+        },
+        "B_over_A": -0.0019802665585449963,
+        "mean_pair_relative_change": -0.001936955423496478
+      },
+      "BA": {
+        "rounds": [
+          0,
+          2,
+          4,
+          6,
+          8,
+          10,
+          12,
+          14,
+          16,
+          18
+        ],
+        "A": {
+          "count": 10,
+          "mean_ns": 1746377763.8,
+          "sample_sd_ns": 12634299.978766575,
+          "sample_cv": 0.007234574466451745
+        },
+        "B": {
+          "count": 10,
+          "mean_ns": 1744935328.2,
+          "sample_sd_ns": 9186824.313393828,
+          "sample_cv": 0.005264850888697725
+        },
+        "B_over_A": -0.0008259585239228651,
+        "mean_pair_relative_change": -0.0007743449563665794
+      }
+    },
+    "position": {
+      "first": {
+        "count": 20,
+        "mean_ns": 1745111345.6,
+        "sample_sd_ns": 9345734.750392223,
+        "sample_cv": 0.005355380201931468
+      },
+      "second": {
+        "count": 20,
+        "mean_ns": 1744104496.3,
+        "sample_sd_ns": 9803370.9931502,
+        "sample_cv": 0.005620862175372743
+      },
+      "second_over_first": -0.0005769541883609008
+    },
+    "elapsed_time_trend": {
+      "slope_ns_per_unit": -77435.96034345453,
+      "correlation": -0.18636016158260188,
+      "unit": "second since first call start"
+    }
+  },
+  "projections": {
+    "interpretation": "Conditional planning projections, not measured precision or evidence that more batches cure bias or dependence.",
+    "assumptions": "Observed sample SDs held fixed; independent stationary batch means and Student-t model; no duplicated or simulated observations.",
+    "comparator_source_sha256": "12fafbd13bd6a17a1aba1ae86c2cf474ad0b86b87b3b5078e4bd40109be653d2",
+    "common_mean_ns": 1744607920.95,
+    "observed_arm_summaries": {
+      "A": {
+        "count": 20,
+        "mean_ns": 1745832563.4,
+        "sample_sd_ns": 11102128.255867522,
+        "sample_cv": 0.0063592170799278615
+      },
+      "B": {
+        "count": 20,
+        "mean_ns": 1743383278.5,
+        "sample_sd_ns": 7587342.929119172,
+        "sample_cv": 0.004352079673293236
+      }
+    },
+    "values": [
+      {
+        "n_per_arm": 20,
+        "degrees_of_freedom": 19,
+        "critical_value": 3.287,
+        "zero_effect_centre": {
+          "B_over_A": {
+            "relative_change": 0.0,
+            "relative_interval_99": [
+              -0.00783713449129575,
+              0.007910791907917547
+            ],
+            "lower": -0.00783713449129575,
+            "upper": 0.007910791907917547,
+            "width": 0.015747926399213297,
+            "half_width": 0.007873963199606648,
+            "contains_zero": true,
+            "excludes_positive": {
+              "1%": true,
+              "2%": true,
+              "5%": true
+            }
+          },
+          "A_over_B": {
+            "relative_change": 0.0,
+            "relative_interval_99": [
+              -0.007848702456040635,
+              0.007899040332735696
+            ],
+            "lower": -0.007848702456040635,
+            "upper": 0.007899040332735696,
+            "width": 0.01574774278877633,
+            "half_width": 0.007873871394388166,
+            "contains_zero": true,
+            "excludes_positive": {
+              "1%": true,
+              "2%": true,
+              "5%": true
+            }
+          }
+        },
+        "observed_displacement": {
+          "B_over_A": {
+            "relative_change": -0.0014029323036741648,
+            "relative_interval_99": [
+              -0.009228068092007158,
+              0.006495696299965603
+            ],
+            "lower": -0.009228068092007158,
+            "upper": 0.006495696299965603,
+            "width": 0.01572376439197276,
+            "half_width": 0.00786188219598638,
+            "contains_zero": true,
+            "excludes_positive": {
+              "1%": true,
+              "2%": true,
+              "5%": true
+            }
+          },
+          "A_over_B": {
+            "relative_change": 0.0014049032878802326,
+            "relative_interval_99": [
+              -0.006453774540561619,
+              0.009314018488832287
+            ],
+            "lower": -0.006453774540561619,
+            "upper": 0.009314018488832287,
+            "width": 0.015767793029393906,
+            "half_width": 0.007883896514696953,
+            "contains_zero": true,
+            "excludes_positive": {
+              "1%": true,
+              "2%": true,
+              "5%": true
+            }
+          }
+        }
+      },
+      {
+        "n_per_arm": 40,
+        "degrees_of_freedom": 39,
+        "critical_value": 3.03,
+        "zero_effect_centre": {
+          "B_over_A": {
+            "relative_change": 0.0,
+            "relative_interval_99": [
+              -0.0051166977983994055,
+              0.005147992215855046
+            ],
+            "lower": -0.0051166977983994055,
+            "upper": 0.005147992215855046,
+            "width": 0.010264690014254452,
+            "half_width": 0.005132345007127226,
+            "contains_zero": true,
+            "excludes_positive": {
+              "1%": true,
+              "2%": true,
+              "5%": true
+            }
+          },
+          "A_over_B": {
+            "relative_change": 0.0,
+            "relative_interval_99": [
+              -0.005121626124433898,
+              0.005143013041908118
+            ],
+            "lower": -0.005121626124433898,
+            "upper": 0.005143013041908118,
+            "width": 0.010264639166342016,
+            "half_width": 0.005132319583171008,
+            "contains_zero": true,
+            "excludes_positive": {
+              "1%": true,
+              "2%": true,
+              "5%": true
+            }
+          }
+        },
+        "observed_displacement": {
+          "B_over_A": {
+            "relative_change": -0.0014029323036741648,
+            "relative_interval_99": [
+              -0.006511790613712876,
+              0.0037371504911247744
+            ],
+            "lower": -0.006511790613712876,
+            "upper": 0.0037371504911247744,
+            "width": 0.01024894110483765,
+            "half_width": 0.005124470552418825,
+            "contains_zero": true,
+            "excludes_positive": {
+              "1%": true,
+              "2%": true,
+              "5%": true
+            }
+          },
+          "A_over_B": {
+            "relative_change": 0.0014049032878802326,
+            "relative_interval_99": [
+              -0.003723236197142099,
+              0.006554471962717523
+            ],
+            "lower": -0.003723236197142099,
+            "upper": 0.006554471962717523,
+            "width": 0.010277708159859622,
+            "half_width": 0.005138854079929811,
+            "contains_zero": true,
+            "excludes_positive": {
+              "1%": true,
+              "2%": true,
+              "5%": true
+            }
+          }
+        }
+      },
+      {
+        "n_per_arm": 80,
+        "degrees_of_freedom": 79,
+        "critical_value": 2.915,
+        "zero_effect_centre": {
+          "B_over_A": {
+            "relative_change": 0.0,
+            "relative_interval_99": [
+              -0.0034841188321039773,
+              0.003498600766255855
+            ],
+            "lower": -0.0034841188321039773,
+            "upper": 0.003498600766255855,
+            "width": 0.006982719598359832,
+            "half_width": 0.003491359799179916,
+            "contains_zero": true,
+            "excludes_positive": {
+              "1%": true,
+              "2%": true,
+              "5%": true
+            }
+          },
+          "A_over_B": {
+            "relative_change": 0.0,
+            "relative_interval_99": [
+              -0.003486403233232571,
+              0.0034963003580241736
+            ],
+            "lower": -0.003486403233232571,
+            "upper": 0.0034963003580241736,
+            "width": 0.006982703591256745,
+            "half_width": 0.0034913517956283724,
+            "contains_zero": true,
+            "excludes_positive": {
+              "1%": true,
+              "2%": true,
+              "5%": true
+            }
+          }
+        },
+        "observed_displacement": {
+          "B_over_A": {
+            "relative_change": -0.0014029323036741648,
+            "relative_interval_99": [
+              -0.004881710617520296,
+              0.002090295582081403
+            ],
+            "lower": -0.004881710617520296,
+            "upper": 0.002090295582081403,
+            "width": 0.006972006199601699,
+            "half_width": 0.0034860030998008495,
+            "contains_zero": true,
+            "excludes_positive": {
+              "1%": true,
+              "2%": true,
+              "5%": true
+            }
+          },
+          "A_over_B": {
+            "relative_change": 0.0014049032878802326,
+            "relative_interval_99": [
+              -0.002085935360612634,
+              0.004905658623307607
+            ],
+            "lower": -0.002085935360612634,
+            "upper": 0.004905658623307607,
+            "width": 0.006991593983920241,
+            "half_width": 0.0034957969919601206,
+            "contains_zero": true,
+            "excludes_positive": {
+              "1%": true,
+              "2%": true,
+              "5%": true
+            }
+          }
+        }
+      },
+      {
+        "n_per_arm": 160,
+        "degrees_of_freedom": 159,
+        "critical_value": 2.86,
+        "zero_effect_centre": {
+          "B_over_A": {
+            "relative_change": 0.0,
+            "relative_interval_99": [
+              -0.0024186931864718098,
+              0.0024256634717298997
+            ],
+            "lower": -0.0024186931864718098,
+            "upper": 0.0024256634717298997,
+            "width": 0.0048443566582017095,
+            "half_width": 0.0024221783291008547,
+            "contains_zero": true,
+            "excludes_positive": {
+              "1%": true,
+              "2%": true,
+              "5%": true
+            }
+          },
+          "A_over_B": {
+            "relative_change": 0.0,
+            "relative_interval_99": [
+              -0.0024197938661395524,
+              0.0024245574470491693
+            ],
+            "lower": -0.0024197938661395524,
+            "upper": 0.0024245574470491693,
+            "width": 0.004844351313188722,
+            "half_width": 0.002422175656594361,
+            "contains_zero": true,
+            "excludes_positive": {
+              "1%": true,
+              "2%": true,
+              "5%": true
+            }
+          }
+        },
+        "observed_displacement": {
+          "B_over_A": {
+            "relative_change": -0.0014029323036741648,
+            "relative_interval_99": [
+              -0.003817917002797766,
+              0.0010190071044908766
+            ],
+            "lower": -0.003817917002797766,
+            "upper": 0.0010190071044908766,
+            "width": 0.004836924107288643,
+            "half_width": 0.0024184620536443213,
+            "contains_zero": true,
+            "excludes_positive": {
+              "1%": true,
+              "2%": true,
+              "5%": true
+            }
+          },
+          "A_over_B": {
+            "relative_change": 0.0014049032878802326,
+            "relative_interval_99": [
+              -0.0010179697860466241,
+              0.0038325493581563563
+            ],
+            "lower": -0.0010179697860466241,
+            "upper": 0.0038325493581563563,
+            "width": 0.0048505191442029805,
+            "half_width": 0.0024252595721014902,
+            "contains_zero": true,
+            "excludes_positive": {
+              "1%": true,
+              "2%": true,
+              "5%": true
+            }
+          }
+        }
+      }
+    ]
+  },
+  "starting_arm": "B",
+  "environment_issues": [],
+  "session_receipt_sha256": "eb0447b266b5da911ff78fc41632bd4a3e54a9dd774ef0c51973814659eb1769",
+  "session": {
+    "index": 8,
+    "sweep": 1,
+    "cell": 4,
+    "starting_arm": "B"
+  },
+  "started_attempts": [
+    {
+      "identity": {
+        "round": 0,
+        "arm": "A",
+        "position": 1
+      },
+      "monotonic_ns": 6123976791600024
+    },
+    {
+      "identity": {
+        "round": 0,
+        "arm": "B",
+        "position": 0
+      },
+      "monotonic_ns": 6123974847474279
+    },
+    {
+      "identity": {
+        "round": 1,
+        "arm": "A",
+        "position": 0
+      },
+      "monotonic_ns": 6123978790940239
+    },
+    {
+      "identity": {
+        "round": 1,
+        "arm": "B",
+        "position": 1
+      },
+      "monotonic_ns": 6123980732526155
+    },
+    {
+      "identity": {
+        "round": 2,
+        "arm": "A",
+        "position": 1
+      },
+      "monotonic_ns": 6123984625440182
+    },
+    {
+      "identity": {
+        "round": 2,
+        "arm": "B",
+        "position": 0
+      },
+      "monotonic_ns": 6123982682095084
+    },
+    {
+      "identity": {
+        "round": 3,
+        "arm": "A",
+        "position": 0
+      },
+      "monotonic_ns": 6123986581667983
+    },
+    {
+      "identity": {
+        "round": 3,
+        "arm": "B",
+        "position": 1
+      },
+      "monotonic_ns": 6123988524358037
+    },
+    {
+      "identity": {
+        "round": 4,
+        "arm": "A",
+        "position": 1
+      },
+      "monotonic_ns": 6123992430787915
+    },
+    {
+      "identity": {
+        "round": 4,
+        "arm": "B",
+        "position": 0
+      },
+      "monotonic_ns": 6123990475825610
+    },
+    {
+      "identity": {
+        "round": 5,
+        "arm": "A",
+        "position": 0
+      },
+      "monotonic_ns": 6123994378020394
+    },
+    {
+      "identity": {
+        "round": 5,
+        "arm": "B",
+        "position": 1
+      },
+      "monotonic_ns": 6123996317523686
+    },
+    {
+      "identity": {
+        "round": 6,
+        "arm": "A",
+        "position": 1
+      },
+      "monotonic_ns": 6124000209100723
+    },
+    {
+      "identity": {
+        "round": 6,
+        "arm": "B",
+        "position": 0
+      },
+      "monotonic_ns": 6123998268944716
+    },
+    {
+      "identity": {
+        "round": 7,
+        "arm": "A",
+        "position": 0
+      },
+      "monotonic_ns": 6124002178214667
+    },
+    {
+      "identity": {
+        "round": 7,
+        "arm": "B",
+        "position": 1
+      },
+      "monotonic_ns": 6124004122275012
+    },
+    {
+      "identity": {
+        "round": 8,
+        "arm": "A",
+        "position": 1
+      },
+      "monotonic_ns": 6124008010689850
+    },
+    {
+      "identity": {
+        "round": 8,
+        "arm": "B",
+        "position": 0
+      },
+      "monotonic_ns": 6124006071105148
+    },
+    {
+      "identity": {
+        "round": 9,
+        "arm": "A",
+        "position": 0
+      },
+      "monotonic_ns": 6124009957753723
+    },
+    {
+      "identity": {
+        "round": 9,
+        "arm": "B",
+        "position": 1
+      },
+      "monotonic_ns": 6124011897393393
+    },
+    {
+      "identity": {
+        "round": 10,
+        "arm": "A",
+        "position": 1
+      },
+      "monotonic_ns": 6124015789356432
+    },
+    {
+      "identity": {
+        "round": 10,
+        "arm": "B",
+        "position": 0
+      },
+      "monotonic_ns": 6124013846961823
+    },
+    {
+      "identity": {
+        "round": 11,
+        "arm": "A",
+        "position": 0
+      },
+      "monotonic_ns": 6124017745795964
+    },
+    {
+      "identity": {
+        "round": 11,
+        "arm": "B",
+        "position": 1
+      },
+      "monotonic_ns": 6124019693854781
+    },
+    {
+      "identity": {
+        "round": 12,
+        "arm": "A",
+        "position": 1
+      },
+      "monotonic_ns": 6124023605616285
+    },
+    {
+      "identity": {
+        "round": 12,
+        "arm": "B",
+        "position": 0
+      },
+      "monotonic_ns": 6124021660973714
+    },
+    {
+      "identity": {
+        "round": 13,
+        "arm": "A",
+        "position": 0
+      },
+      "monotonic_ns": 6124025561027393
+    },
+    {
+      "identity": {
+        "round": 13,
+        "arm": "B",
+        "position": 1
+      },
+      "monotonic_ns": 6124027501876262
+    },
+    {
+      "identity": {
+        "round": 14,
+        "arm": "A",
+        "position": 1
+      },
+      "monotonic_ns": 6124031404482585
+    },
+    {
+      "identity": {
+        "round": 14,
+        "arm": "B",
+        "position": 0
+      },
+      "monotonic_ns": 6124029451581304
+    },
+    {
+      "identity": {
+        "round": 15,
+        "arm": "A",
+        "position": 0
+      },
+      "monotonic_ns": 6124033352932928
+    },
+    {
+      "identity": {
+        "round": 15,
+        "arm": "B",
+        "position": 1
+      },
+      "monotonic_ns": 6124035292893851
+    },
+    {
+      "identity": {
+        "round": 16,
+        "arm": "A",
+        "position": 1
+      },
+      "monotonic_ns": 6124039205681193
+    },
+    {
+      "identity": {
+        "round": 16,
+        "arm": "B",
+        "position": 0
+      },
+      "monotonic_ns": 6124037263467283
+    },
+    {
+      "identity": {
+        "round": 17,
+        "arm": "A",
+        "position": 0
+      },
+      "monotonic_ns": 6124041153948111
+    },
+    {
+      "identity": {
+        "round": 17,
+        "arm": "B",
+        "position": 1
+      },
+      "monotonic_ns": 6124043095338992
+    },
+    {
+      "identity": {
+        "round": 18,
+        "arm": "A",
+        "position": 1
+      },
+      "monotonic_ns": 6124046980818751
+    },
+    {
+      "identity": {
+        "round": 18,
+        "arm": "B",
+        "position": 0
+      },
+      "monotonic_ns": 6124045041944154
+    },
+    {
+      "identity": {
+        "round": 19,
+        "arm": "A",
+        "position": 0
+      },
+      "monotonic_ns": 6124048930474125
+    },
+    {
+      "identity": {
+        "round": 19,
+        "arm": "B",
+        "position": 1
+      },
+      "monotonic_ns": 6124050868903480
+    }
+  ],
+  "session_wall_seconds": 78.009458873
+}
