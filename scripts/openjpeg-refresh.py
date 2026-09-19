@@ -175,15 +175,60 @@ def validate_rows(rows, case_ids, rounds, encode_only=False):
         raise ValueError('missing planned measurements')
 
 
+def front_end_assets(assets):
+    if len(assets) != 9 or len({a['id'] for a in assets}) != 9:
+        raise ValueError('front-end anchor requires the fixed nine-product source cohort')
+    selected = [a for a in assets if a['id'].startswith('106_') and a['product'] == 'RGB8']
+    if len(selected) != 1:
+        raise ValueError('front-end anchor requires exactly Boca RGB8')
+    return selected
+
+
+def worker_sources(source):
+    return {p:d for p,d in source['source_files_sha256'].items()
+            if p.startswith(('workers/','src/','.cargo/'))
+            or p in ('Cargo.toml','Cargo.lock','build.rs','rust-toolchain.toml')}
+
+
+def validate_front_end_manifest(manifest):
+    selected = manifest['assets']
+    if (len(selected) != 1 or not selected[0]['id'].startswith('106_')
+            or selected[0]['product'] != 'RGB8'
+            or manifest['case_ids'] != [selected[0]['id']]
+            or not manifest.get('encode_only') or manifest.get('probe')
+            or manifest['rounds'] != ROUNDS
+            or manifest['styles'] != list(STYLES) or manifest['workers'] != list(THREADS)):
+        raise ValueError('front-end anchor differs from the frozen four encode contrasts')
+    expected = {f"{selected[0]['id']}-{codec}-s{style}.j2k" for codec in CODECS for style in STYLES}
+    streams = manifest.get('reused_streams', {})
+    records = manifest.get('reused_records', {})
+    if (len(streams) != 4 or {Path(p).name for p in streams} != expected
+            or len(records) != 3 or {Path(p).name for p in records} != {'manifest.json','measurement.json','preparations.json'}):
+        raise ValueError('front-end anchor requires bound immutable preparation evidence')
+
+
 def measure(args):
+    study = args.study
+    budget = None
+    if study == 'front-end':
+        if args.probe or not args.encode_only or args.streams is None or args.budget is None:
+            raise ValueError('front-end anchor requires encode-only, reused streams and shared budget; no probe')
+        budget = module('front_end_budget', 'mq-d2-budget.py').Budget(args.budget, 'classic-encode-front-end/v1')
     owner = classic.clean_source(ROOT)
     build_record = bind(args.build)
     if build_record.get('sampling') or build_record.get('execution_diagnostics') or build_record.get('allocation_diagnostics'):
         raise ValueError('sampling builds cannot supply headline measurements')
     # Source identity is fixed by committed bytes, including hidden index changes.
-    if build_record['benchmark']['source_files_sha256'] != owner['source_files_sha256']:
+    if study == 'front-end':
+        if build_record.get('encoder_backend') != 'default' or build_record.get('scheduling_window') != 'default':
+            raise ValueError('front-end anchor requires packed-default encoding and original W batches')
+        if worker_sources(build_record['benchmark']) != worker_sources(owner):
+            raise ValueError('build and runner compiled worker source differs')
+    elif build_record['benchmark']['source_files_sha256'] != owner['source_files_sha256']:
         raise ValueError('build and runner source trees differ')
     selected = classic.assets(args.prepared)
+    if study == 'front-end':
+        selected = front_end_assets(selected)
     if args.probe:
         selected = [a for a in selected if a['id']=='94_104001000B823500-PAN16']
     rounds = 1 if args.probe else ROUNDS
@@ -207,12 +252,14 @@ def measure(args):
         raise ValueError('reviewed licence notice differs')
     (args.output/'LICENSE.txt').write_bytes(notice.read_bytes())
     (args.output/'NOTICE.txt').write_text('RarePlanes Dataset, June 2020. J. Shermeyer, T. Hossler, A. Van Etten, D. Hogan, R. Lewis and D. Kim; In-Q-Tel - CosmiQ Works and AI.Reverie. CC BY-SA 4.0. New lossless JPEG 2000 encodings of the identified prepared samples; no imagery redistribution. See manifest.json for source lineage.\n')
-    manifest = dict(schema_version=1,probe=args.probe,encode_only=args.encode_only,reused_streams=reused_streams,reused_records=reused_records,rounds=rounds,case_ids=[a['id'] for a in selected],assets=selected,
+    manifest = dict(schema_version=1,study=study,probe=args.probe,encode_only=args.encode_only,reused_streams=reused_streams,reused_records=reused_records,rounds=rounds,case_ids=[a['id'] for a in selected],assets=selected,
                     prepared_sha256=sha(args.prepared/'prepared.json'),build_sha256=sha(args.build),build=build_record,
                     owner=owner,machine=cpu_identity(cpus),boundary=BOUNDARY,styles=list(STYLES),workers=list(THREADS),
                     timeout_seconds=120,address_space_bytes=classic.BUDGET,warmup=0,samples_per_batch=1,
                     order='alternating AB/BA per adjacent codec pair; OpenJPEG first in even rounds',
                     started_utc=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()))
+    if study == 'front-end':
+        validate_front_end_manifest(manifest)
     write(args.output/'manifest.json',manifest)
     binary = build_record['binary']
     preparations = []
@@ -244,6 +291,8 @@ def measure(args):
                                 result=dict(status='preparation_failed')
                             else:
                                 request=make_request(asset,args.prepared,stream_owner,stream_origin,codec,style,workers,operation,round_id)
+                                if budget is not None:
+                                    budget.before_call()
                                 result=run_process(binary,request,args.output/name,cpus[:workers])
                             rows.append(dict(case_id=asset['id'],style=style,workers=workers,operation=operation,origin=origin,round=round_id,codec=codec,result=result,path=name))
                             write(args.output/(name+'-receipt.json'),rows[-1])
@@ -262,11 +311,15 @@ def measure(args):
     return 0 if success else 4
 
 
-def analyse(folder, estimator):
+def analyse(folder, estimator, study='refresh'):
     manifest=json.loads((folder/'manifest.json').read_text())
     measurement=json.loads((folder/'measurement.json').read_text())
     if manifest['probe'] or manifest['rounds']!=ROUNDS or sha(folder/'manifest.json')!=measurement['manifest_sha256']:
         raise ValueError('headline analysis requires complete bound twenty-round protocol')
+    if manifest.get('study','refresh') != study:
+        raise ValueError('analysis study differs from measurement identity')
+    if study == 'front-end':
+        validate_front_end_manifest(manifest)
     rows=measurement['rows']
     validate_rows(rows,manifest['case_ids'],ROUNDS,manifest.get('encode_only',False))
     comparisons=[]
@@ -285,7 +338,7 @@ def analyse(folder, estimator):
                         entry.update(estimate)
                         entry['codecs']={c:dict(mean_ms=statistics.mean(samples[c])/1e6,operation_samples_ns=samples[c],exact_batches=len(arm),maximum_process_rss_bytes=max(r['process_peak_rss_bytes'] for r in arm),mean_process_cpu_seconds=statistics.mean(r['process_cpu_seconds'] for r in arm),stream_bytes=sorted({r['observation']['stream_bytes'] for r in arm})) for c,arm in arms.items()}
                     comparisons.append(entry)
-    report=dict(schema_version=1,encode_only=manifest.get('encode_only',False),complete=measurement['complete'],manifest_sha256=sha(folder/'manifest.json'),measurement_sha256=sha(folder/'measurement.json'),
+    report=dict(schema_version=1,study=study,encode_only=manifest.get('encode_only',False),complete=measurement['complete'],manifest_sha256=sha(folder/'manifest.json'),measurement_sha256=sha(folder/'measurement.json'),
                 codec_revision=manifest['build']['codec']['source_revision'],codec_tree=manifest['build']['codec']['source_tree'],
                 benchmark_revision=manifest['owner']['source_revision'],openjpeg=manifest['build']['openjpeg'],
                 analysis_revision=git(ROOT,'rev-parse','HEAD'),analysis_script_sha256=sha(__file__),
@@ -306,7 +359,7 @@ def analyse(folder, estimator):
         else:
             values='— | — | —'
         lines.append(f"| {e['case_id']} | {e['style']} | {e['workers']} | {e['operation']} / {e['origin']} | {values} | {e['verdict']} |")
-    lines += ['', 'Whole-process peak RSS and CPU time, compressed sizes, exact identities and all intervals are in report.json. These measurements describe the fixed nine-product cohort on one host. They do not establish full corpus coverage or a universal codec ranking.', '', 'RarePlanes attribution: J. Shermeyer, T. Hossler, A. Van Etten, D. Hogan, R. Lewis and D. Kim; In-Q-Tel - CosmiQ Works and AI.Reverie; RarePlanes Dataset, June 2020, CC BY-SA 4.0. Factual measurements only; no image payload.']
+    lines += ['', 'Whole-process peak RSS and CPU time, compressed sizes, exact identities and all intervals are in report.json. These measurements describe the selected fixed cohort on one host. They do not establish full corpus coverage or a universal codec ranking.', '', 'RarePlanes attribution: J. Shermeyer, T. Hossler, A. Van Etten, D. Hogan, R. Lewis and D. Kim; In-Q-Tel - CosmiQ Works and AI.Reverie; RarePlanes Dataset, June 2020, CC BY-SA 4.0. Factual measurements only; no image payload.']
     (folder/'report.md').write_text('\n'.join(lines)+'\n')
     print(json.dumps({'comparisons':len(comparisons),'complete':report['complete']}))
 
@@ -315,16 +368,16 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     sub=parser.add_subparsers(dest='command',required=True)
     p=sub.add_parser('build'); p.add_argument('--codec-source',type=Path,required=True); p.add_argument('--output',type=Path,required=True); p.add_argument('--sampling',action='store_true'); p.add_argument('--execution-diagnostics',action='store_true'); p.add_argument('--allocation-diagnostics',action='store_true')
-    p=sub.add_parser('measure'); p.add_argument('--build',type=Path,required=True); p.add_argument('--prepared',type=Path,required=True); p.add_argument('--output',type=Path,required=True); p.add_argument('--cpus',required=True); p.add_argument('--probe',action='store_true'); p.add_argument('--encode-only',action='store_true'); p.add_argument('--streams',type=Path)
-    p=sub.add_parser('analyse'); p.add_argument('--output',type=Path,required=True); p.add_argument('--estimator',type=Path,required=True)
+    p=sub.add_parser('measure'); p.add_argument('--build',type=Path,required=True); p.add_argument('--prepared',type=Path,required=True); p.add_argument('--output',type=Path,required=True); p.add_argument('--cpus',required=True); p.add_argument('--probe',action='store_true'); p.add_argument('--encode-only',action='store_true'); p.add_argument('--streams',type=Path); p.add_argument('--study',choices=('refresh','front-end'),default='refresh'); p.add_argument('--budget',type=Path)
+    p=sub.add_parser('analyse'); p.add_argument('--output',type=Path,required=True); p.add_argument('--estimator',type=Path,required=True); p.add_argument('--study',choices=('refresh','front-end'),default='refresh')
     p=sub.add_parser('estimator'); p.add_argument('--output',type=Path,required=True)
     args=parser.parse_args()
-    for key in ('output','build','prepared','codec_source','estimator','streams'):
+    for key in ('output','build','prepared','codec_source','estimator','streams','budget'):
         if getattr(args,key,None) is not None:
             setattr(args,key,getattr(args,key).resolve())
     if args.command=='build': build(args.codec_source,args.output,args.sampling,args.execution_diagnostics,args.allocation_diagnostics)
     elif args.command=='measure': return measure(args)
-    elif args.command=='analyse': analyse(args.output,args.estimator)
+    elif args.command=='analyse': analyse(args.output,args.estimator,args.study)
     elif args.command=='estimator': classic.estimator_build(ROOT,args.output)
     return 0
 

@@ -6,6 +6,7 @@ from pathlib import Path
 import tempfile
 from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
 
 SPEC=importlib.util.spec_from_file_location('kernel',Path(__file__).resolve().parents[1]/'scripts/classic-encoder-kernel.py')
 kernel=importlib.util.module_from_spec(SPEC)
@@ -137,6 +138,67 @@ class KernelCoverageTests(unittest.TestCase):
             kernel.validate_rows(manifest, rows)
             with self.assertRaises(ValueError): kernel.validate_rows(manifest, rows[:-1])
             with self.assertRaises(ValueError): kernel.validate_rows(dict(manifest,rounds=21),rows)
+
+    def test_front_end_stages_require_all_1120_confirmation_calls(self):
+        assets = self.fixture('screen')[0]['assets']
+        chips = ['AOI_2_Vegas_img1454','AOI_3_Paris_img235','AOI_4_Shanghai_img1196'] + [f'AOI_2_Vegas_img{i}' for i in range(9)]
+        sn = [dict(id='RGB-PanSharpen_'+chip, role='development') for chip in chips]
+        total = 0
+        for phase, selected, count in [('screen',assets,4), ('primary',assets,4), ('confirm',assets,20), ('spacenet',sn,4)]:
+            cases = kernel.contrasts(selected,phase,'front-end')
+            self.assertEqual(len(cases),count)
+            self.assertEqual({c[2] for c in cases},{1,8})
+            if phase in ('screen','primary'):
+                self.assertEqual({c[0]['product'] for c in cases},{'RGB8'})
+                self.assertTrue(all(c[0]['id'].startswith('94_' if phase=='screen' else '106_') for c in cases))
+            if phase == 'confirm':
+                decoded = [c for c in cases if c[3]=='decode']
+                self.assertEqual(len(decoded),4)
+                self.assertTrue(all(c[0]['id'].startswith('94_') and c[0]['product']=='RGB8' and c[4]=='openjpeg' for c in decoded))
+            if phase == 'spacenet':
+                self.assertTrue(all(c[0]['id'].endswith('AOI_2_Vegas_img1454') and c[3]=='encode' for c in cases))
+            contrasts = [dict(case_id=a['id'],style=s,workers=w,operation=op,origin=o) for a,s,w,op,o in cases]
+            rounds = 3 if phase=='screen' else 20
+            manifest = dict(study='front-end',phase=phase,rounds=rounds,assets=selected,contrasts=contrasts)
+            rows = [dict(c,round=r,arm=arm) for c in contrasts for r in range(rounds) for arm in kernel.ARMS]
+            kernel.validate_rows(manifest,rows)
+            with self.assertRaises(ValueError): kernel.validate_rows(manifest,rows[:-1])
+            with self.assertRaises(ValueError): kernel.validate_rows(dict(manifest,rounds=rounds+1),rows)
+            if phase != 'screen': total += len(rows)
+        self.assertEqual(total,1120)
+        for delta in [dict(role='reserved'),dict(id='RGB-PanSharpen_AOI_5_Khartoum_img1')]:
+            changed = [dict(a) for a in sn]; changed[0].update(delta)
+            with self.assertRaises(ValueError): kernel.contrasts(changed,'spacenet','front-end')
+        with self.assertRaises(ValueError): kernel.contrasts(assets,'describe','front-end')
+        changed = [dict(a) for a in assets]; changed[3]['product']='RGB8'
+        with self.assertRaises(ValueError): kernel.contrasts(changed,'screen','front-end')
+
+    def test_front_end_diagnostics_require_new_fields_and_never_headline_samples(self):
+        selected = self.fixture('screen')[0]['assets']
+        for kind in ('describe','diagnose'):
+            cases = kernel.front_end_observation_cases(selected,kind)
+            self.assertEqual(len(cases),16)
+            self.assertEqual({c[0]['product'] for c in cases},{'PAN16','MS16','RGB8','RGB16'})
+            self.assertTrue(all(c[0]['id'].startswith('94_') for c in cases))
+        valid = dict(samples_ns=[],execution_diagnostic=dict(front_end_ns=dict.fromkeys(kernel.FRONT_END_FIELDS,0)))
+        kernel.validate_front_end_diagnostic(valid)
+        for bad in [dict(valid,samples_ns=[1]), dict(samples_ns=[]),
+                    dict(samples_ns=[],execution_diagnostic=dict(front_end_ns={'forward_rct':1}))]:
+            with self.assertRaises(ValueError): kernel.validate_front_end_diagnostic(bad)
+        for value in [-1, True, '1']:
+            detail = dict.fromkeys(kernel.FRONT_END_FIELDS,0); detail['forward_rct']=value
+            with self.assertRaises(ValueError):
+                kernel.validate_front_end_diagnostic(dict(samples_ns=[],execution_diagnostic=dict(front_end_ns=detail)))
+
+    def test_front_end_timings_reject_diagnostic_builds_before_process_launch(self):
+        args = SimpleNamespace(study='front-end',budget=Path('unused'),reference=Path('ref'),packed=Path('candidate'))
+        for mode in ('sampling','execution_diagnostics','allocation_diagnostics'):
+            with patch.object(kernel,'observation_budget'), patch.object(kernel.refresh.classic,'clean_source'), \
+                 patch.object(kernel.refresh,'bind',return_value={mode:True}), patch.object(kernel.refresh,'run_process') as run:
+                with self.assertRaisesRegex(ValueError,'diagnostic builds'): kernel.measure(args)
+                run.assert_not_called()
+        with self.assertRaisesRegex(ValueError,'shared finite budget'):
+            kernel.observation_budget('front-end',None)
 
     def test_three_round_screen_never_calls_twenty_round_estimator(self):
         manifest,rows=self.fixture('screen')
