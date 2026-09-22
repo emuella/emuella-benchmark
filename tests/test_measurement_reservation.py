@@ -404,6 +404,164 @@ class ReservationTests(unittest.TestCase):
         self.assertEqual(args[:2], ['/usr/bin/systemctl', 'stop'])
         self.assertTrue(args[2].startswith('emuella-measurement-reservation-'))
 
+    def balanced_partition(self):
+        patch.object(r, 'CONDITION', 'balanced').start()
+        self.state.update(condition='balanced', partition_mode='root')
+        self.state['before']['isolated'] = ''
+        self.partition()
+        self.put(self.group / 'workers/cpuset.cpus.partition', 'root')
+        self.put(self.group / 'cpuset.cpus.partition', 'member')
+        self.put(self.group / 'cgroup.procs', '')
+        self.put(self.group / 'cpuset.cpus.effective', r.mask(r.HOUSE))
+        self.put(self.group / 'supervisor/cpuset.cpus.effective', r.mask(r.HOUSE))
+        self.put(self.cg / 'cpuset.cpus.isolated', '')
+        self.put(self.cg / 'user.slice/session.scope/cpuset.cpus.effective', r.mask(r.HOUSE))
+
+    def test_balanced_exclusion_checks_worker_ancestor_supervisor_and_descendants(self):
+        self.balanced_partition()
+        r.verify_partition(self.state)
+        for path, value in [
+                (self.group / 'workers/cpuset.cpus.partition', 'isolated'),
+                (self.group / 'workers/cpuset.cpus.partition', 'root invalid (test)'),
+                (self.group / 'workers/cpuset.cpus.exclusive.effective', '0-7'),
+                (self.group / 'cpuset.cpus.partition', 'root'),
+                (self.group / 'cpuset.cpus.effective', '0-31'),
+                (self.group / 'cgroup.procs', '123'),
+                (self.group / 'supervisor/cpuset.cpus.effective', '0-31'),
+                (self.group / 'controller/cpuset.cpus.effective', '0-31'),
+                (self.cg / 'user.slice/session.scope/cpuset.cpus.effective', '0-31'),
+                (self.cg / 'cpuset.cpus.isolated', '0-7,16-23')]:
+            with self.subTest(path=path, value=value):
+                original = path.read_text()
+                path.write_text(value)
+                with self.assertRaises(ValueError):
+                    r.verify_partition(self.state)
+                path.write_text(original)
+        self.put(self.group / 'workers/child/cgroup.procs', '')
+        with self.assertRaisesRegex(ValueError, 'invalid or occupied'):
+            r.verify_partition(self.state)
+
+    def test_balanced_configures_root_partition_and_restores_originals(self):
+        self.balanced_partition()
+        self.put(self.group / 'cpuset.cpus.exclusive', '')
+        self.put(self.group / 'cgroup.subtree_control', '')
+        for child in ('supervisor', 'controller', 'workers'):
+            for field in ('cpuset.cpus', 'cpuset.mems'):
+                self.put(self.group / child / field, '')
+        self.put(self.group / 'workers/cpuset.cpus.exclusive', '')
+        self.put(self.group / 'workers/cpuset.cpus.partition', 'member')
+        with patch.object(Path, 'mkdir'), patch.object(r, 'delegate_procs'), patch.object(r, 'command', side_effect=['/' + self.state['unit'], 'one']):
+            r.configure(self.state)
+        self.assertEqual(r.read(self.group / 'workers/cpuset.cpus.partition'), 'root')
+        self.assertFalse(r.restore())
+        self.assertEqual(r.read(self.group / 'workers/cpuset.cpus.partition'), 'member')
+        self.assertEqual(r.read(self.group / 'cpuset.cpus.exclusive'), '')
+        receipt = json.loads(r.read(self.state_root / 'public/restoration.json'))
+        self.assertEqual((receipt['condition'], receipt['partition_mode']), ('balanced', 'root'))
+
+    def test_balanced_descendants_inherit_only_when_cpuset_disabled_for_children(self):
+        self.balanced_partition()
+        session = self.cg / 'user.slice/session.scope'
+        (session / 'cpuset.cpus.effective').unlink()
+        self.put(self.cg / 'user.slice/cgroup.subtree_control', 'cpu memory')
+        self.put(session / 'cgroup.subtree_control', '')
+        (session / 'app').mkdir()
+        r.verify_partition(self.state)
+        self.put(self.cg / 'user.slice/cgroup.subtree_control', 'cpuset cpu memory')
+        with self.assertRaisesRegex(ValueError, 'inheritance is unproved'):
+            r.verify_partition(self.state)
+
+    def test_balanced_start_binds_copy_commands_mode_and_short_lease(self):
+        fresh = self.root / 'balanced'
+        account = Mock(pw_gid=3000, pw_name='task')
+        def launch(*args):
+            r.atomic(fresh / 'public/authority.json', {'authored': True})
+            return ''
+        retained = self.state_root / 'public/authority.json'
+        retained.write_text('historical isolated receipt')
+        with patch.object(r, 'CONDITION', 'balanced'), patch.object(r, 'ROOT', fresh), patch.object(r, 'inspect', return_value={}), patch.object(r.pwd, 'getpwuid', return_value=account), patch.object(r.os, 'chown'), patch.object(r, 'command', side_effect=launch) as launch_command, patch('builtins.print'):
+            r.start(3000, 'balanced owner authority')
+        invocation = launch_command.call_args.args
+        self.assertIn('RuntimeMaxSec=1800', invocation)
+        self.assertEqual(invocation[-3:], ('--condition', 'balanced', 'serve'))
+        self.assertIn('ExecStopPost=/usr/bin/python3 -I ' + str(fresh / 'helper.py') + ' --condition balanced restore', invocation)
+        journal = json.loads(r.read(fresh / 'journal.json'))
+        self.assertEqual(journal['schema'], r.BALANCED_SCHEMA)
+        self.assertEqual((journal['condition'], journal['partition_mode']), ('balanced', 'root'))
+        self.assertEqual(retained.read_text(), 'historical isolated receipt')
+
+    def test_condition_selection_routes_every_cli_entry_point(self):
+        for condition, root in [('isolated', r.ISOLATED_ROOT), ('balanced', r.BALANCED_ROOT)]:
+            for action in ('serve', 'restore', 'run', 'stop', 'verify', 'retire-failed', 'inspect'):
+                function = {'retire-failed': 'retire_failed'}.get(action, action)
+                def invoked(*args, **kwargs):
+                    self.assertEqual(r.ROOT, root)
+                    self.assertEqual(r.CONDITION, condition)
+                    return 0
+                with self.subTest(condition=condition, action=action), patch.object(r, 'ROOT'), patch.object(r, 'CONDITION'), patch.object(r, function, side_effect=invoked), patch.object(r.sys, 'argv', ['helper', '--condition', condition, action]), patch('builtins.print'):
+                    r.main()
+
+    def test_balanced_journal_requires_schema_and_mode_identity(self):
+        value, root_stat = self.trusted_state()
+        with patch.object(Path, 'lstat', root_stat), patch.object(r, 'CONDITION', 'balanced'):
+            with self.assertRaisesRegex(ValueError, 'schema or boot'):
+                REAL_LOAD()
+            value.update(schema=r.BALANCED_SCHEMA, condition='balanced', partition_mode='root')
+            r.atomic(self.state_root / 'journal.json', value)
+            self.assertEqual(REAL_LOAD()['condition'], 'balanced')
+            for field, replacement in [('condition', 'isolated'), ('partition_mode', 'isolated')]:
+                bad = dict(value, **{field: replacement})
+                r.atomic(self.state_root / 'journal.json', bad)
+                with self.assertRaisesRegex(ValueError, 'condition or partition'):
+                    REAL_LOAD()
+            r.atomic(self.state_root / 'journal.json', value)
+        with patch.object(Path, 'lstat', root_stat), self.assertRaisesRegex(ValueError, 'schema or boot'):
+            REAL_LOAD()
+
+    def test_balanced_verification_rejects_historical_restoration_receipt(self):
+        r.atomic(self.state_root / 'public/restoration.json', {'issues': [], 'before': {}, 'unit': self.state['unit']})
+        with patch.object(r, 'CONDITION', 'balanced'), self.assertRaisesRegex(ValueError, 'condition or partition'):
+            r.verify()
+
+    def test_balanced_partial_failure_keeps_evidence_and_stops_owned_unit(self):
+        account = Mock(pw_gid=3000, pw_name='task')
+        fresh = self.root / 'balanced-failure'
+        with patch.object(r, 'CONDITION', 'balanced'), patch.object(r, 'ROOT', fresh), patch.object(r, 'inspect', return_value={}), patch.object(r.pwd, 'getpwuid', return_value=account), patch.object(r.os, 'chown'), patch.object(r, 'command', side_effect=subprocess.TimeoutExpired('systemd-run', 30)), patch.object(r.subprocess, 'run', return_value=subprocess.CompletedProcess([], 0, '', '')) as stop, patch('builtins.print'):
+            with self.assertRaises(subprocess.TimeoutExpired):
+                r.start(3000, 'authorised balanced diagnostic')
+        journal = json.loads(r.read(fresh / 'journal.json'))
+        self.assertEqual(stop.call_args.args[0], ['/usr/bin/systemctl', 'stop', journal['unit']])
+        self.assertTrue((fresh / 'public/start-failure.json').exists())
+        self.assertFalse((fresh / 'public/authority.json').exists())
+        self.assertEqual(journal['partition_mode'], 'root')
+
+    def test_authority_receipt_keeps_historical_schema_and_distinguishes_balanced(self):
+        self.state.update(authority='explicit authority', issuer='task', expires_epoch=2000)
+        original_read = r.read
+        def read(path):
+            if str(path) == '/proc/self/cgroup':
+                return '0::/' + self.state['unit'] + '/supervisor'
+            return original_read(path)
+        for condition, schema in [('isolated', 'measurement-stability-qualification/v1'),
+                                  ('balanced', 'measurement-balanced-qualification/v1')]:
+            with self.subTest(condition=condition), patch.object(r, 'CONDITION', condition), patch.object(r, 'read', side_effect=read), patch.object(r, 'configure'), patch.object(r, 'verify_partition'), patch.object(r.os, 'pipe', return_value=(123, 124)), patch.object(r.os, 'fork', return_value=42), patch.object(r.os, 'read', return_value=b'1'), patch.object(r.os, 'close'), patch.object(r.os, 'waitpid', return_value=(42, 0)), patch.object(r.time, 'time', return_value=1000):
+                self.assertFalse(r.serve())
+            receipt = json.loads(r.read(self.state_root / 'public/authority.json'))
+            self.assertEqual(receipt['schema'], schema)
+            self.assertEqual(receipt['cgroup'], str(self.group / 'workers'))
+            self.assertEqual(receipt['worker_cpus'], list(range(8)))
+            self.assertEqual(receipt['reserved_cpus'], sorted(r.RESERVED))
+            if condition == 'balanced':
+                self.assertEqual((receipt['condition'], receipt['partition_mode']), ('balanced', 'root'))
+            else:
+                self.assertNotIn('condition', receipt)
+                self.assertNotIn('partition_mode', receipt)
+
+    def test_balanced_command_rejects_wrong_journal_before_socket_admission(self):
+        with patch.object(r, 'CONDITION', 'balanced'), patch.object(r.os, 'geteuid', return_value=3000), patch.object(r, 'load', side_effect=ValueError('condition differs')), patch.object(r.socket, 'socket') as transport, self.assertRaisesRegex(ValueError, 'condition differs'):
+            r.run(['/usr/bin/true'])
+        transport.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()

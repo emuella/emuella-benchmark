@@ -111,6 +111,7 @@ dependencies = [
  "emuella-benchmark",
  "emuella-j2k",
  "emuella-j2k-codestream",
+ "libc",
  "pkg-config",
  "rayon",
  "serde_json",

@@ -6,6 +6,11 @@ build a codec, read imagery, launch measurements, alter the comparator or select
 a candidate. It needs explicit resource-owner authority for the host scheduling
 change and one local `sudo` authentication. No sudoers or polkit policy is changed.
 
+The default `isolated` mode retains the existing stability protocol, runtime
+directory, schemas and three-hour lease. The explicit `balanced` mode described
+below supplies a separate short diagnostic reservation; it does not alter or
+retire an earlier stability reservation or its receipts.
+
 This bounded implementation admits systemd 261, cgroup v2, logical CPUs 0–31,
 sibling pairs `n,n+16`, sixteen distinct physical cores and NUMA node 0. It reserves
 CPUs **0–7,16–23**; the existing runner uses 0–7 or 0, leaving siblings unused.
@@ -169,6 +174,63 @@ umasks. That observed failure remains evidence; it is not a timing observation o
 a completed restoration claim until its privileged receipt has been verified.
 
 No permanent unit, daemon, timer, scheduler or monitoring trial is installed.
+
+## Explicit balanced diagnostic condition
+
+Place `--condition balanced` **before** the subcommand on every invocation:
+
+```sh
+/usr/bin/python3 -I scripts/measurement_reservation.py --condition balanced inspect
+sudo /usr/bin/python3 -I scripts/measurement_reservation.py --condition balanced start \
+  --uid "$(id -u)" --authority 'REVIEWED-BALANCED-RESOURCE-OWNER-AUTHORITY-LOCATOR'
+/usr/bin/python3 -I /run/emuella-balanced-measurement-reservation/helper.py \
+  --condition balanced run -- /absolute/path/to/prepared-diagnostic-wrapper
+/usr/bin/python3 -I /run/emuella-balanced-measurement-reservation/helper.py \
+  --condition balanced verify
+```
+
+The fixed runtime directory is `/run/emuella-balanced-measurement-reservation`.
+It is created exclusively and retained after completion. Existing contents are
+never retired or deleted automatically. The original
+`/run/emuella-measurement-reservation` remains untouched. For early cancellation,
+use the balanced copy with `--condition balanced stop` under the same privileged
+invocation as above. Explicit pre-readiness `retire-failed` has the same guarded
+preservation rules, using the selected balanced directory and a sibling archive.
+
+Balanced mode reserves the same CPUs **0–7,16–23**, with supervisor and controller
+on **8–15,24–31**, but writes `root` to the worker's
+`cpuset.cpus.partition`. The kernel therefore provides ordinary scheduling load
+balancing within this exclusive partition. Its service ancestor remains a
+`member`; the exclusive masks establish a remote partition beneath that ancestor.
+Admission checks require the exact worker effective and exclusive sets, an empty
+worker group without children, the ancestor and supervisor on housekeeping CPUs,
+and every other descendant cgroup's effective set to exclude the reserved CPUs.
+Where cpuset is disabled for children, those children must inherit a checked
+parent allocation; a missing interface with the controller enabled fails closed.
+The isolated CPU set and frequency/boost/SMT policy must remain unchanged.
+See the [kernel cpuset partition contract](https://docs.kernel.org/admin-guide/cgroup-v2.html#cpuset).
+Root kernel activity, interrupts and shared package/memory interference remain.
+
+The lease is **1,800 seconds**, including setup and the wait for the single
+ordinary-user command, followed by the existing 150-second termination grace.
+The diagnostic runner separately enforces its four-call, fifteen-minute and
+64 MiB-output limits; the reservation helper does not count diagnostic calls or
+enlarge these limits. The existing unprivileged round-trip admission probe and
+single-command socket transport are retained.
+
+The root-owned journal uses `measurement-balanced-reservation/v1`; the authority
+receipt at `public/authority.json` uses `measurement-balanced-qualification/v1`.
+Both explicitly record `condition: "balanced"` and `partition_mode: "root"`.
+The authority receipt retains the existing authority/issuer, validity interval,
+worker cgroup path, worker CPUs `[0,1,2,3,4,5,6,7]`, reserved CPUs, controller CPUs
+and residual-interference fields. It cannot qualify the historical isolated
+stability protocol. Balanced restoration receipts also identify the condition and
+partition mode. Recovery rejects a mismatching journal/schema/mode, and balanced
+verification rejects a historical restoration receipt. Systemd's copied-helper
+`serve` and `restore` commands carry the explicit condition argument, preserving
+the selected mode through expiry and failure cleanup. Restoration still compares
+the original snapshot, validates the unit invocation, and reverses only values
+and ownership that match the journalled changes.
 
 ## Verification status
 

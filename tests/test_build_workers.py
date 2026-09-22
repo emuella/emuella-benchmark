@@ -30,7 +30,7 @@ class WorkerBuildTests(unittest.TestCase):
         configuration = manifest[manifest.index("[features]"):manifest.index("[dependencies]")]
         worker_manifest = '[package]\nname="emuella-benchmark-workers"\nversion="0.1.0"\nedition="2024"\n[workspace]\n'
         worker_manifest += configuration + '[dependencies]\n'
-        for name in ("emuella-j2k", "emuella-j2k-codestream", "rayon"):
+        for name in ("emuella-j2k", "emuella-j2k-codestream", "rayon", "libc"):
             dependency = source / "src" / name
             dependency.mkdir(parents=True)
             (dependency / "Cargo.toml").write_text(
@@ -38,7 +38,7 @@ class WorkerBuildTests(unittest.TestCase):
                 '[features]\nparallel=[]\nsimd=[]\n[lib]\npath="lib.rs"\n')
             (dependency / "lib.rs").write_text(
                 'pub fn flags() -> (bool, bool) { (cfg!(feature="parallel"), cfg!(feature="simd")) }\n')
-            features = ', features=["parallel"]' if name != "rayon" else ''
+            features = ', features=["parallel"]' if name not in ("rayon", "libc") else ''
             worker_manifest += f'{name} = {{ path="../src/{name}", optional=true{features} }}\n'
         for name in ("emuella", "openjpeg", "openjph"):
             worker_manifest += f'[[bin]]\nname="{name}-worker"\npath="src/{name}.rs"\n'
