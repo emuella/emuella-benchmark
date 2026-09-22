@@ -108,6 +108,13 @@ class ReservationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'invocation changed'):
                 r.restore()
 
+    def test_reusable_live_stop_and_restore_require_proven_invocation(self):
+        self.state.pop('invocation')
+        with patch.object(r, 'CONDITION', 'balanced-reusable'):
+            for action in (r.stop, r.restore):
+                with self.subTest(action=action.__name__), self.assertRaisesRegex(ValueError, 'invocation unproven'):
+                    action()
+
     def test_policy_drift_never_written_back(self):
         with patch.object(r, 'policy', return_value={'boost': '0'}):
             self.assertTrue(r.restore())
