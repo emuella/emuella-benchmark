@@ -90,3 +90,7 @@ Reconstruct with `parallel-execution-diagnostic.py analyse --output RETAINED_ROO
 The report distinguishes incomplete and unsupported calls and still requires the
 separate helper restoration receipt. No runtime observation has been made merely
 because the tooling is merged.
+
+The [completed four-call result](parallel-execution-diagnostic-results.md) records
+parallel execution support and independently verified restoration. Precision and
+panel confirmation remain unqualified.

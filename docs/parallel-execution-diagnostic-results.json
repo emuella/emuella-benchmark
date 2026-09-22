@@ -1,0 +1,1100 @@
+{
+  "schema": "parallel-execution-diagnostic/v1",
+  "binding_sha256": "36a76be5a1a4d16a7bd97011543f1fddfd1b8a3e8a2d0c5a1f879ff0fa2fee23",
+  "binary_sha256": "ac1892a21f070827f94c713c6e2e33dcc41ab7c70f161527160f51b3163d0b6a",
+  "worker_benchmark_revision": "257c591a10922d08aa4d93a8bb6c400e27cb6a25",
+  "runner_revision": "16a6e99c3353908b276d0cdd44712ee421f06eeb",
+  "codec_revision": "975a5e734773578f61abf76d5fddfbd837f3bd7d",
+  "started_calls": 4,
+  "operationally_complete": true,
+  "all_cells_supported": true,
+  "rows": [
+    {
+      "index": 0,
+      "case_id": "106_10400100413CDF00-RGB8",
+      "workers": 8,
+      "operation": "encode",
+      "assessment": {
+        "supported": true,
+        "issues": [],
+        "runtime_deltas_ns": {
+          "1527363": 221274423,
+          "1527358": 232166601,
+          "1527361": 224913630,
+          "1527356": 231782999,
+          "1527355": 479797547,
+          "1527360": 226104027,
+          "1527359": 231380156,
+          "1527357": 232480769,
+          "1527362": 221717092
+        },
+        "operation_ns": 756105932,
+        "cpu_snapshot_span_ns": 756123614,
+        "outer_span_ns": 757475211,
+        "outside_span_ns": 17682,
+        "total_cpu_ns": 2301617244,
+        "operation_cpu_lower_ns": 2301458106,
+        "operation_cpu_lower_ratio": 3.0438302473204244,
+        "whole_outer_cpu_ratio": 3.0385380413458836,
+        "productive_pool_tids": [
+          1527356,
+          1527357,
+          1527358,
+          1527359,
+          1527360,
+          1527361,
+          1527362,
+          1527363
+        ],
+        "observed_productive_cpus": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "scope": "Worker CPUCLOCK_SCHED snapshots surround the operation; subtract one outside-span allowance per tracked thread. External schedstat/last-CPU samples are advisory placement evidence, not a scheduler trace or proof of eight-way simultaneity.",
+        "nr_throttled_delta": 0,
+        "thermal_throttle_counters": {
+          "0": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "1": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "16": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "17": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "18": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "19": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "2": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "20": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "21": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "22": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "23": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "3": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "4": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "5": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "6": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "7": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          }
+        }
+      }
+    },
+    {
+      "index": 1,
+      "case_id": "94_104001000B823500-RGB16",
+      "workers": 8,
+      "operation": "encode",
+      "assessment": {
+        "supported": true,
+        "issues": [],
+        "runtime_deltas_ns": {
+          "1527463": 15159932,
+          "1527459": 17671313,
+          "1527462": 16387593,
+          "1527460": 17349174,
+          "1527461": 16051032,
+          "1527458": 18548936,
+          "1527457": 18294478,
+          "1527456": 20598023,
+          "1527455": 9606497
+        },
+        "operation_ns": 31868900,
+        "cpu_snapshot_span_ns": 31876240,
+        "outer_span_ns": 33068591,
+        "outside_span_ns": 7340,
+        "total_cpu_ns": 149666978,
+        "operation_cpu_lower_ns": 149600918,
+        "operation_cpu_lower_ratio": 4.694260485928288,
+        "whole_outer_cpu_ratio": 4.525955702194871,
+        "productive_pool_tids": [
+          1527456,
+          1527457,
+          1527458,
+          1527459,
+          1527460,
+          1527461,
+          1527462,
+          1527463
+        ],
+        "observed_productive_cpus": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "scope": "Worker CPUCLOCK_SCHED snapshots surround the operation; subtract one outside-span allowance per tracked thread. External schedstat/last-CPU samples are advisory placement evidence, not a scheduler trace or proof of eight-way simultaneity.",
+        "nr_throttled_delta": 0,
+        "thermal_throttle_counters": {
+          "0": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "1": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "16": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "17": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "18": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "19": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "2": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "20": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "21": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "22": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "23": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "3": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "4": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "5": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "6": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "7": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          }
+        }
+      }
+    },
+    {
+      "index": 2,
+      "case_id": "94_104001000B823500-RGB8",
+      "workers": 8,
+      "operation": "decode",
+      "assessment": {
+        "supported": true,
+        "issues": [],
+        "runtime_deltas_ns": {
+          "1527861": 248950939,
+          "1527865": 217175753,
+          "1527866": 212582361,
+          "1527860": 249905112,
+          "1527864": 218472871,
+          "1527867": 206658514,
+          "1527862": 213812574,
+          "1527863": 251422940,
+          "1527859": 40906364
+        },
+        "operation_ns": 300752892,
+        "cpu_snapshot_span_ns": 300765902,
+        "outer_span_ns": 302169472,
+        "outside_span_ns": 13010,
+        "total_cpu_ns": 1859887428,
+        "operation_cpu_lower_ns": 1859770338,
+        "operation_cpu_lower_ratio": 6.183715560081796,
+        "whole_outer_cpu_ratio": 6.155113604593385,
+        "productive_pool_tids": [
+          1527860,
+          1527861,
+          1527862,
+          1527863,
+          1527864,
+          1527865,
+          1527866,
+          1527867
+        ],
+        "observed_productive_cpus": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "scope": "Worker CPUCLOCK_SCHED snapshots surround the operation; subtract one outside-span allowance per tracked thread. External schedstat/last-CPU samples are advisory placement evidence, not a scheduler trace or proof of eight-way simultaneity.",
+        "nr_throttled_delta": 0,
+        "thermal_throttle_counters": {
+          "0": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "1": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "16": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "17": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "18": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "19": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "2": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "20": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "21": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "22": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "23": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "3": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "4": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "5": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "6": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "7": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          }
+        }
+      }
+    },
+    {
+      "index": 3,
+      "case_id": "94_104001000B823500-RGB8",
+      "workers": 1,
+      "operation": "decode",
+      "assessment": {
+        "supported": true,
+        "issues": [],
+        "runtime_deltas_ns": {
+          "1527944": 0,
+          "1527943": 1793639697
+        },
+        "operation_ns": 1796822573,
+        "cpu_snapshot_span_ns": 1796830323,
+        "outer_span_ns": 1797498242,
+        "outside_span_ns": 7750,
+        "total_cpu_ns": 1793639697,
+        "operation_cpu_lower_ns": 1793624197,
+        "operation_cpu_lower_ratio": 0.9982199822909282,
+        "whole_outer_cpu_ratio": 0.997853380376213,
+        "productive_pool_tids": [],
+        "observed_productive_cpus": [
+          0
+        ],
+        "scope": "Worker CPUCLOCK_SCHED snapshots surround the operation; subtract one outside-span allowance per tracked thread. External schedstat/last-CPU samples are advisory placement evidence, not a scheduler trace or proof of eight-way simultaneity.",
+        "nr_throttled_delta": 0,
+        "thermal_throttle_counters": {
+          "0": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "1": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "16": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "17": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "18": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "19": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "2": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "20": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "21": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "22": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "23": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "3": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "4": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "5": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "6": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          },
+          "7": {
+            "thermal_throttle/core_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            },
+            "thermal_throttle/package_throttle_count": {
+              "before": null,
+              "after": null,
+              "delta": null,
+              "status": "unavailable"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "reservation_restoration": "Separate helper verification receipt required; runner restoration alone is insufficient.",
+  "scope": "Diagnostic only. No headline timings, A/A precision, causal contrast or candidate qualification."
+}
