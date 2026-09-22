@@ -465,7 +465,8 @@ def analyse(root, estimator, report):
             started_attempts=[json.loads(x.read_text()) for x in sorted(folder.glob('call-*-started.json'))])
         sessions.append(result)
     cells = [dict(cell=index, operation=cell['operation'], workers=cell['workers'], case_id=cell['asset']['id'],
-                  disposition=analysis.classify_cell([s for s in sessions if s['session']['cell']==index]))
+                  disposition=(analysis.classify_cell([s for s in sessions if s['session']['cell']==index]) if global_valid else analysis.INCOMPLETE),
+                  session_only_disposition=analysis.classify_cell([s for s in sessions if s['session']['cell']==index]))
              for index, cell in enumerate(binding['cells'])]
     write(report, dict(policy=POLICY, binding_sha256=sha(root/'binding.json'), estimator_sha256=sha(estimator),
         comparator_sha256=sha(analysis.COMPARE_SOURCE), cells=cells, sessions=sessions,

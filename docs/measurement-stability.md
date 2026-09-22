@@ -141,7 +141,9 @@ to contain zero and have an upper bound **strictly below +1% in both directions*
 Otherwise a complete valid cell is not consistently demonstrated; missing/invalid
 mandatory observations are incomplete/uninterpretable. +2%/+5% remain labelled
 planning sensitivities. Invalid operational completion/restoration is separately
-reported, without suppressing otherwise complete session observations.
+reported, without suppressing otherwise complete session observations. Mandatory
+whole-study failures make authoritative cell dispositions incomplete; the separately
+labelled session-only disposition retains the diagnostic interpretation.
 
 Every session supplies planning-only 20/40/80/160-pair projections with actual
 critical values 3.287/3.030/2.915/2.860. Observed SDs are held fixed under explicit
