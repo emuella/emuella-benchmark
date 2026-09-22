@@ -4,7 +4,9 @@
 existing [measurement stability protocol](measurement-stability.md). It does not
 build a codec, read imagery, launch measurements, alter the comparator or select
 a candidate. It needs explicit resource-owner authority for the host scheduling
-change and one local `sudo` authentication. No sudoers or polkit policy is changed.
+change and one local `sudo` authentication. This one-shot helper changes no sudoers or
+polkit policy. The optional installed reusable launcher below has a separate,
+explicitly authorised installation boundary.
 
 The default `isolated` mode retains the existing stability protocol, runtime
 directory, schemas and three-hour lease. The explicit `balanced` mode described
@@ -294,3 +296,134 @@ processes. Read-only inspection can prove local prerequisite compatibility.
 execution.** Neither mocked tests nor read-only inspection establish a live
 reservation or completed measurement study. Retain that first execution's actual
 receipts, including any failure, before making such claims.
+
+## Installed reusable balanced launcher
+
+The optional installed launcher delegates the **host scheduling capability** to
+one fixed ordinary numeric UID under a reviewed standing resource-owner decision.
+It does not authorise a particular experiment, input, extra observation, release
+or data operation. Every workload still needs its applicable campaign authority;
+a per-run locator is retained metadata, never a file to load or a command to run.
+In particular, this launcher does not reopen any closed historical attempt.
+
+This is a distinct `balanced-reusable` condition, with
+`measurement-balanced-reusable-reservation/v1` journals and
+`measurement-balanced-reusable-qualification/v1` authority receipts. Each fresh
+UUID gets a persistent directory under `/var/lib/emuella-measurement/leases/`.
+The historical isolated, balanced diagnostic and balanced A/A directories and
+schemas are unchanged. Do not use this authority receipt to qualify those
+historical protocols without an explicit consumer contract change.
+
+The fixed scope is the same balanced `root` partition: reserved CPUs
+**0–7,16–23**, ordinary benchmark worker CPUs **0–7**, supervisor/controller CPUs
+**8–15,24–31**, and one **10,800-second** lease including setup and waiting, plus
+the existing 150-second stop grace. The controller is an ordinary user and can
+run arbitrary ordinary-user workloads within its single command slot; this is
+not a sandbox for untrusted workloads. There are no caller options for CPU masks,
+UID, duration, executable, environment, unit, source directory or recovery path
+at the privileged gateway.
+
+Create a new package as the ordinary user from the reviewed candidate:
+
+```sh
+/usr/bin/python3 -I scripts/install_measurement_launcher.py package \
+  --output /absolute/new-package-directory
+```
+
+The printed `package_sha256` binds the manifest, which binds all three Python
+source files. Review those exact bytes and record the source revision and package
+identity. Then authenticate once for installation:
+
+```sh
+sudo /usr/bin/python3 -I /absolute/new-package-directory/install_measurement_launcher.py install \
+  --uid NUMERIC-ORDINARY-UID \
+  --authority 'REVIEWED-STANDING-RESOURCE-OWNER-DECISION' \
+  --package-sha256 PRINTED-PACKAGE-DIGEST
+```
+
+When the package remains in a user-writable directory, use a trusted interpreter
+bootstrap which reads the installer once, checks its separately reviewed SHA-256,
+sets `__file__` to its absolute package path and executes those same checked
+bytes. A hash check followed by a separate executable read has a race. The
+installer independently reads and hashes each remaining source before copying
+those same bytes. Installation requires explicit administrative authority;
+ordinary code merge authority alone does not grant an access-policy change.
+
+Installation creates fixed root-owned files in
+`/usr/local/libexec/emuella-measurement/`, a root-owned policy with the designated
+UID/GID/account, scope and standing authority, persistent lease storage, and
+`/etc/sudoers.d/emuella-measurement`. Existing destinations, symlinks, writable
+ancestors and non-regular sources are rejected. The installer validates both the
+candidate and complete sudoers policy. A rejected published rule is moved into
+the installed directory as evidence. Partial installations remain visible and
+require administrator diagnosis; they are never overwritten automatically.
+
+Only the installed launcher is passwordless, with four exact sudoers argument
+lists and `NOSETENV`. No writable checkout, generic interpreter, service manager,
+recovery helper or wildcard command is delegated. The launcher's absolute
+`/usr/bin/python3 -I` shebang isolates Python from user module paths; Python and
+its standard library are host OS dependencies maintained by the administrator.
+The launcher verifies root ownership and ancestor permissions, the package hashes
+and the fixed policy at every invocation, clears inherited settings, and uses
+absolute administrative executables. The service executes its root-owned,
+hash-bound lease copy of the helper. No persistent daemon, timer or unit is
+installed.
+
+After installation, start with one UTF-8 authority locator, at most 2,048 bytes,
+followed by EOF on standard input (input must finish within ten seconds):
+
+```sh
+printf '%s\n' 'THIS-WORKLOAD-AUTHORITY-LOCATOR' | \
+  sudo -n /usr/local/libexec/emuella-measurement/measurement_launcher.py start
+sudo -n /usr/local/libexec/emuella-measurement/measurement_launcher.py status
+```
+
+`status` emits `measurement-launcher-status/v1` JSON with the current lease UUID,
+unit, expiry, helper path, installation binding and receipt paths. An unused
+installation reports `state: "unused"`. `state: "cleanup-recorded"` means cleanup
+ran; only `restoration_verified: true` records a completed gateway verification.
+Status does not itself prove live restoration. Start prints readiness messages
+and the same status object after admission. An overlapping request fails without
+stopping the existing lease.
+
+Use the returned absolute `helper` path as the ordinary user:
+
+```sh
+/usr/bin/python3 -I /var/lib/emuella-measurement/leases/LEASE-UUID/helper.py \
+  --condition balanced-reusable run -- /absolute/ordinary-user-program
+sudo -n /usr/local/libexec/emuella-measurement/measurement_launcher.py verify
+```
+
+The ordinary command slot remains single-use on success or failure. The existing
+supervisor handles completion, client disconnection and expiry. Explicit
+cancellation stops only the journal's owned systemd invocation:
+
+```sh
+sudo -n /usr/local/libexec/emuella-measurement/measurement_launcher.py stop
+```
+
+A nonblocking root-owned lock serialises administrative operations. Intent is
+recorded before setup, so an interrupted or partial start cannot be silently
+retried. Before the next start, the gateway verifies cleanup, original host
+snapshot and cgroup removal, then retains a root-owned
+`public/launcher-verification.json` bound to the exact journal and boot. The
+previous helper source, journal, authority and restoration receipts remain in
+place. There is no implicit deletion, lease reuse or retention pruning.
+
+Run privileged `verify` after each command, including failures, and before a
+planned reboot. A previously verified terminal journal may be carried across a
+normal reboot; a fresh lease captures a fresh host snapshot. A reboot with an
+unverified or interrupted lease blocks new admission. Changed source identity,
+account identity, intervening host state or failed restoration also blocks. An
+administrator must investigate the retained evidence and establish the missing
+restoration observation; there is no passwordless reset or force override.
+A restored lease on the current boot is verified live again before a fresh start.
+
+To revoke the capability, an administrator first stops and verifies any active
+lease, then removes only `/etc/sudoers.d/emuella-measurement` and runs `visudo -c`.
+For urgent revocation, remove that exact rule first and perform cancellation
+under separately authenticated administrative authority. Keep the installed
+recovery code and all lease receipts until restoration is proved. Source upgrades,
+account/scope changes, prior-boot failure recovery and eventual receipt retention
+management require an explicitly reviewed administrative operation. They are not
+passwordless actions and this installer never replaces an existing installation.

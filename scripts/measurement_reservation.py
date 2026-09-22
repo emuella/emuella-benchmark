@@ -25,6 +25,7 @@ ROOT = Path('/run/emuella-measurement-reservation')
 ISOLATED_ROOT = ROOT
 BALANCED_ROOT = Path('/run/emuella-balanced-measurement-reservation')
 BALANCED_AA_ROOT = Path('/run/emuella-balanced-aa-measurement-reservation')
+REUSABLE_ROOT = Path('/var/lib/emuella-measurement/leases')
 CONDITION = 'isolated'
 BALANCED_LEASE = 1800  # Setup included; diagnostic call/time caps are runner-owned.
 BALANCED_SCHEMA = 'measurement-balanced-reservation/v1'
@@ -41,8 +42,19 @@ SCHEMA = 'measurement-stability-reservation/v1'
 
 def select_condition(condition):
     global CONDITION, ROOT
-    root = {'isolated': ISOLATED_ROOT, 'balanced': BALANCED_ROOT,
-            'balanced-aa': BALANCED_AA_ROOT}[condition]
+    if condition == 'balanced-reusable':
+        root = Path(__file__).absolute().parent
+        if root.parent != REUSABLE_ROOT or str(uuid.UUID(root.name)) != root.name:
+            raise ValueError('reusable recovery must run from its fixed lease directory')
+        # The installed launcher selects a fresh root internally before start.
+        # Recovery takes no caller-controlled path or identity argument.
+        for ancestor in (root, *root.parents):
+            info = ancestor.lstat()
+            if not stat.S_ISDIR(info.st_mode) or info.st_uid != 0 or info.st_mode & 0o022:
+                raise ValueError('unsafe reusable recovery ancestry')
+    else:
+        root = {'isolated': ISOLATED_ROOT, 'balanced': BALANCED_ROOT,
+                'balanced-aa': BALANCED_AA_ROOT}[condition]
     CONDITION = condition
     ROOT = root
 
@@ -53,7 +65,8 @@ def condition_args():
 
 def reservation_schema():
     return {'isolated': SCHEMA, 'balanced': BALANCED_SCHEMA,
-            'balanced-aa': BALANCED_AA_SCHEMA}[CONDITION]
+            'balanced-aa': BALANCED_AA_SCHEMA,
+            'balanced-reusable': 'measurement-balanced-reusable-reservation/v1'}[CONDITION]
 
 
 def validate_condition(state):
@@ -107,6 +120,13 @@ def atomic(path, value):
             output.flush()
             os.fsync(output.fileno())
         os.replace(temporary, path)
+        # Reusable leases persist across boots: the name update must be durable
+        # before admission or a successful terminal receipt can be relied on.
+        directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
     finally:
         temporary.unlink(missing_ok=True)
 
@@ -405,6 +425,9 @@ def serve():
     if CONDITION != 'isolated':
         receipt.update(schema='measurement-' + CONDITION + '-qualification/v1',
                        condition=CONDITION, partition_mode='root')
+    if 'installation' in state:
+        receipt['installation'] = state['installation']
+        receipt['lease_id'] = state['id']
     atomic(ROOT / 'public/authority.json', receipt)
     state['admission_probe'] = 'passed; no codec or real input invoked'
     state['ready'] = True
@@ -418,6 +441,8 @@ def _restore():
     issues = []
     group = unit_group(state)
     if group.exists():
+        if CONDITION == 'balanced-reusable' and not state.get('invocation'):
+            raise ValueError('owned invocation unproven; authenticated recovery required')
         current = command('/usr/bin/systemctl', 'show', state['unit'], '-p', 'InvocationID', '--value')
         if state.get('invocation') and current != state['invocation']:
             raise ValueError('unit invocation changed; refusing restoration')
@@ -465,6 +490,9 @@ def _restore():
            'before': state['before'], 'unit': state['unit']}
     if CONDITION != 'isolated':
         receipt.update(condition=CONDITION, partition_mode='root')
+    if 'installation' in state:
+        receipt['installation'] = state['installation']
+        receipt['lease_id'] = state['id']
     atomic(ROOT / 'public/restoration.json', receipt)
     return bool(issues)
 
@@ -484,7 +512,7 @@ def restore():
         return _restore()
 
 
-def start(uid, authority):
+def start(uid, authority, installation=None):
     require_root()
     if uid == 0 or not authority.strip() or len(authority) > 2048:
         raise ValueError('non-root uid and explicit authority locator required')
@@ -500,7 +528,7 @@ def start(uid, authority):
     source = Path(__file__).read_bytes()
     (ROOT / 'helper.py').write_bytes(source)
     (ROOT / 'helper.py').chmod(0o444)
-    identity = str(uuid.uuid4())
+    identity = ROOT.name if CONDITION == 'balanced-reusable' else str(uuid.uuid4())
     lease = BALANCED_LEASE if CONDITION == 'balanced' else LEASE
     state = {'schema': reservation_schema(), 'id': identity,
              'unit': 'emuella-measurement-reservation-' + identity + '.service',
@@ -508,6 +536,8 @@ def start(uid, authority):
              'authority': authority, 'boot': read('/proc/sys/kernel/random/boot_id'),
              'helper_sha256': hashlib.sha256(source).hexdigest(), 'before': before,
              'expires_epoch': time.time() + lease, 'changes': [], 'ownership': []}
+    if installation is not None:
+        state['installation'] = installation
     if CONDITION != 'isolated':
         state.update(condition=CONDITION, partition_mode='root')
     save(state)
@@ -574,6 +604,8 @@ def stop():
     require_root()
     state = load()
     if unit_group(state).exists():
+        if CONDITION == 'balanced-reusable' and not state.get('invocation'):
+            raise ValueError('owned invocation unproven; authenticated recovery required')
         current = command('/usr/bin/systemctl', 'show', state['unit'], '-p', 'InvocationID', '--value')
         if state.get('invocation') and current != state['invocation']:
             raise ValueError('unit invocation changed; refusing to stop')
@@ -649,7 +681,7 @@ def retire_failed():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--condition', choices=('isolated', 'balanced', 'balanced-aa'), default='isolated',
+    parser.add_argument('--condition', choices=('isolated', 'balanced', 'balanced-aa', 'balanced-reusable'), default='isolated',
                         help='balanced and balanced-aa use separate finite load-balanced exclusive reservations')
     commands = parser.add_subparsers(dest='action', required=True)
     launch = commands.add_parser('start')
