@@ -106,7 +106,7 @@ The independent prelaunch review authenticates the prerequisite evidence and its
 coverage. Endpoint and allocation identities are checked against the frozen request
 and each worker response. Ordinary workers cannot silently change layout or limits.
 
-Output roots must be fresh siblings of the selected prepared/stream directories
+Initial output roots must be fresh siblings of the selected prepared/stream directories
 in their existing approved stores. Additional budget roots must be separate
 metadata directories in those stores. No whole-store or overlapping budget root
 is accepted. The registered build root must carry the workspace scratch marker for
@@ -128,6 +128,26 @@ python3 scripts/finite_confirmation_live.py prepare \
 These commands do not start corpus workers or create a reservation. Retain the
 resulting SHA-256 outside the preparation, with the exact reviewed runner revision.
 
+A prelaunch review repair may create an explicitly named preparation checkpoint
+in the **same acquisition roots**. Supply the predecessor and its externally
+pinned digest; the old bytes, notices and predecessor chain remain untouched:
+
+```sh
+python3 scripts/finite_confirmation_live.py prepare --config CONFIG.json \
+  --output APPROVED_OUTPUT/preparation-reviewed.json \
+  --previous-preparation APPROVED_OUTPUT/preparation.json \
+  --previous-sha256 REVIEWED_PREDECESSOR_SHA
+```
+
+The checkpoint verifies the same manifest, authority, treatment and acquisition
+configuration, allowing updated prerequisite evidence. Both output roots may
+contain only their notices, the verified preparation chain and the shared
+`prelaunch.lock`. Any transport, acquisition, worker-start or other unexpected
+metadata blocks this operation. The checkpoint and outside execution share the
+lock, so a preparation update cannot race acquisition. The new checkpoint records
+its predecessor digest and requires a new independent review before launch.
+This facility cannot replace an attempted execution or create another attempt.
+
 ## Reusable admission and restoration
 
 After review, the operational owner starts one fresh installed `balanced-reusable`
@@ -142,7 +162,13 @@ python3 scripts/finite_confirmation_live.py execute \
 ```
 
 `execute` runs outside the reserved controller. It verifies the root-owned current
-lease, installed package, authority and recovery helper, then uses the lease's
+lease, installed package, authority and recovery helper. It authenticates the
+installed `installation` and `lease_id` extension fields against the frozen
+installation and current owned lease before projecting the exact common admission
+schema. Environmental admission, including schema, quota and expiry failures,
+runs inside the owned-lease cleanup guard. An unauthenticated or different lease
+is never stopped. Once ownership is proved, every admission failure or interruption
+reaches installed cleanup. Successful admission then uses the lease's
 single ordinary-user command transport to enter `run`. Direct acquisition without
 that outside restoration owner and the installed controller placement is rejected.
 Admission explicitly requires `measurement-balanced-reusable-qualification/v1`,
@@ -157,7 +183,9 @@ empty on success, failure and interruption. The outside owner always invokes the
 installed `stop` and `verify` actions after transport, independently of observation
 success or exhausted caps. Their retained output and root-owned restoration,
 journal and launcher-verification receipts must identify the same lease and
-installation. An unresolved or mismatched restoration prevents successful
+installation. The retained independent record embeds exact authority and journal
+text, plus restoration and privileged verification objects, so later reconstruction
+can check their bindings without a live reservation. An unresolved or mismatched restoration prevents successful
 completion. A hard termination of the outside process still relies on the installed
 lease expiry/ExecStopPost safety mechanism; the owner must obtain independent
 verification before terminal closeout. Never interpret absent terminal evidence as
@@ -168,3 +196,35 @@ identifiers stay in the approved output roots. The completion record labels the
 statistical result separately from production authority and independent restoration.
 This path adds no external codec speed anchor and consumes no proprietary or
 private-reference material.
+
+
+## Retained-data reconstruction
+
+After acquisition and independent terminal verification, reconstruct the complete
+v2 matrix without rerunning a corpus operation:
+
+```sh
+python3 scripts/finite_confirmation_report.py \
+  --preparation APPROVED_OUTPUT/preparation-reviewed.json --sha256 REVIEWED_PREPARATION_SHA \
+  --v1 RETAINED_V1.json --register REGISTER.json --design DESIGN.json \
+  --estimator-40 FIXED40_EXECUTABLE --estimator-160 FIXED160_EXECUTABLE \
+  --output APPROVED_OUTPUT/reconstruction.json
+```
+
+The supplied owner files verify the immutable v2 derivation independently of
+historical checkout paths. Rebuilt comparators must retain the frozen owner module,
+entrypoint and manifest identities. Reconstruction reads retained metadata and
+prerequisite evidence only; source worktrees, workers, protected raw/stream payloads
+and live reservation state are not required. Exact comparator results are checked
+against every retained completed endpoint decision.
+
+The shared analyser explicitly admits v2 and preserves that schema, predecessor,
+authority and condition in the output. It produces all 28 endpoint statuses and
+keeps the frozen call identities and original receipts. A start without a terminal
+receipt is labelled `missing_terminal_receipt`; orphaned receipts and inconsistent
+prefixes remain explicit failures. No receipt is relabelled as another attempt.
+The reporter rechecks retained request, exactness, environment and allocation
+predicates and validates both ordinary runner restoration and the independent
+journal/authority/verification bindings. Missing or inconsistent evidence yields
+**OPERATIONALLY INCOMPLETE**, never a successful subset. A complete reconstruction
+still does not authorise production promotion.

@@ -3,6 +3,8 @@
 import argparse
 import copy
 import fcntl
+import hashlib
+from contextlib import contextmanager
 import json
 import os
 from pathlib import Path
@@ -184,8 +186,9 @@ def installed_binding():
     for name, digest in files.items():
         if sha(launcher.trusted(INSTALL/name)) != digest:
             raise ValueError('installed historical source differs')
-    return dict(package_sha256=PACKAGE, files=files,
-                policy_sha256=sha(launcher.trusted(INSTALL/'policy.json')))
+    policy_path = launcher.trusted(INSTALL/'policy.json')
+    return dict(package_sha256=PACKAGE, files=files, policy_sha256=sha(policy_path),
+                standing_authority=json.loads(policy_path.read_text())['authority'])
 
 
 def file_identity(path):
@@ -219,7 +222,7 @@ def host_policy():
     return result
 
 
-def prepare(config_path, output):
+def prepare_checkpoint(config_path, output, previous=None, previous_sha=None):
     config = json.loads(config_path.read_text())
     contract = manifest(config)
     evidence_roots(config)
@@ -234,11 +237,16 @@ def prepare(config_path, output):
         prerequisites[key] = evidence
     estimators = {n: stability.estimator_identity(absolute(path), int(n)) for n, path in config['estimators'].items()}
     output = absolute(str(output))
-    if output != absolute(config['stores']['rareplanes']['output'])/'preparation.json':
-        raise ValueError('preparation must stay in the approved observation root')
-    for info in config['stores'].values():
-        if Path(info['output']).exists():
-            raise ValueError('fresh output roots required; no replacement attempt')
+    if (output.parent != absolute(config['stores']['rareplanes']['output'])
+            or not output.name.startswith('preparation') or output.suffix != '.json' or output.exists()):
+        raise ValueError('new preparation filename required in the same approved observation root')
+    chain = []
+    if previous is not None:
+        chain = check_prelaunch_checkpoint(config, output, previous, previous_sha)
+    else:
+        for info in config['stores'].values():
+            if Path(info['output']).exists():
+                raise ValueError('fresh output roots required; use an explicit zero-start preparation checkpoint')
     binding = dict(schema=PREPARATION, config=config, manifest=contract, builds=builds, stores=stores,
                    requests=requests, estimators=estimators, prerequisites=prerequisites,
                    runner=refresh.classic.clean_source(refresh.ROOT), installation=installed_binding(),
@@ -260,16 +268,59 @@ def prepare(config_path, output):
         files.update([estimator['path'], *map(str, [root/'provenance.json', root/'src/owner_compare.rs', root/'src/main.rs', root/'Cargo.toml'])])
     files.update(str(p) for p in (refresh.ROOT/'scripts').glob('*.py'))
     files.update(config['contract'][k] for k in ('v1', 'register', 'design', 'manifest'))
+    files.update(str(path) for path in chain)
+    if previous is not None:
+        binding['prelaunch_predecessor'] = dict(path=str(previous), sha256=previous_sha, zero_starts_verified=True)
     binding['file_identities'] = {p: file_identity(p) for p in sorted(files)}
     if stability.p.bytes_used(Path(config['build_root'])) > finite.limits()['build_bytes']:
         raise ValueError('registered build cap exceeded')
-    for name, info in config['stores'].items():
-        root = Path(info['output']); root.mkdir()
-        notice = Path(info['prepared']).parent/panels.NOTICES[name][0]
-        (root/'LICENSE.txt').write_bytes(notice.read_bytes())
-        (root/'NOTICE.txt').write_text(panels.ATTRIBUTIONS[name]+' CC BY-SA 4.0. Local finite v2 observations; protected payloads remain in the approved store.\n')
+    if previous is not None:
+        check_prelaunch_checkpoint(config, output, previous, previous_sha)
+    else:
+        for name, info in config['stores'].items():
+            root = Path(info['output']); root.mkdir()
+            notice = Path(info['prepared']).parent/panels.NOTICES[name][0]
+            (root/'LICENSE.txt').write_bytes(notice.read_bytes())
+            (root/'NOTICE.txt').write_text(panels.ATTRIBUTIONS[name]+' CC BY-SA 4.0. Local finite v2 observations; protected payloads remain in the approved store.\n')
     write(output, binding)
     return binding
+
+
+def check_prelaunch_checkpoint(config, output, previous, digest):
+    root = absolute(config['stores']['rareplanes']['output'])
+    previous = absolute(str(previous))
+    if previous.parent != root or output.parent != root or previous == output:
+        raise ValueError('prelaunch checkpoint must retain the same acquisition roots')
+    chain, pointer, expected = [], previous, digest
+    while pointer is not None:
+        if pointer in chain or pointer.parent != root or pointer.is_symlink() or sha(pointer) != expected:
+            raise ValueError('immutable preparation predecessor differs')
+        old = json.loads(pointer.read_text())
+        if (old.get('schema') != PREPARATION or old['manifest'] != manifest(config)
+                or {k:v for k,v in old['config'].items() if k != 'prerequisites'} !=
+                   {k:v for k,v in config.items() if k != 'prerequisites'}):
+            raise ValueError('prelaunch checkpoint cannot change the acquisition identity or treatment')
+        chain.append(pointer)
+        parent = old.get('prelaunch_predecessor')
+        pointer, expected = (absolute(parent['path']), parent['sha256']) if parent else (None, None)
+    for info in config['stores'].values():
+        folder = absolute(info['output'])
+        allowed = {folder/'LICENSE.txt', folder/'NOTICE.txt'}
+        if folder == root:
+            allowed.update(chain); allowed.add(root/'prelaunch.lock')
+        if not folder.is_dir() or any(p not in allowed or p.is_symlink() or not p.is_file() for p in folder.iterdir()):
+            raise ValueError('zero transport/acquisition/worker starts not established; no replacement preparation')
+    return chain
+
+
+def prepare(config_path, output, previous=None, previous_sha=None):
+    if (previous is None) != (previous_sha is None):
+        raise ValueError('both predecessor path and externally pinned digest required')
+    if previous is None:
+        return prepare_checkpoint(config_path, output)
+    config = json.loads(config_path.read_text())
+    with lifecycle(absolute(config['stores']['rareplanes']['output'])):
+        return prepare_checkpoint(config_path, output, absolute(str(previous)), previous_sha)
 
 
 def read_preparation(path, digest):
@@ -326,7 +377,7 @@ def admit(receipt, *, sysroot=Path('/sys'), now=None):
     return values
 
 
-def authority(binding, path):
+def authenticate_lease(binding, path):
     path = absolute(str(path))
     lease = path.parent.parent
     if path.name != 'authority.json' or path.parent.name != 'public' or lease.parent != LEASES:
@@ -335,12 +386,34 @@ def authority(binding, path):
     if receipt['authority'] != binding['config']['authority']:
         raise ValueError('lease authority differs from separately reviewed v2 authority')
     current = json.loads(launcher.trusted(LEASES.parent/'current.json').read_text())
-    if (current['lease_id'] != lease.name or current['installation']['package_sha256'] != PACKAGE
-            or current['installation']['policy_sha256'] != binding['installation']['policy_sha256']):
+    expected = installation_record(binding)
+    if (current['lease_id'] != lease.name or current['installation'] != expected
+            or receipt.get('installation') != expected or receipt.get('lease_id') != lease.name):
         raise ValueError('active lease/installed binding differs')
     if sha(launcher.trusted(lease/'helper.py')) != binding['installation']['files']['measurement_reservation.py']:
         raise ValueError('lease recovery source differs')
-    admit(receipt)
+    return receipt
+
+
+def installation_record(binding):
+    installed = binding['installation']
+    return dict(version=1, package_sha256=installed['package_sha256'],
+                policy_sha256=installed['policy_sha256'], standing_authority=installed['standing_authority'])
+
+
+def common_authority(receipt):
+    # The caller authenticates both installed extension fields before projecting
+    # the helper's exact common schema. Never ignore arbitrary extra fields.
+    if set(receipt) != {'schema', 'authority', 'issuer', 'approved', 'valid_from_epoch', 'valid_until_epoch',
+                        'cgroup', 'worker_cpus', 'reserved_cpus', 'controller_cpus', 'residual_interference',
+                        'condition', 'partition_mode', 'installation', 'lease_id'}:
+        raise ValueError('installed authority receipt fields differ')
+    return {key: value for key, value in receipt.items() if key not in ('installation', 'lease_id')}
+
+
+def authority(binding, path, *, sysroot=Path('/sys'), now=None):
+    receipt = common_authority(authenticate_lease(binding, path))
+    admit(receipt, sysroot=sysroot, now=now)
     return receipt
 
 
@@ -517,54 +590,88 @@ def acquire(binding, preparation_path, digest, authority_path):
     return disposition
 
 
-def validate_restoration(binding, lease):
+def verify_retained_restoration(binding, terminal, lease_id, authority_sha):
+    journal_text, authority_text = terminal['journal_text'], terminal['authority_text']
+    journal, receipt = json.loads(journal_text), json.loads(authority_text)
+    journal_sha = hashlib.sha256(journal_text.encode()).hexdigest()
+    restoration, verified = terminal['restoration'], terminal['verification']
+    expected = installation_record(binding)
+    if (hashlib.sha256(authority_text.encode()).hexdigest() != authority_sha
+            or receipt.get('lease_id') != lease_id or receipt.get('installation') != expected
+            or receipt.get('authority') != binding['config']['authority']
+            or journal.get('schema') != 'measurement-balanced-reusable-reservation/v1'
+            or journal.get('id') != lease_id or journal.get('authority') != binding['config']['authority']
+            or journal.get('installation') != expected or not journal.get('cleanup_executed')
+            or journal.get('helper_sha256') != binding['installation']['files']['measurement_reservation.py']
+            or journal.get('condition') != 'balanced-reusable' or journal.get('partition_mode') != 'root'
+            or restoration.get('condition') != 'balanced-reusable' or restoration.get('partition_mode') != 'root'
+            or restoration.get('installation') != expected or restoration.get('lease_id') != lease_id
+            or restoration.get('cleanup_executed') is not True or restoration.get('before') != journal.get('before')
+            or restoration.get('unit') != journal.get('unit') or restoration.get('issues') != []
+            or verified.get('restored') is not True or verified.get('lease_id') != lease_id
+            or verified.get('boot') != journal.get('boot') or verified.get('journal_sha256') != journal_sha
+            or verified.get('report', {}).get('restored') is not True or verified['report'].get('issues') != []
+            or verified['report'].get('observed') != journal.get('before')):
+        raise ValueError('independent installed restoration not proved for this exact lease')
+    common_authority(receipt)
+    return True
+
+
+def validate_restoration(binding, lease, authority_sha):
     current = json.loads(launcher.trusted(LEASES.parent/'current.json').read_text())
     if current['lease_id'] != lease.name:
         raise ValueError('another lease replaced the attempt before restoration verification')
-    journal_path = launcher.trusted(lease/'journal.json')
-    journal = json.loads(journal_path.read_text())
-    restoration = json.loads(launcher.trusted(lease/'public/restoration.json').read_text())
-    verified = json.loads(launcher.trusted(lease/'public/launcher-verification.json').read_text())
-    if (journal.get('schema') != 'measurement-balanced-reusable-reservation/v1'
-            or journal.get('id') != lease.name or journal.get('authority') != binding['config']['authority']
-            or journal.get('installation', {}).get('package_sha256') != PACKAGE
-            or not journal.get('cleanup_executed')
-            or restoration.get('condition') != 'balanced-reusable' or restoration.get('partition_mode') != 'root'
-            or restoration.get('unit') != journal.get('unit')
-            or restoration.get('issues') != [] or verified.get('restored') is not True
-            or verified.get('lease_id') != lease.name or verified.get('boot') != journal.get('boot')
-            or verified.get('journal_sha256') != sha(journal_path)
-            or verified.get('report', {}).get('restored') is not True or verified['report'].get('issues') != []):
-        raise ValueError('independent installed restoration not proved for this exact lease')
-    return dict(restoration=restoration, verification=verified, journal_sha256=sha(journal_path))
+    terminal = dict(journal_text=launcher.trusted(lease/'journal.json').read_text(),
+                    authority_text=launcher.trusted(lease/'public/authority.json').read_text(),
+                    restoration=json.loads(launcher.trusted(lease/'public/restoration.json').read_text()),
+                    verification=json.loads(launcher.trusted(lease/'public/launcher-verification.json').read_text()))
+    verify_retained_restoration(binding, terminal, lease.name, authority_sha)
+    return terminal
 
 
-def execute(preparation_path, digest, authority_path):
+@contextmanager
+def lifecycle(root):
+    # Preparation checkpoints and outside execution share one ordinary-user lock.
+    # Holding it through transport prevents a checkpoint from racing acquisition.
+    with (root/'prelaunch.lock').open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        yield
+
+
+def execute_owned(binding, preparation_path, digest, authority_path):
     """Outside controller: one command transport, then unconditional installed cleanup."""
-    binding = read_preparation(preparation_path, digest)
     root = Path(binding['config']['stores']['rareplanes']['output'])
-    receipt = authority(binding, authority_path)
+    if (root/'execution-started.json').exists():
+        raise ValueError('execution already attempted; no restart or replacement')
     lease = authority_path.parent.parent
-    write(root/'execution-started.json', dict(preparation_sha256=digest, authority_sha256=sha(authority_path),
-                                             lease_id=lease.name, controller_transport='single use'))
-    error, status, terminal = None, None, None
+    error, status, terminal, owned = None, None, None, False
+    authority_sha = None
     old_handlers = {}
     def interrupted(signum, frame):
         raise KeyboardInterrupt('interrupted by signal '+str(signum))
     try:
         for signum in (signal.SIGINT, signal.SIGTERM):
             old_handlers[signum] = signal.signal(signum, interrupted)
+        authenticate_lease(binding, authority_path)
+        owned = True
+        authority_sha = sha(authority_path)
+        write(root/'execution-started.json', dict(preparation_sha256=digest, authority_sha256=authority_sha,
+                                                 lease_id=lease.name, controller_transport='single use'))
+        # Every environmental/schema/expiry check occurs after the cleanup guard.
+        authority(binding, authority_path)
         command = ['/usr/bin/python3', '-I', str(lease/'helper.py'), '--condition', 'balanced-reusable', 'run', '--',
                    '/usr/bin/python3', '-I', str(Path(__file__).resolve()), 'run', '--preparation', str(preparation_path),
                    '--sha256', digest, '--authority-receipt', str(authority_path)]
         status = subprocess.run(command, check=False).returncode
     except BaseException as failure:
-        error = str(failure)
+        error = str(failure) or type(failure).__name__
     finally:
         # Do not allow a second interrupt to skip safety restoration. No corpus calls here.
         for signum in old_handlers:
             signal.signal(signum, signal.SIG_IGN)
         try:
+            if not owned:
+                raise ValueError('lease ownership was not authenticated; no stop or verify attempted')
             if installed_binding() != binding['installation']:
                 raise ValueError('installed policy changed before independent restoration')
             restoration_calls = []
@@ -576,7 +683,7 @@ def execute(preparation_path, digest, authority_path):
                 except (OSError, subprocess.SubprocessError) as failure:
                     restoration_calls.append(dict(action=action, status='failed', error=str(failure)))
             write(root/'installed-restoration-commands.json', restoration_calls)
-            terminal = validate_restoration(binding, lease)
+            terminal = validate_restoration(binding, lease, authority_sha)
             write(root/'independent-restoration.json', terminal)
         except BaseException as failure:
             error = (error+'; ' if error else '')+'restoration unresolved: '+str(failure)
@@ -586,7 +693,14 @@ def execute(preparation_path, digest, authority_path):
         write(root/'execution-complete.json', dict(schema=SCHEMA, status=status, error=error,
             lease_id=lease.name, restoration_verified=terminal is not None,
             production_decision='requires complete retained evidence and independent engineering review'))
-    return 1 if error or status else 0
+    return 1 if error is not None or status != 0 else 0
+
+
+def execute(preparation_path, digest, authority_path):
+    binding = read_preparation(preparation_path, digest)
+    root = Path(binding['config']['stores']['rareplanes']['output'])
+    with lifecycle(root):
+        return execute_owned(binding, preparation_path, digest, authority_path)
 
 
 def main():
@@ -600,6 +714,8 @@ def main():
     command = commands.add_parser('prepare')
     for key in ('config', 'output'):
         command.add_argument('--'+key, type=Path, required=True)
+    command.add_argument('--previous-preparation', type=Path)
+    command.add_argument('--previous-sha256')
     for name in ('execute', 'run'):
         command = commands.add_parser(name)
         for key in ('preparation', 'authority-receipt'):
@@ -609,7 +725,7 @@ def main():
     if args.command == 'derive':
         write(args.output, derive(args.v1, args.sha256, args.register, args.design, args.authority))
     elif args.command == 'prepare':
-        prepare(args.config, args.output)
+        prepare(args.config, args.output, args.previous_preparation, args.previous_sha256)
     elif args.command == 'execute':
         return execute(args.preparation, args.sha256, args.authority_receipt)
     else:

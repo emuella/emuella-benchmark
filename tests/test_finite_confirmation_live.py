@@ -187,7 +187,7 @@ class LiveTests(unittest.TestCase):
                 calls.append(command)
                 if len(calls) == 1 and effect: raise effect
                 return Mock(returncode=0, stdout='{}', stderr='')
-            with patch.object(live, 'read_preparation', return_value=binding), patch.object(live, 'authority'), \
+            with patch.object(live, 'read_preparation', return_value=binding), patch.object(live, 'authenticate_lease'), patch.object(live, 'authority'), \
                  patch.object(live, 'sha', return_value='digest'), patch.object(live.subprocess, 'run', side_effect=run), \
                  patch.object(live, 'installed_binding', return_value={}), patch.object(live, 'validate_restoration', return_value={'restored':True}):
                 status = live.execute(root/'preparation.json', 'digest', root/'lease/public/authority.json')
@@ -197,7 +197,7 @@ class LiveTests(unittest.TestCase):
 
     def test_unresolved_restoration_prevents_success(self):
         binding = self.binding()
-        with patch.object(live, 'read_preparation', return_value=binding), patch.object(live, 'authority'), \
+        with patch.object(live, 'read_preparation', return_value=binding), patch.object(live, 'authenticate_lease'), patch.object(live, 'authority'), \
              patch.object(live, 'sha', return_value='digest'), patch.object(live, 'installed_binding', return_value={}), \
              patch.object(live.subprocess, 'run', return_value=Mock(returncode=0,stdout='{}',stderr='')), \
              patch.object(live, 'validate_restoration', side_effect=ValueError('wrong lease')):
