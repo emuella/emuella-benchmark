@@ -86,7 +86,8 @@ RarePlanes store under `parallel-execution-diagnostic-v1`. No protected imagery,
 private paths or external binaries are included in the public report.
 
 Reconstruct offline from that retained root, without invoking a codec or requiring
-a live reservation. Use a new report filename and compare bytes with this report:
+a live reservation. Use a new report filename and compare parsed JSON values with
+this report; thread-key object ordering may differ between processes:
 
 ```sh
 python3 scripts/parallel-execution-diagnostic.py analyse \
