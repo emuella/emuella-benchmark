@@ -26,8 +26,10 @@ current cgroup/affinity information and launches no worker:
 python3 scripts/measurement-stability.py inspect --output NEW-LOCAL-RECEIPT.json
 ```
 
-This implementation supports one enforceable arrangement: an **existing delegated
-cgroup-v2 isolated cpuset partition**, empty before/between worker calls, with no
+Historical admission uses an **existing delegated cgroup-v2 isolated cpuset
+partition**. The separately selected balanced A/A mode below requires an exclusive
+partition `root` with ordinary internal load balancing. Both are empty
+before/between worker calls, with no
 child cgroups, exclusive effective CPUs covering the eight selected physical
 cores and all their SMT siblings. It never creates or alters that partition.
 The optional [temporary reservation helper](measurement-reservation.md) can
@@ -203,3 +205,68 @@ One operational owner/watcher runs the study. Retain build/authority/restoration
 all observation and analysis receipts within the approved persistent store before
 registered scratch cleanup. Offline merged integration reconstructs the report;
 it never repeats real observations merely because tooling/documentation landed.
+
+
+## Balanced A/A after execution-integrity support
+
+The [four-call diagnostic](parallel-execution-diagnostic-results.md) supports the
+limited parallel-execution criteria under the exclusive balanced condition. A new
+production A/A cohort can select that condition explicitly; diagnostic timings
+are never substituted for production observations and historical A/A stays separate.
+
+Use helper `--condition balanced-aa`, runtime
+`/run/emuella-balanced-aa-measurement-reservation`, receipt schema
+`measurement-balanced-aa-qualification/v1`, `condition=balanced-aa`,
+`partition_mode=root`. Its three-hour lease includes setup; the observation window
+remains two hours. The old isolated and 30-minute balanced diagnostic runtimes,
+leases and completed receipts are unchanged. No runtime is silently recycled.
+
+The runner additionally requires exact worker/reserved/controller masks
+0–7 / 0–7,16–23 / 8–15,24–31, unlimited task and available ancestor CPU quotas,
+and exclusion of ordinary top-level cgroups. The helper enforces and checks
+ordinary descendant exclusion too. Missing root quota interface remains unavailable.
+All original policy/topology/affinity/available-throttle invalidity rules still
+apply; this adds no timing-based data exclusion. No pool binding, worker changes,
+codec instrumentation, governor change or new estimator accompanies admission.
+
+`prepare-balanced` verifies the original four prepared/raw/stream identities and
+one production build, freezes the unchanged comparator, schedule, counts/caps,
+launch cadence, clean runner/helper and policy identities, and writes a preparation
+receipt in registered scratch. It needs no live reservation and invokes no codec.
+The output cohort directory must not exist. Both labels use the same executable;
+the standard production verifier rejects diagnostic feature builds.
+
+```sh
+python3 scripts/measurement-stability.py prepare-balanced \
+  --build BUILD/build.json --codec-source CLEAN_REFERENCE \
+  --worker-benchmark-source CLEAN_ORIGINAL_WORKER_SOURCE \
+  --estimator ESTIMATOR/target/release/classic-treatment-estimator \
+  --prepared APPROVED_STORE/prepared-final \
+  --streams APPROVED_STORE/openjpeg-refresh-main-01 \
+  --build-root REGISTERED_SCRATCH --preparation REGISTERED_SCRATCH/preparation.json \
+  --output APPROVED_STORE/balanced-measurement-stability-v1 \
+  --decisions EXACT_REVIEWED_WORKSPACE_PERMALINK
+```
+
+After reviewed helper setup, admit one unprivileged controller command:
+
+```sh
+python3 scripts/measurement_reservation.py --condition balanced-aa run -- \
+  /usr/bin/python3 ABSOLUTE_MEASUREMENT_STABILITY_RUNNER launch-balanced \
+  --preparation FROZEN_PREPARATION --preparation-sha256 REVIEWED_SHA256 \
+  --authority LIVE_BALANCED_AA_RECEIPT
+```
+
+`launch-balanced` checks the preparation hash and every build/source/input identity,
+requires its exact decision URL in the live authority, and freezes the live
+environment before the original study starts. It retains the preparation beside
+the binding. The existing study launches the same four preflights and twelve
+sessions, counting failures without replacement. Before/after every call, admission
+and frozen identity/policy checks remain active. A changed preparation, helper or
+policy fails closed; partial observations remain retained. Analyse with the same
+unchanged command and frozen comparator described above. Always retain the separate
+post-run helper verification; the runner's affinity receipt alone is insufficient.
+
+A successful preparation, tooling merge or diagnostic result is not a precision
+verdict. Fresh study results must assess all sessions in both orientations and
+retain full-matrix planning gaps before reconsidering the suspended confirmation.

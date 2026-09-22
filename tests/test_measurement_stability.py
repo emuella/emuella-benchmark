@@ -111,6 +111,29 @@ class StabilityTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'sibling'):
                 s.reservation(receipt, sysroot=root, now=2)
 
+    def test_balanced_aa_requires_explicit_identity_root_and_ordinary_exclusion(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp); receipt=self.reservation_fixture(root)
+            old=Path(receipt['cgroup']); owner=root/'fs/cgroup/owner'; owner.mkdir()
+            group=owner/'workers';old.rename(group)
+            receipt.update(cgroup=str(group),schema=s.BALANCED_AA_SCHEMA,condition='balanced-aa',partition_mode='root',controller_cpus=list(range(8,16))+list(range(24,32)))
+            (group/'cpuset.cpus.partition').write_text('root')
+            (owner/'cpu.max').write_text('max 100000')
+            other=root/'fs/cgroup/ordinary';other.mkdir();(other/'cpuset.cpus.effective').write_text('8-15,24-31')
+            s.admit(receipt,sysroot=root,now=2)
+            with self.assertRaises(ValueError): s.reservation(receipt,sysroot=root,now=2)
+            for key,value in [('schema','measurement-balanced-qualification/v1'),('condition','balanced'),('partition_mode','isolated')]:
+                with self.assertRaises(ValueError):s.admit(dict(receipt,**{key:value}),sysroot=root,now=2)
+            for path,bad,original in [(group/'cpu.max','100000 100000','max 100000'),(owner/'cpu.max','100000 100000','max 100000'),(other/'cpuset.cpus.effective','0-31','8-15,24-31')]:
+                path.write_text(bad)
+                with self.assertRaises(ValueError):s.admit(receipt,sysroot=root,now=2)
+                path.write_text(original)
+
+    def test_environment_uses_receipt_specific_admission(self):
+        # The production collector uses the same explicit admission at every boundary.
+        with patch.object(s,'admit',side_effect=ValueError('admission reached')):
+            with self.assertRaisesRegex(ValueError,'admission reached'):s.environment({})
+
     def test_cleanup_on_exception_and_intervention_guard(self):
         for intervene in (False, True):
             with tempfile.TemporaryDirectory() as tmp:
@@ -299,6 +322,53 @@ class StabilityTests(unittest.TestCase):
         for label in ('B_over_A','A_over_B'):
             for actual, expected in zip(result['estimator'][label]['output']['relative_interval_99'], projected[label]['relative_interval_99']):
                 self.assertAlmostEqual(actual, expected, places=12)
+
+
+
+class BalancedPreparationTests(unittest.TestCase):
+    def test_preparation_binds_helper_policy_output_and_hash_without_live_resources(self):
+        import measurement_reservation as helper
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp); path=root/'prepared.json'
+            binding={'prepared_manifest':str(root/'prepared/prepared.json')}
+            prepared=dict(schema=s.PREPARATION_SCHEMA,condition='balanced-aa',helper_sha256='helper',host_policy={'fixed':True},output=str(root/'result'),binding=binding)
+            path.write_text(json.dumps(prepared))
+            def digest(value):return 'prepared' if Path(value)==path else 'helper'
+            with patch.object(s,'sha',side_effect=digest),patch.object(helper,'policy',return_value={'fixed':True}),patch.object(s,'admit',side_effect=AssertionError('offline preparation must not admit live resources')):
+                self.assertEqual(s.read_preparation(path,'prepared'),prepared)
+                with self.assertRaisesRegex(ValueError,'changed'):s.read_preparation(path,'wrong')
+                for key,value in [('condition','balanced'),('schema','wrong'),('helper_sha256','changed'),('host_policy',{}),('output',str(root/'outside/result'))]:
+                    path.write_text(json.dumps(dict(prepared,**{key:value})))
+                    with self.assertRaises(ValueError):s.read_preparation(path,'prepared')
+
+    def test_launch_stops_before_publish_for_changed_authority_or_short_window(self):
+        from types import SimpleNamespace
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);authority=root/'authority.json'
+            args=SimpleNamespace(preparation=root/'prep',preparation_sha256='digest',authority=authority)
+            for receipt in [dict(schema=s.POLICY,authority='decision',valid_until_epoch=10000),dict(schema=s.BALANCED_AA_SCHEMA,authority='other',valid_until_epoch=10000),dict(schema=s.BALANCED_AA_SCHEMA,authority='decision',valid_until_epoch=7199)]:
+                authority.write_text(json.dumps(receipt))
+                prepared=dict(binding=dict(decisions='decision'),output=str(root/'output'))
+                with patch.object(s,'read_preparation',return_value=prepared),patch.object(s,'verify_core'),patch.object(s,'admit'),patch.object(s.time,'time',return_value=0),patch.object(s,'publish_binding') as publish,patch.object(s,'study') as study:
+                    with self.assertRaises(ValueError):s.launch_balanced(args)
+                    publish.assert_not_called();study.assert_not_called()
+
+    def test_prepared_launch_binds_live_environment_then_runs_existing_study_once(self):
+        from types import SimpleNamespace
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);authority=root/'authority.json';out=root/'out'
+            receipt=dict(schema=s.BALANCED_AA_SCHEMA,authority='decision',valid_until_epoch=10000)
+            authority.write_text(json.dumps(receipt))
+            prepared=dict(binding=dict(decisions='decision',cells=[{'index':i} for i in range(4)]),output=str(out))
+            args=SimpleNamespace(preparation=root/'prep',preparation_sha256='digest',authority=authority)
+            def publish(output,binding):
+                self.assertEqual(binding['condition'],receipt);self.assertEqual(binding['environment'],{'admitted':True})
+                self.assertEqual(binding['preparation_sha256'],'digest');output.mkdir()
+            with patch.object(s,'read_preparation',return_value=prepared),patch.object(s,'verify_core'),patch.object(s,'admit'),patch.object(s.time,'time',return_value=0),patch.object(s,'environment',return_value={'admitted':True}),patch.object(s.p,'verify_call') as verify,patch.object(s,'verify_binding'),patch.object(s,'publish_binding',side_effect=publish),patch.object(s,'study') as study:
+                s.launch_balanced(args)
+                self.assertEqual(verify.call_count,4);study.assert_called_once_with(out)
+                self.assertEqual(json.loads((out/'preparation.json').read_text()),prepared)
+                self.assertNotIn('authority_path',prepared['binding'])
 
 
 if __name__ == '__main__':
