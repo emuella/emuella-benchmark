@@ -270,3 +270,8 @@ post-run helper verification; the runner's affinity receipt alone is insufficien
 A successful preparation, tooling merge or diagnostic result is not a precision
 verdict. Fresh study results must assess all sessions in both orientations and
 retain full-matrix planning gaps before reconsidering the suspended confirmation.
+
+The completed balanced cohort is recorded in
+[balanced production A/A results](balanced-measurement-stability-results.md).
+It preserves the historical isolated observations separately and does not
+authorise or launch panel confirmation.
