@@ -106,6 +106,7 @@ def _order_group(a, b, rounds):
 
 
 def diagnostics(a, b, rows):
+    rounds = len(a)
     vectors = {"A": a, "B": b}
     ordered = [vectors[row["arm"]][row["round"]] for row in rows]
     first, second = ordered[::2], ordered[1::2]
@@ -114,13 +115,13 @@ def diagnostics(a, b, rows):
         execution_indices = [index for index, row in enumerate(rows) if row["arm"] == arm]
         arms[arm] = dict(_summary(values), ordered_ns=values,
                          lag1_correlation=_correlation(values[:-1], values[1:]),
-                         round_trend=_trend(list(range(ROUNDS)), values),
+                         round_trend=_trend(list(range(rounds)), values),
                          execution_order_trend=_trend(execution_indices, values))
     result = dict(
         interpretation="Descriptive only; no significance, independence, stationarity or coverage claim.",
         arms=arms, sample_covariance_ns2=_covariance(a, b), correlation=_correlation(a, b),
         acquisition_order_ns=ordered, acquisition_lag1_correlation=_correlation(ordered[:-1], ordered[1:]),
-        acquisition_order_trend=_trend(list(range(2*ROUNDS)), ordered),
+        acquisition_order_trend=_trend(list(range(2*rounds)), ordered),
         order_groups={order: _order_group(a, b, [row["round"] for row in rows[::2] if row["arm"] == order[0]])
                       for order in ("AB", "BA")},
         position=dict(first=_summary(first), second=_summary(second),
@@ -205,16 +206,18 @@ def _text(value):
     return value.decode(errors="replace") if isinstance(value, bytes) else value
 
 
-def analyse_session(rows, estimator, valid=True):
-    """Analyse exactly one twenty-pair AB/BA session; never pool sessions.
+def analyse_session(rows, estimator, valid=True, rounds=ROUNDS):
+    """Analyse exactly one fixed-size AB/BA session; never pool sessions.
 
     Raw records survive every failure. Canonical vectors use None for a missing,
     failed or ambiguous arm/round, and no successful subset reaches the estimator.
     The starting arm is inferred from the first round-zero, position-zero row.
     The caller supplies identity/environment validity through ``valid``.
     """
+    if type(rounds) is not int or rounds not in (20, 40):
+        raise ValueError("only inherited twenty- or forty-pair sessions are supported")
     result = dict(complete=False, valid=False, issues=[], raw_rows=copy.deepcopy(rows),
-                  vectors_ns={"A": [None]*ROUNDS, "B": [None]*ROUNDS},
+                  vectors_ns={"A": [None]*rounds, "B": [None]*rounds},
                   estimator={}, diagnostics=None, projections=None)
     issues = result["issues"]
     if valid is not True:
@@ -222,8 +225,8 @@ def analyse_session(rows, estimator, valid=True):
     if not isinstance(rows, list):
         issues.append("rows must be a list")
         return result
-    if len(rows) != 2*ROUNDS:
-        issues.append("session requires exactly forty observations")
+    if len(rows) != 2*rounds:
+        issues.append(f"session requires exactly {2*rounds} observations")
     first = rows[0] if rows and isinstance(rows[0], dict) else {}
     starting_arm = first.get("arm")
     if (starting_arm not in ("A", "B") or type(first.get("round")) is not int or first["round"] != 0
@@ -237,7 +240,7 @@ def analyse_session(rows, estimator, valid=True):
             issues.append(f"row {index}: expected an object")
             continue
         r, arm, position = row.get("round"), row.get("arm"), row.get("position")
-        if type(r) is not int or r not in range(ROUNDS) or arm not in ("A", "B"):
+        if type(r) is not int or r not in range(rounds) or arm not in ("A", "B"):
             issues.append(f"row {index}: invalid round/arm identity")
             continue
         key = (r, arm)
@@ -246,8 +249,8 @@ def analyse_session(rows, estimator, valid=True):
         if (type(position) is not int or position != expected_position
                 or index != 2*r + expected_position):
             issues.append(f"row {index}: acquisition does not match adjacent alternating AB/BA order")
-    expected = {(r, arm) for r in range(ROUNDS) for arm in ("A", "B")}
-    coverage = set(indexed) == expected and all(len(v) == 1 for v in indexed.values()) and len(rows) == 40
+    expected = {(r, arm) for r in range(rounds) for arm in ("A", "B")}
+    coverage = set(indexed) == expected and all(len(v) == 1 for v in indexed.values()) and len(rows) == 2*rounds
     result["complete"] = coverage
     if not coverage:
         issues.append("missing, duplicate or extra session observations")

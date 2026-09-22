@@ -95,20 +95,24 @@ def cpu_identity(cpus):
                 topology={str(c):{k:Path(f'/sys/devices/system/cpu/cpu{c}/topology/{k}').read_text().strip() for k in ('physical_package_id','core_id','thread_siblings_list')} for c in cpus})
 
 
-def run_process(binary, request, directory, cpus, execution_diagnostics=False, allocation_diagnostics=False):
+def run_process(binary, request, directory, cpus, execution_diagnostics=False, allocation_diagnostics=False, placement=None):
     directory.mkdir()
     write(directory / 'request.json', request)
     command = ['taskset','-c',','.join(map(str,cpus)), 'prlimit','--as='+str(classic.BUDGET),'--',
-               '/usr/bin/time','-f','%U %S %M','-o',str(directory/'resources.txt'),str(binary),str(directory/'request.json')]
+               '/usr/bin/time','-f',('%U %S %M %w %c' if placement else '%U %S %M'),'-o',str(directory/'resources.txt'),str(binary),str(directory/'request.json')]
     start = time.monotonic_ns()
     with (directory/'stdout.json').open('x') as stdout, (directory/'stderr.txt').open('x') as stderr:
-        process = subprocess.Popen(command, stdout=stdout, stderr=stderr, start_new_session=True)
+        process = subprocess.Popen(command, stdout=stdout, stderr=stderr, start_new_session=True, preexec_fn=placement)
         try:
             status = process.wait(timeout=120)
         except subprocess.TimeoutExpired:
             os.killpg(process.pid, signal.SIGKILL)
             process.wait()
             status = 'timeout'
+        except BaseException:
+            os.killpg(process.pid, signal.SIGKILL)
+            process.wait()
+            raise
     result = dict(status=status, process_wall_ns=time.monotonic_ns()-start)
     if status == 0:
         try:
@@ -132,7 +136,13 @@ def run_process(binary, request, directory, cpus, execution_diagnostics=False, a
                 raise ValueError('diagnostic response cannot supply headline timings')
             elif (not isinstance(samples,list) or len(samples)!=1 or type(samples[0]) is not int or samples[0]<=0 or value.get('stream_sha256') != request['stream_sha256']):
                 raise ValueError('timing/stream identity differs')
-            user, system, rss = (directory/'resources.txt').read_text().split()
+            resources = (directory/'resources.txt').read_text().split()
+            if len(resources) != (5 if placement else 3):
+                raise ValueError('resource accounting fields differ')
+            user, system, rss = resources[:3]
+            if placement:
+                result.update(process_voluntary_context_switches=int(resources[3]),
+                              process_involuntary_context_switches=int(resources[4]))
             result.update(observation=value,process_cpu_seconds=float(user)+float(system),process_peak_rss_bytes=int(rss)*1024)
         except (ValueError,TypeError,KeyError) as error:
             result.update(status='invalid_response',reason=str(error))
