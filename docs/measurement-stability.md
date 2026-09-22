@@ -10,8 +10,9 @@ and next decision; benchmark owns this runner, environment admission and analysi
 
 ## Admission before observation
 
-The current handoff is **blocked before preflight**. Affinity, low observed load
-and a runner lock do not reserve CPUs. `inspect` writes an unlaunched report with
+The first authorised cohort has [completed](measurement-stability-results.md).
+Admission for any future invocation still requires its own valid reservation;
+affinity, low observed load and a runner lock do not reserve CPUs. `inspect` writes an unlaunched report with
 all twelve sessions and four cell verdicts incomplete; it reads only allowlisted
 current cgroup/affinity information and launches no worker:
 
