@@ -62,8 +62,9 @@ remain separately identified: this is no matched causal contrast establishing wh
 those calls were effectively serial, or how much a policy change altered variance.
 
 Runner restoration reports original affinity restored and worker cgroup empty.
-The external helper reports cleanup executed, final verification successful and
-no issues. A separate post-run helper `verify` succeeded: affected original settings
+The external helper reports cleanup executed and no issues, and requests final
+verification after unit removal. That separate post-run helper `verify` succeeded:
+affected original settings
 match and the owned unit cgroup is gone. Historical reservation receipts are intact.
 
 ## Identities and reproduction
