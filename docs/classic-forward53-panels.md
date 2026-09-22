@@ -129,8 +129,10 @@ Keep these source checkouts committed and unchanged throughout observation.
 The receipt also carries the coordinator's source-audit evidence as appropriate.
 
 Create only the RarePlanes output directory and its `budget.json` before freeze.
-The budget contains `policy`, `protected_output_roots` (exactly the two new
-output roots) and `scratch_root` (registered campaign scratch). No existing
+The budget contains `policy`, `protected_output_roots` (both new output roots
+and any additional, non-overlapping metadata binding roots in the same approved
+stores) and `scratch_root` (registered campaign scratch). Entire source stores,
+prepared inputs and stream roots cannot be budget metadata roots. No existing
 observation root or ledger state may be reused. Freeze/run verify reviewed
 RarePlanes/SpaceNet notices and existing prepared manifest locks through the
 inherited asset selectors, constrain all raw/stream paths to the approved store,

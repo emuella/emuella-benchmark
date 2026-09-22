@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 SPEC = importlib.util.spec_from_file_location('panels', Path(__file__).resolve().parents[1] / 'scripts/classic-forward53-panels.py')
@@ -58,6 +59,21 @@ class ScheduleTests(unittest.TestCase):
             panels.schedule(rareplanes, spacenet[:-1] + [spacenet[0]])
         with self.assertRaises(ValueError):
             panels.schedule(rareplanes[:-1], spacenet)
+
+    def test_budget_includes_additional_metadata_but_never_payload_roots(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config = dict(stores={name: {key: str(root / name / key) for key in ('prepared', 'streams', 'output')}
+                                  for name in ('rareplanes', 'spacenet')})
+            roots = [str(root / name / leaf) for name in ('rareplanes', 'spacenet') for leaf in ('output', 'binding')]
+            budget = SimpleNamespace(path=root / 'rareplanes/output/budget.json', config=dict(protected_output_roots=roots))
+            panels.validate_budget_roots(config, budget)
+            for invalid in (roots[1:], roots + [str(root / 'rareplanes')],
+                            roots + [str(root / 'rareplanes/prepared/subdir')],
+                            roots + [str(root / 'elsewhere')], roots + [roots[0]]):
+                budget.config['protected_output_roots'] = invalid
+                with self.assertRaises(ValueError):
+                    panels.validate_budget_roots(config, budget)
 
     def test_queries_remain_identical_across_forms(self):
         rows = [dict(planned=dict(case_id='rgb', style=0, workers=8, arm=arm),

@@ -138,6 +138,24 @@ def build_bindings(config, receipt):
     return bound
 
 
+def validate_budget_roots(config, budget):
+    stores = [absolute(s['prepared']).parent for s in config['stores'].values()]
+    excluded = stores + [absolute(s[k]) for s in config['stores'].values() for k in ('prepared', 'streams')]
+    roots = [absolute(p) for p in budget.config['protected_output_roots']]
+    expected = {absolute(s['output']) for s in config['stores'].values()}
+    if not expected.issubset(roots):
+        raise ValueError('ledger must cover both output roots')
+    if any(not any(root.is_relative_to(store) for store in stores)
+           or any(root == path or root.is_relative_to(path) or path.is_relative_to(root)
+                  for path in excluded if path not in stores)
+           or root in stores for root in roots):
+        raise ValueError('ledger roots must be approved-store metadata, excluding prepared inputs/streams')
+    if any(a.is_relative_to(b) or b.is_relative_to(a) for i, a in enumerate(roots) for b in roots[i + 1:]):
+        raise ValueError('ledger metadata roots overlap')
+    if not budget.path.is_relative_to(absolute(config['stores']['rareplanes']['output'])):
+        raise ValueError('ledger must remain with RarePlanes observations')
+
+
 def bind(config):
     if config.get('policy') != POLICY or config.get('panel_width') != 16 or config.get('cpus') != list(range(8)):
         raise ValueError('fixed policy, width or CPUs differ')
@@ -149,7 +167,6 @@ def bind(config):
                     builds=build_bindings(config, receipt), stores={})
     budget_path = absolute(config['budget'])
     budget = budget_module.Budget(budget_path, POLICY)
-    expected_roots = []
     for name, info in config['stores'].items():
         prepared, streams, output = (absolute(info[k]) for k in ('prepared', 'streams', 'output'))
         store = prepared.parent
@@ -163,10 +180,7 @@ def bind(config):
             raise ValueError('prepared asset escapes its approved store')
         bindings['stores'][name] = dict(assets=assets, prepared_sha256=refresh.sha(prepared / 'prepared.json'),
                                        notice_sha256=refresh.sha(notice))
-        expected_roots.append(str(output))
-    if (sorted(budget.config['protected_output_roots']) != sorted(expected_roots)
-            or not budget_path.is_relative_to(absolute(config['stores']['rareplanes']['output']))):
-        raise ValueError('ledger must cover both output roots and remain with RarePlanes evidence')
+    validate_budget_roots(config, budget)
     absolute(budget.config['scratch_root'])
     rows = schedule(*(bindings['stores'][s]['assets'] for s in ('rareplanes', 'spacenet')))
     for row in rows:
