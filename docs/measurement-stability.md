@@ -1,5 +1,11 @@
 # Controlled identical-binary measurement stability
 
+> **Execution-integrity follow-up:** retained CPU accounting shows effectively
+> single-core execution for the nominal eight-worker calls. The original interval
+> arithmetic and restoration record stand, but parallel execution and transfer to
+> panel confirmation are not qualified. See the [follow-up audit](measurement-execution-integrity.md).
+> No new A/A study or panel confirmation has been launched.
+
 `measurement-stability-qualification/v1` is an opt-in prospective condition check
 using the unchanged production comparator and the inherited
 [precision protocol](precision-feasibility.md). Its fresh-process boundary takes

@@ -1,5 +1,11 @@
 # Measurement stability qualification: completed controlled A/A
 
+> **Execution-integrity follow-up:** retained CPU accounting shows effectively
+> single-core execution for the nominal eight-worker calls. The original interval
+> arithmetic and restoration record stand, but parallel execution and transfer to
+> panel confirmation are not qualified. See the [follow-up audit](measurement-execution-integrity.md).
+> No new A/A study or panel confirmation has been launched.
+
 `measurement-stability-qualification/v1` completed one prospectively frozen
 condition: **all twelve sessions valid, all 964 calls retained**, including four
 separate preflights and 960 timed fresh-process calls. The observation window was
@@ -28,7 +34,8 @@ rustc 1.97.1/LLVM 22.1.6, six linked-library hashes, tuned perf/ThinLTO/one code
 unit, SIMD off and original MQ/packed-default/W/traversal were retained. The panel
 candidate was neither built nor invoked.
 
-CPUs 0–7 were workers; their SMT siblings 16–23 remained reserved and unused.
+CPUs 0–7 were workers; their SMT siblings 16–23 remained reserved and excluded from worker affinity
+(the follow-up counters retain small residual system activity).
 An authenticated systemd/cgroup-v2 isolated exclusive cpuset excluded ordinary
 workloads. Controller, telemetry and builds used 8–15,24–31 on the other L3 domain.
 All cores share package 0 and NUMA node 0; memory/package and kernel/IRQ interference
