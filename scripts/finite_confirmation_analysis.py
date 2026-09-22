@@ -13,6 +13,7 @@ from pathlib import Path
 import precision_feasibility_analysis as analysis
 
 SCHEMA = 'classic-forward53-finite-confirmation/v1'
+V2_SCHEMA = 'classic-forward53-finite-confirmation/v2'
 ORDER = (0, 2, 1, 3, 10, 11, 4, 5, 6, 7, 8, 9, *range(12, 28))
 BASELINE = '975a5e734773578f61abf76d5fddfbd837f3bd7d'
 CANDIDATE = 'd60859a8595554be52c8748a8e8c85b69614fea5'
@@ -168,7 +169,15 @@ def analyse_attempt(manifest, rows, estimators, *, checks, consumption, declined
     """
     schedule = sorted((row for stage in ('allocation', 'preflight', 'ordinary')
                        for row in manifest['schedule'][stage]), key=lambda row: row['index'])
-    if manifest['schema'] != SCHEMA or manifest['limits'] != limits() or len(schedule) != 2648:
+    if manifest['schema'] == V2_SCHEMA:
+        predecessor = manifest.get('predecessor_sha256')
+        if (not isinstance(predecessor, str) or len(predecessor) != 64
+                or any(c not in '0123456789abcdef' for c in predecessor)
+                or not isinstance(manifest.get('authority'), str) or not manifest['authority'].strip()
+                or manifest.get('reservation_schema') != 'measurement-balanced-reusable-qualification/v1'
+                or manifest.get('condition') != 'balanced-reusable'):
+            raise ValueError('explicit verified v2 predecessor, authority and condition required')
+    if manifest['schema'] not in (SCHEMA, V2_SCHEMA) or manifest['limits'] != limits() or len(schedule) != 2648:
         raise ValueError('verified finite manifest required')
     issues = budget_issues(consumption)
     if consumption.get('started_calls') != len(rows):
@@ -177,7 +186,7 @@ def analyse_attempt(manifest, rows, estimators, *, checks, consumption, declined
         issues.append('receipts are not the unique frozen schedule prefix')
     observed_endpoints = {row.get('planned', {}).get('endpoint_id') for row in rows}
     observed_call_ids = {row.get('planned', {}).get('call_id') for row in rows}
-    result = dict(schema=SCHEMA, offline_only=True, promotion_authorised=False,
+    result = dict(schema=manifest['schema'], offline_only=True, promotion_authorised=False,
                   disposition=INCOMPLETE, raw_rows=copy.deepcopy(rows), issues=issues,
                   started_calls=consumption.get('started_calls'),
                   endpoints=[dict(endpoint_id=f'endpoint-{i:02}',
@@ -186,6 +195,9 @@ def analyse_attempt(manifest, rows, estimators, *, checks, consumption, declined
                                   baseline_mean_ns=None, candidate_mean_ns=None, relative_interval_99=None) for i in ORDER],
                   missing_call_ids=[row['call_id'] for row in schedule if row['call_id'] not in observed_call_ids],
                   checks=copy.deepcopy(checks), consumption=copy.deepcopy(consumption))
+    if manifest['schema'] == V2_SCHEMA:
+        result.update(predecessor_sha256=manifest['predecessor_sha256'], authority=manifest['authority'],
+                      reservation_schema=manifest['reservation_schema'], condition=manifest['condition'])
     if declined_reason is not None:
         if rows or consumption.get('started_calls') != 0:
             raise ValueError('declined before launch requires zero starts')

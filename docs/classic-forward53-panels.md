@@ -12,7 +12,11 @@ form used for authored correctness is outside this real-input schedule.
 
 The [completed development record](classic-forward53-panels-results.md) retains
 all observations and the original qualification-pending disposition. The later
-finite attempt below closes that disposition without changing those observations.
+historical v1 finite attempt below closes that disposition without changing those
+observations. The separately authorised [v2 confirmation](classic-forward53-finite-confirmation-v2.md)
+then closed as **NOT QUALIFIED WITHIN BUDGET** after its fifth completed endpoint
+left the +1% critical bound unresolved. Production remains unchanged; the v1
+zero-start record and historical development data remain intact.
 
 Development provides descriptive observations, exactness and resource evidence.
 It cannot qualify a production default or establish a speed claim. One policy
@@ -158,7 +162,7 @@ instrumented observations, and always leaves qualification pending. Reporting
 is offline and does not launch or replace calls. Output files are exclusive;
 choose a new report filename when inspecting a later stage.
 
-## Finite confirmation closed before launch
+## Historical v1 finite confirmation closed before launch
 
 The historical [precision study](precision-feasibility-results.md) completed all
 18 sessions. Boca RGB8 encode at one and eight workers established the +1%
@@ -231,9 +235,10 @@ never authorises promotion. The declined attempt did not implement or qualify
 live bindings for reservation, rights/locks, source review, preflights, independent
 decode receipts, allocation/output limits, start ledger, monitoring or restoration.
 Existing balanced reservation admission and restoration tests remain applicable
-to their own helper. No live confirmation runner or acquisition command is
-provided. Future source reuse requires a separately authorised objective and
-prospective evidence plan.
+to their own helper. The closed v1 delivery provided no live confirmation runner
+or acquisition command. The separately authorised v2 runner and its terminal
+observations are documented in the linked v2 record. Neither closed attempt grants
+an automatic retest or further source-reuse authority.
 
 RarePlanes Dataset, June 2020: J. Shermeyer et al.; In-Q-Tel – CosmiQ Works and
 AI.Reverie, CC BY-SA 4.0. SpaceNet Dataset, SpaceNet Partners and DigitalGlobe

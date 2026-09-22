@@ -47,6 +47,7 @@ pixel payloads or secrets.
 [Corpus integration](docs/corpus.md) describes runtime catalogue identities.
 [Refreshed Emuella–OpenJPEG results](docs/openjpeg-refresh-results.md) compare matched classic profiles and CPU budgets.
 [Packed encoder qualification](docs/classic-encoder-kernel-results.md) compares the retained reference with the qualified encoder and a fresh OpenJPEG anchor.
+[Finite forward 5/3 v2 result](docs/classic-forward53-finite-confirmation-v2.md) records the unresolved critical gate, unchanged production decision and bounded runner.
 [Finite entropy result](docs/classic-entropy-hot-loop-results.md) records the rejected decoder decision-path variants and retained independent oracle.
 [Retained D2 confirmation](docs/mq-d2-incremental-confirmation-results.md) records its fresh not-selected outcome under the incremental policy.
 [RarePlanes calibration](docs/rareplanes-calibration.md) describes the bounded
