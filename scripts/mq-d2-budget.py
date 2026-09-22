@@ -10,6 +10,7 @@ def size(path):
 
 
 POLICIES = {
+    "classic-forward53-panels/v1": (180, 5400, 2*1024**3, 30*1024**3),
     "mq-d2-incremental-confirmation/v1": (800, 7200, 2*1024**3, 20*1024**3),
     "classic-encode-front-end/v1": (1600, 14400, 4*1024**3, 30*1024**3),
 }
