@@ -10,6 +10,9 @@ private source constant; independent codec evidence owns that assertion. There
 is no runtime selector in ordinary observations. A structural forced-reference
 form used for authored correctness is outside this real-input schedule.
 
+The [completed development record](classic-forward53-panels-results.md) retains
+all observations and the qualification-pending disposition.
+
 Development provides descriptive observations, exactness and resource evidence.
 It cannot qualify a production default or establish a speed claim. One policy
 is within the exploration allowance of at most three; unused call headroom is
