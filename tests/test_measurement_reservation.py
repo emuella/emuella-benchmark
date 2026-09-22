@@ -268,14 +268,32 @@ class ReservationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'unsafe'):
                 REAL_LOAD()
 
-    def test_atomic_receipt_refuses_existing_symlink_without_touching_target(self):
+    def test_atomic_receipt_refuses_colliding_symlink_without_touching_target(self):
         target = self.root / 'untouched'
         target.write_text('original')
         path = self.state_root / 'receipt.json'
-        path.with_name(path.name + '.new').symlink_to(target)
-        with self.assertRaises(FileExistsError):
-            r.atomic(path, {'value': 1})
+        temporary = path.with_name(path.name + '.fixed.new')
+        temporary.symlink_to(target)
+        with patch.object(r.uuid, 'uuid4', return_value='fixed'):
+            with self.assertRaises(FileExistsError):
+                r.atomic(path, {'value': 1})
         self.assertEqual(target.read_text(), 'original')
+        self.assertTrue(temporary.is_symlink())
+
+    def test_interrupted_journal_write_does_not_obstruct_repeated_recovery(self):
+        path = self.mutation('cpuset.cpus.exclusive', '', '0-7,16-23')
+        r.save(self.state)  # Last complete write-ahead record before interruption.
+        partial = self.state_root / 'journal.json.killed-writer.new'
+        partial.write_text('{partial write')
+        # Also retain the former fixed name: neither is consumed or deleted.
+        legacy = self.state_root / 'journal.json.new'
+        legacy.write_text('{legacy partial')
+        self.assertFalse(r.restore())
+        self.assertEqual(r.read(path), '')
+        self.assertTrue(json.loads(r.read(self.state_root / 'public/restoration.json'))['cleanup_executed'])
+        self.assertFalse(r.restore())
+        self.assertEqual(partial.read_text(), '{partial write')
+        self.assertEqual(legacy.read_text(), '{legacy partial')
 
     def test_unprivileged_probe_child_moves_both_directions(self):
         destinations = []

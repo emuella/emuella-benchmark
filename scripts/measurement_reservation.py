@@ -62,7 +62,9 @@ def command(*args, timeout=30):
 
 def atomic(path, value):
     path = Path(path)
-    temporary = path.with_name(path.name + '.new')
+    # A killed writer may leave its temporary behind. Never reuse that name,
+    # so recovery can always publish a new journal without deleting old evidence.
+    temporary = path.with_name(path.name + '.' + str(uuid.uuid4()) + '.new')
     fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o644)
     try:
         with os.fdopen(fd, 'w') as output:
