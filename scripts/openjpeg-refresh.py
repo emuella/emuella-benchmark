@@ -34,8 +34,8 @@ def git(source, *args):
     return subprocess.check_output(['git', '-C', str(source), *args], text=True).strip()
 
 
-def build(source, output, sampling=False, execution_diagnostics=False, allocation_diagnostics=False):
-    if sum((sampling, execution_diagnostics, allocation_diagnostics)) > 1:
+def build(source, output, sampling=False, execution_diagnostics=False, allocation_diagnostics=False, parallel_diagnostics=False):
+    if sum((sampling, execution_diagnostics, allocation_diagnostics, parallel_diagnostics)) > 1:
         raise ValueError("diagnostic build modes are exclusive")
     benchmark = classic.clean_source(ROOT)
     codec = classic.clean_source(source)
@@ -48,7 +48,7 @@ def build(source, output, sampling=False, execution_diagnostics=False, allocatio
     if archive.wait():
         raise ValueError('source archive failed')
     command = ['cargo', 'build', '--profile', 'perf', '--manifest-path', str(snapshot / 'workers/Cargo.toml'),
-               '--bin', 'classic-compare-worker', '--features', 'classic-encode-sampling' if sampling else ('classic-execution-diagnostics,emuella-j2k-codestream/classic-execution-diagnostics' if execution_diagnostics else ('classic-allocation-diagnostics' if allocation_diagnostics else 'classic-compare')), '--target-dir', str(output / 'target'), '--message-format=json', '-vv']
+               '--bin', 'classic-compare-worker', '--features', 'classic-parallel-diagnostics,emuella-j2k-codestream/classic-execution-diagnostics' if parallel_diagnostics else 'classic-encode-sampling' if sampling else ('classic-execution-diagnostics,emuella-j2k-codestream/classic-execution-diagnostics' if execution_diagnostics else ('classic-allocation-diagnostics' if allocation_diagnostics else 'classic-compare')), '--target-dir', str(output / 'target'), '--message-format=json', '-vv']
     for package in ('emuella-j2k', 'emuella-j2k-codestream'):
         command += ['--config', 'patch."https://github.com/emuella/emuella-j2k".' + package + '.path=' + json.dumps(str(source / 'crates' / package))]
     env = dict(os.environ)
@@ -68,7 +68,7 @@ def build(source, output, sampling=False, execution_diagnostics=False, allocatio
     if classic.clean_source(ROOT) != benchmark or classic.clean_source(source) != codec or configs != build_support.cargo_config_files(snapshot, env):
         raise ValueError('source/configuration changed during build')
     libraries = {str(p): sha(p) for p in build_support.libraries(binary)}
-    write(output / 'build.json', dict(benchmark=benchmark, codec=codec, sampling=sampling, execution_diagnostics=execution_diagnostics, allocation_diagnostics=allocation_diagnostics,
+    write(output / 'build.json', dict(benchmark=benchmark, codec=codec, parallel_diagnostics=parallel_diagnostics, sampling=sampling, execution_diagnostics=execution_diagnostics, allocation_diagnostics=allocation_diagnostics,
           encoder_backend=env.get('EMUELLA_TIER1_ENCODER', 'default'), scheduling_window=env.get('EMUELLA_CLASSIC_WINDOW', 'default'), binary=str(binary), binary_sha256=sha(binary),
           libraries=libraries, rustc=subprocess.check_output(['rustc', '-vV'], text=True),
           openjpeg=subprocess.check_output(['pkg-config', '--modversion', 'libopenjp2'], text=True).strip(),
@@ -95,16 +95,20 @@ def cpu_identity(cpus):
                 topology={str(c):{k:Path(f'/sys/devices/system/cpu/cpu{c}/topology/{k}').read_text().strip() for k in ('physical_package_id','core_id','thread_siblings_list')} for c in cpus})
 
 
-def run_process(binary, request, directory, cpus, execution_diagnostics=False, allocation_diagnostics=False, placement=None):
+def run_process(binary, request, directory, cpus, execution_diagnostics=False, allocation_diagnostics=False, placement=None, parallel_diagnostics=False, monitor=None, environment=None):
+    if parallel_diagnostics != (monitor is not None):
+        raise ValueError('parallel diagnostic requires its operation monitor')
     directory.mkdir()
     write(directory / 'request.json', request)
     command = ['taskset','-c',','.join(map(str,cpus)), 'prlimit','--as='+str(classic.BUDGET),'--',
                '/usr/bin/time','-f',('%U %S %M %w %c' if placement else '%U %S %M'),'-o',str(directory/'resources.txt'),str(binary),str(directory/'request.json')]
+    if parallel_diagnostics:
+        command.insert(4, '--fsize=1048576')
     start = time.monotonic_ns()
     with (directory/'stdout.json').open('x') as stdout, (directory/'stderr.txt').open('x') as stderr:
-        process = subprocess.Popen(command, stdout=stdout, stderr=stderr, start_new_session=True, preexec_fn=placement)
+        process = subprocess.Popen(command, stdout=stdout, stderr=stderr, start_new_session=True, preexec_fn=placement, env=environment)
         try:
-            status = process.wait(timeout=120)
+            status = monitor(process, time.monotonic()+120) if monitor else process.wait(timeout=120)
         except subprocess.TimeoutExpired:
             os.killpg(process.pid, signal.SIGKILL)
             process.wait()
@@ -126,13 +130,16 @@ def run_process(binary, request, directory, cpus, execution_diagnostics=False, a
             if request['operation'] == 'prepare':
                 if samples != [] or value['stream_sha256'] != sha(request['stream_path']):
                     raise ValueError('prepare response differs')
+            elif parallel_diagnostics:
+                if samples != [] or value.get('diagnostic_parallel') is not True or not isinstance(value.get('parallel_diagnostic'), dict) or value.get('stream_sha256') != request['stream_sha256']:
+                    raise ValueError('parallel diagnostic/stream identity differs')
             elif execution_diagnostics:
                 if samples != [] or not isinstance(value.get('execution_diagnostic'), dict) or value.get('stream_sha256') != request['stream_sha256']:
                     raise ValueError('execution diagnostic/stream identity differs')
             elif allocation_diagnostics:
                 if samples != [] or not isinstance(value.get('allocation_diagnostic'), dict) or value.get('execution_diagnostic') is not None or value.get('stream_sha256') != request['stream_sha256']:
                     raise ValueError('allocation diagnostic/stream identity differs')
-            elif value.get('execution_diagnostic') is not None or value.get('allocation_diagnostic') is not None:
+            elif value.get('diagnostic_parallel') or value.get('execution_diagnostic') is not None or value.get('allocation_diagnostic') is not None:
                 raise ValueError('diagnostic response cannot supply headline timings')
             elif (not isinstance(samples,list) or len(samples)!=1 or type(samples[0]) is not int or samples[0]<=0 or value.get('stream_sha256') != request['stream_sha256']):
                 raise ValueError('timing/stream identity differs')
@@ -226,7 +233,7 @@ def measure(args):
         budget = module('front_end_budget', 'mq-d2-budget.py').Budget(args.budget, 'classic-encode-front-end/v1')
     owner = classic.clean_source(ROOT)
     build_record = bind(args.build)
-    if build_record.get('sampling') or build_record.get('execution_diagnostics') or build_record.get('allocation_diagnostics'):
+    if build_record.get('parallel_diagnostics') or build_record.get('sampling') or build_record.get('execution_diagnostics') or build_record.get('allocation_diagnostics'):
         raise ValueError('sampling builds cannot supply headline measurements')
     # Source identity is fixed by committed bytes, including hidden index changes.
     if study == 'front-end':
@@ -377,7 +384,7 @@ def analyse(folder, estimator, study='refresh'):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     sub=parser.add_subparsers(dest='command',required=True)
-    p=sub.add_parser('build'); p.add_argument('--codec-source',type=Path,required=True); p.add_argument('--output',type=Path,required=True); p.add_argument('--sampling',action='store_true'); p.add_argument('--execution-diagnostics',action='store_true'); p.add_argument('--allocation-diagnostics',action='store_true')
+    p=sub.add_parser('build'); p.add_argument('--codec-source',type=Path,required=True); p.add_argument('--output',type=Path,required=True); p.add_argument('--sampling',action='store_true'); p.add_argument('--execution-diagnostics',action='store_true'); p.add_argument('--allocation-diagnostics',action='store_true'); p.add_argument('--parallel-diagnostics',action='store_true')
     p=sub.add_parser('measure'); p.add_argument('--build',type=Path,required=True); p.add_argument('--prepared',type=Path,required=True); p.add_argument('--output',type=Path,required=True); p.add_argument('--cpus',required=True); p.add_argument('--probe',action='store_true'); p.add_argument('--encode-only',action='store_true'); p.add_argument('--streams',type=Path); p.add_argument('--study',choices=('refresh','front-end'),default='refresh'); p.add_argument('--budget',type=Path)
     p=sub.add_parser('analyse'); p.add_argument('--output',type=Path,required=True); p.add_argument('--estimator',type=Path,required=True); p.add_argument('--study',choices=('refresh','front-end'),default='refresh')
     p=sub.add_parser('estimator'); p.add_argument('--output',type=Path,required=True)
@@ -385,7 +392,7 @@ def main():
     for key in ('output','build','prepared','codec_source','estimator','streams','budget'):
         if getattr(args,key,None) is not None:
             setattr(args,key,getattr(args,key).resolve())
-    if args.command=='build': build(args.codec_source,args.output,args.sampling,args.execution_diagnostics,args.allocation_diagnostics)
+    if args.command=='build': build(args.codec_source,args.output,args.sampling,args.execution_diagnostics,args.allocation_diagnostics,args.parallel_diagnostics)
     elif args.command=='measure': return measure(args)
     elif args.command=='analyse': analyse(args.output,args.estimator,args.study)
     elif args.command=='estimator': classic.estimator_build(ROOT,args.output)

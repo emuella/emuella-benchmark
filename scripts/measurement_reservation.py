@@ -22,6 +22,11 @@ import time
 import uuid
 
 ROOT = Path('/run/emuella-measurement-reservation')
+ISOLATED_ROOT = ROOT
+BALANCED_ROOT = Path('/run/emuella-balanced-measurement-reservation')
+CONDITION = 'isolated'
+BALANCED_LEASE = 1800  # Setup included; diagnostic call/time caps are runner-owned.
+BALANCED_SCHEMA = 'measurement-balanced-reservation/v1'
 CG = Path('/sys/fs/cgroup')
 SYS = Path('/sys/devices/system/cpu')
 RESERVED = set(range(8)) | set(range(16, 24))
@@ -30,6 +35,25 @@ LEASE = 10800  # Includes setup; the separate study observation cap remains 7200
 POLICY = ('scaling_driver', 'scaling_governor', 'energy_performance_preference',
           'scaling_min_freq', 'scaling_max_freq')
 SCHEMA = 'measurement-stability-reservation/v1'
+
+
+def select_condition(condition):
+    global CONDITION, ROOT
+    CONDITION = condition
+    ROOT = BALANCED_ROOT if condition == 'balanced' else ISOLATED_ROOT
+
+
+def condition_args():
+    return ['--condition', 'balanced'] if CONDITION == 'balanced' else []
+
+
+def validate_condition(state):
+    # Journals predating the optional mode have no condition fields.
+    if CONDITION == 'balanced':
+        if state.get('condition') != 'balanced' or state.get('partition_mode') != 'root':
+            raise ValueError('reservation condition or partition mode differs')
+    elif state.get('condition', 'isolated') != 'isolated' or state.get('partition_mode', 'isolated') != 'isolated':
+        raise ValueError('reservation condition or partition mode differs')
 
 
 def read(path):
@@ -133,8 +157,10 @@ def load():
         if not stat.S_ISREG(info.st_mode) or info.st_uid != 0 or info.st_mode & 0o022:
             raise ValueError('unsafe root-owned recovery file')
     state = json.loads(read(ROOT / 'journal.json'))
-    if state['schema'] != SCHEMA or state['boot'] != read('/proc/sys/kernel/random/boot_id'):
+    schema = BALANCED_SCHEMA if CONDITION == 'balanced' else SCHEMA
+    if state['schema'] != schema or state['boot'] != read('/proc/sys/kernel/random/boot_id'):
         raise ValueError('recovery journal belongs to another schema or boot')
+    validate_condition(state)
     if hashlib.sha256((ROOT / 'helper.py').read_bytes()).hexdigest() != state['helper_sha256']:
         raise ValueError('recovery helper identity changed')
     if state['unit'] != 'emuella-measurement-reservation-' + state['id'] + '.service':
@@ -172,9 +198,11 @@ def delegate_procs(state, path):
 
 
 def verify_partition(state):
+    validate_condition(state)
     group = unit_group(state)
     worker = group / 'workers'
-    if (read(worker / 'cpuset.cpus.partition') != 'isolated'
+    partition = 'root' if CONDITION == 'balanced' else 'isolated'
+    if (read(worker / 'cpuset.cpus.partition') != partition
             or cpus(read(worker / 'cpuset.cpus.effective')) != RESERVED
             or cpus(read(worker / 'cpuset.cpus.exclusive.effective')) != RESERVED
             or read(worker / 'cgroup.procs') or list(worker.glob('*/cgroup.procs'))):
@@ -186,6 +214,37 @@ def verify_partition(state):
             effective = child / 'cpuset.cpus.effective'
             if not effective.exists() or cpus(read(effective)) & RESERVED:
                 raise ValueError('ordinary cgroup exclusion is not established')
+    if CONDITION == 'balanced':
+        if (read(group / 'cpuset.cpus.partition') != 'member'
+                or read(group / 'cgroup.procs')
+                or cpus(read(group / 'cpuset.cpus.effective')) != HOUSE
+                or cpus(read(group / 'supervisor/cpuset.cpus.effective')) != HOUSE):
+            raise ValueError('reservation ancestor or supervisor placement differs')
+        if read(CG / 'cpuset.cpus.isolated') != state['before']['isolated']:
+            raise ValueError('balanced reservation changed the isolated CPU set')
+        # Also inspect descendants: admission must prove every ordinary cgroup's
+        # effective allocation, including nested slices and delegated children.
+        allocations = {}
+        def traversal_failed(error):
+            raise error
+        for parent, children, _ in os.walk(CG, onerror=traversal_failed):
+            for name in children:
+                child = Path(parent) / name
+                if child == worker:
+                    continue
+                effective = child / 'cpuset.cpus.effective'
+                if effective.exists():
+                    allocation = cpus(read(effective))
+                else:
+                    # A controller disabled for children has no child interface;
+                    # those children inherit the previously checked parent set.
+                    if ('cpuset' in read(child.parent / 'cgroup.subtree_control').split()
+                            or child.parent not in allocations):
+                        raise ValueError('ordinary descendant cpuset inheritance is unproved')
+                    allocation = allocations[child.parent]
+                if allocation & RESERVED:
+                    raise ValueError('ordinary descendant cgroup exclusion is not established')
+                allocations[child] = allocation
     if policy() != state['before']['policy']:
         raise ValueError('frequency/boost/SMT policy changed')
 
@@ -212,7 +271,8 @@ def configure(state):
         mutate(state, child / 'cpuset.cpus', mask(allocation))
         mutate(state, child / 'cpuset.mems', '0')
     mutate(state, group / 'workers/cpuset.cpus.exclusive', mask(RESERVED))
-    mutate(state, group / 'workers/cpuset.cpus.partition', 'isolated')
+    mutate(state, group / 'workers/cpuset.cpus.partition',
+           'root' if CONDITION == 'balanced' else 'isolated')
     for path in (group / 'cgroup.procs', group / 'controller/cgroup.procs', group / 'workers/cgroup.procs'):
         delegate_procs(state, path)
     verify_partition(state)
@@ -333,6 +393,9 @@ def serve():
                'cgroup': str(unit_group(state) / 'workers'), 'worker_cpus': list(range(8)),
                'reserved_cpus': sorted(RESERVED), 'controller_cpus': sorted(HOUSE),
                'residual_interference': 'Shared package and NUMA memory; hard IRQ and root kernel activity remain. No frequency, boost, SMT or IRQ changes.'}
+    if CONDITION == 'balanced':
+        receipt.update(schema='measurement-balanced-qualification/v1',
+                       condition='balanced', partition_mode='root')
     atomic(ROOT / 'public/authority.json', receipt)
     state['admission_probe'] = 'passed; no codec or real input invoked'
     state['ready'] = True
@@ -388,9 +451,12 @@ def _restore():
     state['cleanup_executed'] = True
     save(state)
     # Unit/controller files disappear under systemd after ExecStopPost exits.
-    atomic(ROOT / 'public/restoration.json', {'issues': issues, 'cleanup_executed': True,
+    receipt = {'issues': issues, 'cleanup_executed': True,
            'final_verification': 'run verify after unit cgroup removal',
-           'before': state['before'], 'unit': state['unit']})
+           'before': state['before'], 'unit': state['unit']}
+    if CONDITION == 'balanced':
+        receipt.update(condition='balanced', partition_mode='root')
+    atomic(ROOT / 'public/restoration.json', receipt)
     return bool(issues)
 
 
@@ -426,22 +492,26 @@ def start(uid, authority):
     (ROOT / 'helper.py').write_bytes(source)
     (ROOT / 'helper.py').chmod(0o444)
     identity = str(uuid.uuid4())
-    state = {'schema': SCHEMA, 'id': identity,
+    lease = BALANCED_LEASE if CONDITION == 'balanced' else LEASE
+    state = {'schema': BALANCED_SCHEMA if CONDITION == 'balanced' else SCHEMA, 'id': identity,
              'unit': 'emuella-measurement-reservation-' + identity + '.service',
              'uid': uid, 'gid': account.pw_gid, 'issuer': account.pw_name,
              'authority': authority, 'boot': read('/proc/sys/kernel/random/boot_id'),
              'helper_sha256': hashlib.sha256(source).hexdigest(), 'before': before,
-             'expires_epoch': time.time() + LEASE, 'changes': [], 'ownership': []}
+             'expires_epoch': time.time() + lease, 'changes': [], 'ownership': []}
+    if CONDITION == 'balanced':
+        state.update(condition='balanced', partition_mode='root')
     save(state)
     ROOT.chmod(0o755)  # Controller can now traverse to its private socket directory.
     helper = str(ROOT / 'helper.py')
     args = ['/usr/bin/systemd-run', '--quiet', '--collect', '--unit=' + state['unit'],
             '--slice=-.slice', '-p', 'Type=exec', '-p', 'Delegate=cpuset cpu memory pids',
             '-p', 'DelegateSubgroup=supervisor', '-p', 'AllowedCPUs=0-31',
-            '-p', 'CPUAffinity=8-15 24-31', '-p', 'RuntimeMaxSec=' + str(LEASE),
+            '-p', 'CPUAffinity=8-15 24-31', '-p', 'RuntimeMaxSec=' + str(lease),
             '-p', 'TimeoutStopSec=150', '-p', 'KillMode=control-group',
-            '-p', 'ExecStopPost=/usr/bin/python3 -I ' + helper + ' restore',
-            '/usr/bin/python3', '-I', helper, 'serve']
+            '-p', 'ExecStopPost=/usr/bin/python3 -I ' + helper +
+            (' --condition balanced' if CONDITION == 'balanced' else '') + ' restore',
+            '/usr/bin/python3', '-I', helper, *condition_args(), 'serve']
     try:
         command(*args)
         deadline = time.monotonic() + 30
@@ -471,6 +541,8 @@ def start(uid, authority):
 def run(argv):
     if os.geteuid() == 0:
         raise PermissionError('run the measurement command as the ordinary task user')
+    if CONDITION == 'balanced':
+        load()  # Bind the new mode to its safe, hash-bound journal before admission.
     if argv and argv[0] == '--':
         argv = argv[1:]
     payload = json.dumps({'argv': argv, 'cwd': os.getcwd()}).encode()
@@ -508,6 +580,7 @@ def verify(wait=0):
     while not (ROOT / 'public/restoration.json').exists() and time.monotonic() < deadline:
         time.sleep(0.2)
     result = json.loads(read(ROOT / 'public/restoration.json'))
+    validate_condition(result)
     current = snapshot()
     while time.monotonic() < deadline and ((CG / result['unit']).exists()
             or current['root_controllers'] != result['before']['root_controllers']):
@@ -566,6 +639,8 @@ def retire_failed():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--condition', choices=('isolated', 'balanced'), default='isolated',
+                        help='balanced uses a separate finite load-balanced exclusive reservation')
     commands = parser.add_subparsers(dest='action', required=True)
     launch = commands.add_parser('start')
     launch.add_argument('--uid', type=int, required=True)
@@ -576,6 +651,7 @@ def main():
     launch = commands.add_parser('run')
     launch.add_argument('argv', nargs=argparse.REMAINDER)
     args = parser.parse_args()
+    select_condition(args.condition)
     if args.action == 'inspect':
         print(json.dumps(inspect(), indent=2))
         return 0

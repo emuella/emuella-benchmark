@@ -54,7 +54,7 @@ def calls(entry):
             for r in range(PAIRS) for position, arm in enumerate(order if r % 2 == 0 else order[::-1])]
 
 
-def reservation(receipt, *, sysroot=Path('/sys'), now=None):
+def reservation(receipt, *, sysroot=Path('/sys'), now=None, expected_partition='isolated', expected_schema=POLICY, occupied_group=None):
     """Read-only admission of an existing delegated isolated cpuset, never creation.
 
     The authority record is supplied by the operational owner after review; its
@@ -62,7 +62,13 @@ def reservation(receipt, *, sysroot=Path('/sys'), now=None):
     """
     required = {'schema', 'authority', 'issuer', 'approved', 'valid_from_epoch', 'valid_until_epoch',
                 'cgroup', 'worker_cpus', 'reserved_cpus', 'controller_cpus', 'residual_interference'}
-    if set(receipt) != required or receipt['schema'] != POLICY or receipt['approved'] is not True:
+    if expected_partition == 'root':
+        required |= {'condition', 'partition_mode'}
+        if receipt.get('condition') != 'balanced' or receipt.get('partition_mode') != 'root':
+            raise ValueError('explicit balanced partition identity required')
+    elif expected_partition != 'isolated':
+        raise ValueError('unsupported partition mode')
+    if set(receipt) != required or receipt['schema'] != expected_schema or receipt['approved'] is not True:
         raise ValueError('explicit allowlisted reservation/authority receipt required')
     if not all(isinstance(receipt[k], str) and receipt[k].strip() for k in ('authority', 'issuer', 'residual_interference')):
         raise ValueError('authority and residual shared-package/cache interference must be stated')
@@ -81,12 +87,15 @@ def reservation(receipt, *, sysroot=Path('/sys'), now=None):
     cgroup = Path(receipt['cgroup']).resolve()
     cgroup.relative_to((sysroot/'fs/cgroup').resolve())
     values = {key: (cgroup/key).read_text().strip() for key in CGROUP_FILES}
-    if (values['cpuset.cpus.partition'] != 'isolated'
+    if (values['cpuset.cpus.partition'] != expected_partition
             or set(cpulist(values['cpuset.cpus.effective'])) != reserved
             or set(cpulist(values['cpuset.cpus.exclusive.effective'])) != reserved):
         raise ValueError('enforceable isolated exclusive cpuset covering all reserved CPUs required')
-    if (cgroup/'cgroup.procs').read_text().strip() or any(cgroup.glob('*/cgroup.procs')):
+    members = (cgroup/'cgroup.procs').read_text().split()
+    if any(cgroup.glob('*/cgroup.procs')) or (members and occupied_group is None):
         raise ValueError('worker partition must be empty and have no child cgroups')
+    if occupied_group is not None and any(os.getpgid(int(pid)) != occupied_group for pid in members):
+        raise ValueError('unrelated task entered worker reservation')
     if not os.access(cgroup/'cgroup.procs', os.W_OK):
         raise ValueError('worker cgroup placement has not been delegated')
     physical = set()
@@ -108,11 +117,11 @@ def reservation(receipt, *, sysroot=Path('/sys'), now=None):
     return values
 
 
-def environment(receipt):
+def environment(receipt, reservation_check=reservation):
     """Allowlisted external counters only; never enumerate unrelated commands."""
     value = dict(monotonic_ns=time.monotonic_ns(), utc_epoch=time.time(),
                  controller_affinity=sorted(os.sched_getaffinity(0)),
-                 reservation=reservation(receipt), cpu={},
+                 reservation=reservation_check(receipt), cpu={},
                  boost=p.read_optional('/sys/devices/system/cpu/cpufreq/boost'),
                  proc={key: p.read_optional('/proc/'+key) for key in ('stat', 'loadavg', 'pressure/cpu', 'pressure/memory', 'pressure/io')},
                  effective_frequency='unavailable; frequency snapshots are not effective frequency',
