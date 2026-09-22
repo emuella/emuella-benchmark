@@ -1,5 +1,66 @@
 # Separately authorised finite forward 5/3 confirmation v2
 
+The v2 attempt is closed as **NOT QUALIFIED WITHIN BUDGET**. Production retains
+the existing forward transform and defaults. The primary passed, but the fifth
+completed endpoint did not resolve its mandatory +1% non-regression bound. The
+runner stopped at that gate; the remaining 23 endpoints were not started.
+
+The [factual evidence](evidence/classic-forward53-finite-confirmation-v2.json)
+records all 28 statuses, bindings, counts and restoration facts. The protocol below
+remains the record of this completed attempt; it supplies no authority for another
+attempt, rescue patch or retest.
+
+## Terminal observations
+
+The one acquisition used independently reviewed runner
+`71049b39236cf4052b95cda02445f32387b7f621` and preparation SHA-256
+`4c723506f77a9c539bd14c88a60831afbcb12e279fa6f9919dc30d019aa10732`.
+All five completed endpoints received exactly 40 pairs. Times below are arithmetic
+means of operation samples; intervals are the unchanged 99% candidate/baseline
+relative-time intervals.
+
+| Endpoint | Fixed encode workload | Baseline mean (ms) | Candidate mean (ms) | Relative interval | Required gate |
+|---|---|---:|---:|---|---|
+| 00, sole primary | Boca RGB8, bypass, eight workers | 733.863 | 463.279 | −37.3820% to −36.3553% | Pass |
+| 02 | Boca RGB8, style zero, eight workers | 789.419 | 521.635 | −34.5655% to −33.2717% | Pass |
+| 01 | Boca RGB8, style zero, one worker | 2,430.240 | 2,289.434 | −5.9325% to −5.6551% | Pass |
+| 03 | Boca RGB8, bypass, one worker | 2,045.878 | 1,897.306 | −7.4385% to −7.0852% | Pass |
+| 10 | Mansfield RGB16, bypass, one worker | 134.332 | 135.302 | +0.38703% to +1.05799% | Unresolved |
+
+The primary saved **270.583753075 ms** on the observed arithmetic means and passed
+both its strict −5% upper-bound and 10 ms saving predicates. Endpoint 10's upper
+bound was **+1.0579857318%**, above the required +1%; its lower bound remained below
++1%. This is an unresolved critical gate, not demonstrated regression beyond the
+unacceptable margin. Its separate legacy ±5% verdict was `equivalent`, which does
+not satisfy the tighter +1% requirement. The primary gain cannot waive this gate.
+
+Acquisition stopped after **458 starts**: 400 ordinary calls, ten preflights and
+48 allocation calls, with no failed worker calls or replacement observations.
+Endpoint 11's fixed 160-pair session never started, so there was no intermediate
+evaluation. All 2,190 later scheduled calls remained unstarted. The recorded
+observation window was **1,140.33395129 seconds**; evidence and registered builds
+occupied 33,121,720 and 2,061,543,743 bytes at acquisition completion. The stop was
+the unresolved fixed-count endpoint predicate, not exhaustion of the global
+wall-time or storage caps.
+
+Retained reconstruction reproduced the five decisions with no issues, missing
+terminal receipts or orphaned receipts. Mandatory checks passed for the reviewed
+prerequisites and **observed prefix only**. They do not prove timing or resource
+gates for the unstarted endpoints, and the incomplete matrix cannot qualify the
+candidate for production. Historical development and A/A observations remain
+separate and were not pooled.
+
+The first installed reservation setup failed before its authority receipt,
+transport or any corpus start because an unrelated transient app cgroup disappeared
+during fail-closed traversal. Its independent privileged verification confirmed
+restoration with no issues. The user then explicitly authorised one further setup.
+That setup succeeded with the same preparation and acquisition identity and hosted
+the **one measured execution**. Ordinary runner restoration and independent
+privileged restoration both passed with no issues. The failed setup is retained
+separately; it was not a retried or replaced measurement.
+
+## Acquisition contract
+
 `scripts/finite_confirmation_live.py` is the owner acquisition path for
 `classic-forward53-finite-confirmation/v2`. The closed v1 attempt remains
 **DECLINED BEFORE LAUNCH**, with zero corpus starts. V2 requires its own explicit

@@ -1,19 +1,26 @@
 # Classic forward 5/3 panel observations
 
-The finite confirmation attempt is **DECLINED BEFORE LAUNCH**: zero corpus
+The historical v1 finite confirmation attempt is **DECLINED BEFORE LAUNCH**: zero corpus
 worker starts and no candidate confirmation measurements. A fresh exclusive
 balanced reservation required unavailable administrator authentication; the
 previous A/A reservation had been independently restored and its historical
 single-use receipt could not cover a new reservation. Production remains unchanged.
 Candidate source is preserved for recovery, without an automatic retest obligation.
 
+The separately authorised [v2 confirmation](classic-forward53-finite-confirmation-v2.md)
+subsequently closed as **NOT QUALIFIED WITHIN BUDGET**: its primary passed, but
+Mansfield RGB16/bypass/one-worker did not resolve its required +1% upper bound.
+Five endpoints completed and 23 remained unstarted. Production remains unchanged.
+That measured result does not alter v1's zero-start record or the historical
+development observations below.
+
 The row-major engine previously passed source, correctness, portability and
 resource checks and completed the entire frozen 168-call development schedule.
 Those descriptive observations and the original qualification-pending conclusion
 remain historical evidence. The later finite-attempt amendment supersedes that
 indefinite disposition only; it does not convert development results into a
-performance claim or the operational decline into a measured rejection. No Boca
-confirmation, OpenJPEG encode anchor or production promotion was attempted.
+performance claim or the operational decline into a measured rejection. V1
+attempted no Boca confirmation, OpenJPEG encode anchor or production promotion.
 
 The [protocol](classic-forward53-panels.md) retains the prospective policy and
 finite limits. [Factual evidence](evidence/classic-forward53-panels.json) includes
