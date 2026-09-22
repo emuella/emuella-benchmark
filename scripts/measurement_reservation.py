@@ -68,6 +68,7 @@ def atomic(path, value):
     fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o644)
     try:
         with os.fdopen(fd, 'w') as output:
+            os.fchmod(output.fileno(), 0o644)  # Explicit contract, independent of sudo umask.
             json.dump(value, output, indent=2)
             output.write('\n')
             output.flush()
@@ -414,10 +415,13 @@ def start(uid, authority):
         raise ValueError('non-root uid and explicit authority locator required')
     before = inspect()
     account = pwd.getpwuid(uid)
-    ROOT.mkdir(mode=0o755)  # Exclusive: never overwrite an earlier lease/journal.
-    (ROOT / 'public').mkdir(mode=0o755)
+    ROOT.mkdir(mode=0o700)  # Exclusive; stage state privately before publication.
+    ROOT.chmod(0o700)  # mkdir/open modes alone are filtered by the caller's umask.
+    (ROOT / 'public').mkdir(mode=0o700)
+    (ROOT / 'public').chmod(0o755)
     (ROOT / 'control').mkdir(mode=0o700)
     os.chown(ROOT / 'control', uid, account.pw_gid)
+    (ROOT / 'control').chmod(0o700)
     source = Path(__file__).read_bytes()
     (ROOT / 'helper.py').write_bytes(source)
     (ROOT / 'helper.py').chmod(0o444)
@@ -429,6 +433,7 @@ def start(uid, authority):
              'helper_sha256': hashlib.sha256(source).hexdigest(), 'before': before,
              'expires_epoch': time.time() + LEASE, 'changes': [], 'ownership': []}
     save(state)
+    ROOT.chmod(0o755)  # Controller can now traverse to its private socket directory.
     helper = str(ROOT / 'helper.py')
     args = ['/usr/bin/systemd-run', '--quiet', '--collect', '--unit=' + state['unit'],
             '--slice=-.slice', '-p', 'Type=exec', '-p', 'Delegate=cpuset cpu memory pids',
@@ -451,7 +456,15 @@ def start(uid, authority):
         raise TimeoutError('reservation setup did not become ready')
     except BaseException:
         # An ambiguous systemd-run timeout may still have started the unit.
-        subprocess.run(['/usr/bin/systemctl', 'stop', state['unit']], timeout=180, check=False)
+        # ExecStopPost may already have completed and --collect unloaded the unit.
+        # Retain cleanup diagnostics without masking the original setup error.
+        cleanup = subprocess.run(['/usr/bin/systemctl', 'stop', state['unit']],
+                                 timeout=180, check=False, capture_output=True, text=True)
+        atomic(ROOT / 'public/start-failure.json',
+               {'stop_returncode': cleanup.returncode, 'stop_stderr': cleanup.stderr,
+                'restoration_receipt': str(ROOT / 'public/restoration.json')})
+        print('Setup did not become ready; no measurement command was admitted. '
+              'Use verify, then retire-failed after resolving any restoration issue.', file=sys.stderr)
         raise
 
 
@@ -489,6 +502,8 @@ def stop():
 
 
 def verify(wait=0):
+    if not os.access(ROOT, os.X_OK):
+        raise PermissionError('runtime directory is not traversable; use the repaired helper retire-failed with sudo')
     deadline = time.monotonic() + wait
     while not (ROOT / 'public/restoration.json').exists() and time.monotonic() < deadline:
         time.sleep(0.2)
@@ -509,6 +524,46 @@ def verify(wait=0):
     return bool(issues)
 
 
+def retire_failed():
+    """Preserve a restored pre-readiness failure; never release or retry a study."""
+    require_root()
+    state = load()
+    with lifecycle_lock():
+        state = load()
+        if state.get('ready') or (ROOT / 'public/authority.json').exists():
+            raise ValueError('a ready reservation cannot be retired as a setup failure')
+        active = command('/usr/bin/systemctl', 'show', state['unit'], '-p', 'ActiveState', '--value')
+        if active not in ('inactive', 'failed') or unit_group(state).exists():
+            raise ValueError('failed unit must be stopped and its cgroup removed first')
+        if not state.get('cleanup_executed') or verify(wait=20):
+            raise ValueError('restoration must be verified before preserving a failed attempt')
+        archive = ROOT.with_name(ROOT.name + '.failed-' + state['id'])
+        if archive.exists() or archive.is_symlink():
+            raise FileExistsError('failed-attempt archive already exists')
+        paths = [ROOT, ROOT / 'public', ROOT / 'journal.json', ROOT / 'helper.py',
+                 ROOT / 'public/restoration.json']
+        modes = {}
+        for path in paths:
+            info = path.lstat()
+            is_dir = path in (ROOT, ROOT / 'public')
+            if (info.st_uid != 0 or info.st_mode & 0o022
+                    or not (stat.S_ISDIR(info.st_mode) if is_dir else stat.S_ISREG(info.st_mode))):
+                raise ValueError('unsafe failed-attempt evidence path')
+            modes[str(path.relative_to(ROOT))] = stat.S_IMODE(info.st_mode)
+        atomic(ROOT / 'retirement.json', {'id': state['id'], 'original_modes': modes,
+               'restoration_verified': True, 'ready': False, 'archive': str(archive),
+               'automatic_restart': False})
+        # Only this task's allowlisted metadata becomes readable. Retain all
+        # contents and original modes; no recursive chmod, deletion or root control write.
+        for path in paths:
+            path.chmod(0o755 if path in (ROOT, ROOT / 'public') else
+                       0o444 if path.name == 'helper.py' else 0o644)
+        ROOT.rename(archive)
+    print('Failed attempt retained at ' + str(archive))
+    print('No new reservation or measurement was launched.')
+    return 0
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='action', required=True)
@@ -516,7 +571,7 @@ def main():
     launch.add_argument('--uid', type=int, required=True)
     launch.add_argument('--authority', required=True)
     commands.add_parser('inspect')
-    for name in ('serve', 'restore', 'stop', 'verify'):
+    for name in ('serve', 'restore', 'stop', 'verify', 'retire-failed'):
         commands.add_parser(name)
     launch = commands.add_parser('run')
     launch.add_argument('argv', nargs=argparse.REMAINDER)
@@ -524,6 +579,8 @@ def main():
     if args.action == 'inspect':
         print(json.dumps(inspect(), indent=2))
         return 0
+    if args.action == 'retire-failed':
+        return retire_failed()
     if args.action == 'verify':
         return verify(wait=20)
     if args.action == 'start':

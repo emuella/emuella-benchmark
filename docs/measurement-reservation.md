@@ -79,7 +79,11 @@ sudo /usr/bin/python3 -I scripts/measurement_reservation.py start \
 
 `start` copies this exact helper to a root-owned, hash-bound recovery file under
 `/run/emuella-measurement-reservation`, journals original values before writes,
-then launches the transient service. A ready message means the live admission
+then launches the transient service. Directory and receipt modes are applied
+explicitly after creation, so a restrictive sudo umask cannot prevent controller
+traversal or ordinary-user receipt verification. The controller socket directory
+stays private to the nominated UID; root-owned records remain non-writable to it.
+A ready message means the live admission
 probe and exclusion checks passed. The receipt is at
 `/run/emuella-measurement-reservation/public/authority.json`. The coordinator must
 still verify its authority, policy and workload bindings before measurements.
@@ -136,8 +140,34 @@ on reboot, so retain receipts in the approved evidence store before reboot.
 
 The root-owned journal, helper hash, authority and restoration files are retained
 under `/run/emuella-measurement-reservation`; they are not deleted by cleanup.
-A second `start` refuses an existing state directory. Do not remove it to retry a
-started measurement: the study's one-condition/no-replacement rules still apply.
+A second `start` refuses an existing state directory. Do not delete retained
+state to retry. If setup failed **before readiness**, use the repaired helper from
+the checkout (the retained runtime helper is the old version):
+
+```sh
+sudo /usr/bin/python3 -I scripts/measurement_reservation.py retire-failed
+```
+
+This requires a stopped/unloaded unit, no remaining task cgroup, no ready flag or
+authority receipt, successful cleanup and full original-snapshot restoration.
+It then moves the entire failed-attempt directory to the deterministic sibling
+`/run/emuella-measurement-reservation.failed-<attempt-id>`, without deleting files.
+The original metadata modes are recorded; only the allowlisted root-owned
+metadata and its traversal directories receive the intended readable modes.
+Existing archives, unsafe file types/ownership and unresolved restoration fail
+closed. No reservation is launched by this command. A later manually invoked
+`start` is a separate setup attempt and remains subject to the study's prohibition
+on another condition or replacement calls after timing begins.
+
+The first authenticated attempt exposed a permissions defect: the runtime root
+was mode 0700 and the controller logged permission denied after dropping root.
+Creation modes had been filtered by the invoking environment's umask. Systemd
+removed the failed unit before the launch wrapper's secondary stop, producing a
+misleading "unit not loaded" message. The repair applies explicit modes, retains
+secondary-stop diagnostics in `public/start-failure.json`, and tests restrictive
+umasks. That observed failure remains evidence; it is not a timing observation or
+a completed restoration claim until its privileged receipt has been verified.
+
 No permanent unit, daemon, timer, scheduler or monitoring trial is installed.
 
 ## Verification status

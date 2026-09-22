@@ -317,10 +317,87 @@ class ReservationTests(unittest.TestCase):
             self.assertFalse(r.verify(wait=2))
             sleep.assert_called_once_with(0.2)
 
+    def test_restrictive_umask_keeps_controller_path_and_receipts_accessible(self):
+        account = Mock(pw_gid=3000, pw_name='task')
+        for creation_mask in (0o077, 0o777):
+            fresh = self.root / f'umask-{creation_mask}'
+            def launch(*args):
+                # Test the permissions already published at service launch.
+                self.assertEqual(fresh.stat().st_mode & 0o777, 0o755)
+                self.assertEqual((fresh / 'public').stat().st_mode & 0o777, 0o755)
+                self.assertEqual((fresh / 'control').stat().st_mode & 0o777, 0o700)
+                self.assertEqual((fresh / 'journal.json').stat().st_mode & 0o777, 0o644)
+                r.atomic(fresh / 'public/authority.json', {'authored': True})
+                return ''
+            old = os.umask(creation_mask)
+            try:
+                with patch.object(r, 'ROOT', fresh), patch.object(r, 'inspect', return_value={}), patch.object(r.pwd, 'getpwuid', return_value=account), patch.object(r.os, 'chown'), patch.object(r, 'command', side_effect=launch), patch('builtins.print'):
+                    r.start(3000, 'explicit task authorisation')
+                self.assertEqual((fresh / 'public/authority.json').stat().st_mode & 0o777, 0o644)
+            finally:
+                self.assertEqual(os.umask(old), creation_mask)
+
+    def retirement_state(self):
+        self.group.rename(self.cg / 'removed')
+        self.state.update(id=str(uuid.uuid4()), cleanup_executed=True)
+        (self.state_root / 'helper.py').write_text('authored retained helper')
+        r.save(self.state)
+        r.atomic(self.state_root / 'public/restoration.json',
+                 {'issues': [], 'before': self.state['before'], 'unit': self.state['unit']})
+        real_stat = Path.lstat
+        def root_stat(path):
+            value = real_stat(path)
+            return types.SimpleNamespace(st_mode=value.st_mode, st_uid=0)
+        return root_stat
+
+    def test_retire_preserves_failed_attempt_after_verified_restoration(self):
+        root_stat = self.retirement_state()
+        self.state_root.chmod(0o700)
+        (self.state_root / 'public').chmod(0o700)
+        original = (self.state_root / 'journal.json').read_bytes()
+        with patch.object(Path, 'lstat', root_stat), patch.object(r, 'command', return_value='inactive'), patch.object(r, 'verify', return_value=False) as verify, patch('builtins.print'):
+            self.assertEqual(r.retire_failed(), 0)
+        verify.assert_called_once_with(wait=20)
+        archive = self.state_root.with_name(self.state_root.name + '.failed-' + self.state['id'])
+        self.assertFalse(self.state_root.exists())
+        self.assertEqual((archive / 'journal.json').read_bytes(), original)
+        self.assertEqual(archive.stat().st_mode & 0o777, 0o755)
+        self.assertEqual((archive / 'public').stat().st_mode & 0o777, 0o755)
+        receipt = json.loads((archive / 'retirement.json').read_text())
+        self.assertEqual(receipt['original_modes']['.'], 0o700)
+        self.assertFalse(receipt['automatic_restart'])
+
+    def test_retire_refuses_ready_or_active_or_unrestored_attempt(self):
+        self.retirement_state()
+        for key, value in [('ready', True), ('cleanup_executed', False)]:
+            original = self.state.get(key)
+            self.state[key] = value
+            with patch.object(r, 'command', return_value='inactive'), patch.object(r, 'verify', return_value=False), self.assertRaises(ValueError):
+                r.retire_failed()
+            self.state[key] = original
+        self.state['cleanup_executed'] = True
+        with patch.object(r, 'command', return_value='active'), self.assertRaisesRegex(ValueError, 'stopped'):
+            r.retire_failed()
+        with patch.object(r, 'command', return_value='inactive'), patch.object(r, 'verify', return_value=True), self.assertRaisesRegex(ValueError, 'restoration'):
+            r.retire_failed()
+        self.assertTrue(self.state_root.exists())
+
+    def test_retire_refuses_archive_collision_and_unsafe_receipt(self):
+        root_stat = self.retirement_state()
+        archive = self.state_root.with_name(self.state_root.name + '.failed-' + self.state['id'])
+        archive.mkdir()
+        with patch.object(r, 'command', return_value='inactive'), patch.object(r, 'verify', return_value=False), self.assertRaises(FileExistsError):
+            r.retire_failed()
+        archive.rmdir()
+        (self.state_root / 'public/restoration.json').chmod(0o666)
+        with patch.object(Path, 'lstat', root_stat), patch.object(r, 'command', return_value='inactive'), patch.object(r, 'verify', return_value=False), self.assertRaisesRegex(ValueError, 'unsafe'):
+            r.retire_failed()
+        self.assertTrue(self.state_root.exists())
+
     def test_partial_start_failure_stops_only_owned_unit(self):
         account = Mock(pw_gid=3000, pw_name='task')
         fresh = self.root / 'partial'
-        with patch.object(r, 'ROOT', fresh), patch.object(r, 'inspect', return_value={}), patch.object(r.pwd, 'getpwuid', return_value=account), patch.object(r.os, 'chown'), patch.object(r, 'command', side_effect=subprocess.TimeoutExpired('systemd-run', 30)), patch.object(r.subprocess, 'run') as stop:
+        with patch.object(r, 'ROOT', fresh), patch.object(r, 'inspect', return_value={}), patch.object(r.pwd, 'getpwuid', return_value=account), patch.object(r.os, 'chown'), patch.object(r, 'command', side_effect=subprocess.TimeoutExpired('systemd-run', 30)), patch.object(r.subprocess, 'run', return_value=subprocess.CompletedProcess([], 0, '', '')) as stop:
             with self.assertRaises(subprocess.TimeoutExpired):
                 r.start(3000, 'authorised')
         args = stop.call_args.args[0]
