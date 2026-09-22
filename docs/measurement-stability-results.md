@@ -145,8 +145,9 @@ Those assumptions are not proved. Persistent displacement is not removed by
 larger counts. No projection changes this completed cohort or supplies power,
 coverage, a false-positive rate or a probability of clearing the full matrix.
 
-Forty pairs is a defensible representative planning count under the measured
-condition. One-worker encoding, other styles, Tok, PAN/MSI16 and SpaceNet remain
+The original forty-pair planning recommendation applies only to the recorded
+condition; its transfer to intended parallel execution is now suspended by the
+[execution-integrity follow-up](measurement-execution-integrity.md). One-worker encoding, other styles, Tok, PAN/MSI16 and SpaceNet remain
 unmeasured here. The workspace owns explicit transfer rationales, the full
 28-contrast/112-allocation register, unchanged candidate gates and any proposed
 finite confirmation manifest. Such a proposal remains unlaunched and requires
