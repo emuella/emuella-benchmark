@@ -248,6 +248,29 @@ class StabilityTests(unittest.TestCase):
                     self.assertTrue(all(cell['disposition']==expected for cell in report['cells']))
                     self.assertTrue(all(cell['session_only_disposition']==s.analysis.DEMONSTRATED for cell in report['cells']))
                     self.assertTrue(all(session['valid'] and session['estimator'] and session['projections'] for session in report['sessions']))
+                # Even positive completion/restoration receipts cannot qualify a
+                # favourable subset after mandatory session evidence is lost.
+                terminal=root/'session-11/session.json'
+                original_terminal=terminal.read_text()
+                call=root/'session-11/call-39-A-receipt.json'
+                original_call=call.read_text()
+                for label in ('missing-terminal', 'mismatched-terminal', 'missing-call'):
+                    if label=='missing-terminal': terminal.unlink()
+                    elif label=='mismatched-terminal':
+                        changed=json.loads(original_terminal);changed['binding_sha256']='wrong'
+                        terminal.write_text(json.dumps(changed))
+                    else: call.unlink()
+                    report_path=root/(label+'.json');s.analyse(root,executable,report_path)
+                    report=json.loads(report_path.read_text())
+                    self.assertFalse(report['operationally_complete'])
+                    self.assertTrue(all(cell['disposition']==s.analysis.INCOMPLETE for cell in report['cells']))
+                    self.assertTrue(all(session['valid'] and session['estimator'] and session['projections'] for session in report['sessions'][:11]))
+                    self.assertFalse(report['sessions'][11]['valid'])
+                    if label!='missing-call':
+                        self.assertTrue(report['sessions'][11]['estimator'])
+                        self.assertTrue(report['sessions'][11]['projections'])
+                    terminal.write_text(original_terminal)
+                    call.write_text(original_call)
 
     def test_inspect_never_launches_worker_and_renders_all_missing_sessions(self):
         with tempfile.TemporaryDirectory() as tmp, patch.object(s.refresh, 'run_process') as worker:

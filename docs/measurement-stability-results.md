@@ -2,7 +2,7 @@
 
 The bounded `measurement-stability-qualification/v1` cohort has **not launched**.
 No authorised enforceable exclusive CPU reservation was established. No real-input
-preflight, timed observation, codec build, candidate benchmark or candidate change
+preflight, timed observation, study-worker or candidate build, candidate benchmark or candidate change
 was performed for this package. The historical shared-host observations remain
 separately labelled in [precision feasibility results](precision-feasibility-results.md).
 

@@ -464,6 +464,8 @@ def analyse(root, estimator, report):
         result.update(session=entry, environment_issues=measured.get('issues', ['missing terminal session record']),
             started_attempts=[json.loads(x.read_text()) for x in sorted(folder.glob('call-*-started.json'))])
         sessions.append(result)
+    # Aggregate receipts cannot substitute for complete, valid mandatory sessions.
+    global_valid = global_valid and all(session['complete'] and session['valid'] for session in sessions)
     cells = [dict(cell=index, operation=cell['operation'], workers=cell['workers'], case_id=cell['asset']['id'],
                   disposition=(analysis.classify_cell([s for s in sessions if s['session']['cell']==index]) if global_valid else analysis.INCOMPLETE),
                   session_only_disposition=analysis.classify_cell([s for s in sessions if s['session']['cell']==index]))
