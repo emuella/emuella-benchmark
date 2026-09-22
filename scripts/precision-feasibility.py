@@ -105,7 +105,7 @@ def environment_issues(before, after):
 
 
 def verify_build(record):
-    if any(record.get(x) for x in ('sampling', 'execution_diagnostics', 'allocation_diagnostics')):
+    if any(record.get(x) for x in ('sampling', 'execution_diagnostics', 'allocation_diagnostics', 'parallel_diagnostics')):
         raise ValueError('diagnostic worker is not production')
     if record.get('encoder_backend') != 'default' or record.get('scheduling_window') != 'default':
         raise ValueError('production selectors must be unset')

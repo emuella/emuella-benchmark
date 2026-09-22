@@ -15,6 +15,7 @@ classic-encode-sampling = ["classic-compare"]
 classic-execution-diagnostics = ["classic-compare"]
 forward53-diagnostics = ["classic-execution-diagnostics"]
 classic-allocation-diagnostics = ["classic-compare"]
+classic-parallel-diagnostics = ["classic-compare", "dep:libc"]
 simd = ["emuella", "emuella-j2k/simd", "emuella-j2k-codestream/simd"]
 
 [profile.perf]
@@ -29,6 +30,7 @@ emuella-benchmark = { path = ".." }
 emuella-j2k = { git = "https://github.com/emuella/emuella-j2k", rev = "1c1a7fbc583d69c6d57bfd1da4248aa6fae071cc", features = ["parallel"], optional = true }
 emuella-j2k-codestream = { git = "https://github.com/emuella/emuella-j2k", rev = "1c1a7fbc583d69c6d57bfd1da4248aa6fae071cc", features = ["parallel"], optional = true }
 rayon = { version = "1", optional = true }
+libc = { version = "0.2", optional = true }
 serde_json = "1"
 sha2 = "0.10"
 tempfile = "3"

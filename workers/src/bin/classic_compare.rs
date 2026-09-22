@@ -1,10 +1,24 @@
 //! One fresh-process sample with matching owned interleaved buffer boundaries.
+#[cfg(all(
+    feature = "classic-parallel-diagnostics",
+    any(
+        feature = "classic-encode-sampling",
+        feature = "classic-execution-diagnostics",
+        feature = "classic-allocation-diagnostics"
+    )
+))]
+compile_error!("parallel diagnostics cannot be combined with other diagnostic features");
+#[cfg(all(feature = "classic-parallel-diagnostics", not(target_os = "linux")))]
+compile_error!("parallel diagnostics require Linux task accounting");
 #[cfg(any(
     feature = "classic-execution-diagnostics",
     feature = "classic-allocation-diagnostics"
 ))]
 #[path = "../classic_execution_diagnostics.rs"]
 mod execution_diagnostics;
+#[cfg(feature = "classic-parallel-diagnostics")]
+#[path = "../classic_parallel_diagnostics.rs"]
+mod parallel_diagnostics;
 
 // Link the worker library so Cargo carries its native adapter link directives.
 use emuella_benchmark_workers as _;
@@ -12,6 +26,7 @@ use emuella_j2k as codec;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 #[cfg(not(any(
+    feature = "classic-parallel-diagnostics",
     feature = "classic-execution-diagnostics",
     feature = "classic-allocation-diagnostics"
 )))]
@@ -530,6 +545,8 @@ fn asset(path: &std::path::Path, expected: &str, max: u64) -> Result<Vec<u8>> {
     Ok(bytes)
 }
 fn run(r: Request) -> Result<Value> {
+    #[cfg(feature = "classic-parallel-diagnostics")]
+    parallel_diagnostics::admit(&r.operation, &r.codec, r.workers)?;
     // Configure the global pool once. The main thread calls public APIs directly.
     rayon::ThreadPoolBuilder::new()
         .num_threads(usize::from(r.workers))
@@ -568,10 +585,19 @@ fn run(r: Request) -> Result<Value> {
         sampling
     };
     #[cfg(not(any(
+        feature = "classic-parallel-diagnostics",
         feature = "classic-execution-diagnostics",
         feature = "classic-allocation-diagnostics"
     )))]
     let start = Instant::now();
+    #[cfg(feature = "classic-parallel-diagnostics")]
+    let (output, diagnostic, ns) = parallel_diagnostics::measure(&r.operation, r.workers, || {
+        if r.operation == "decode" {
+            decode(&r, input.as_ref().unwrap())
+        } else {
+            encode(&r, &raw)
+        }
+    })?;
     #[cfg(feature = "classic-execution-diagnostics")]
     let (output, diagnostic, ns) = {
         if r.operation != "encode" || r.codec != "emuella" {
@@ -580,6 +606,7 @@ fn run(r: Request) -> Result<Value> {
         execution_diagnostics::encode(|| encode(&r, &raw))
     };
     #[cfg(not(any(
+        feature = "classic-parallel-diagnostics",
         feature = "classic-execution-diagnostics",
         feature = "classic-allocation-diagnostics"
     )))]
@@ -602,16 +629,19 @@ fn run(r: Request) -> Result<Value> {
         })
     };
     #[cfg(any(
+        feature = "classic-parallel-diagnostics",
         feature = "classic-execution-diagnostics",
         feature = "classic-allocation-diagnostics"
     ))]
     let output = output?;
     #[cfg(not(any(
+        feature = "classic-parallel-diagnostics",
         feature = "classic-execution-diagnostics",
         feature = "classic-allocation-diagnostics"
     )))]
     let ns = u64::try_from(start.elapsed().as_nanos()).map_err(err)?;
     #[cfg(not(any(
+        feature = "classic-parallel-diagnostics",
         feature = "classic-execution-diagnostics",
         feature = "classic-allocation-diagnostics"
     )))]
@@ -644,18 +674,24 @@ fn run(r: Request) -> Result<Value> {
             .write_all(&stream)
             .map_err(err)?;
     }
-    Ok(
-        json!({"codec":r.codec,"operation":r.operation,"case_id":r.case_id,"round":r.round,"style":r.style,"workers":r.workers,
+    let response = json!({"codec":r.codec,"operation":r.operation,"case_id":r.case_id,"round":r.round,"style":r.style,"workers":r.workers,
         "boundary":"owned_interleaved_bytes_to_owned_codestream_or_interleaved_bytes", "profile":profile,
         "exact":true,"diagnostic_sampling":cfg!(feature = "classic-encode-sampling"),
         "execution_diagnostic":if cfg!(feature = "classic-execution-diagnostics") {Some(&diagnostic)} else {None},
         "allocation_diagnostic":if cfg!(feature = "classic-allocation-diagnostics") {Some(&diagnostic)} else {None},
-        "diagnostic_facade_ns":if cfg!(any(feature = "classic-execution-diagnostics", feature = "classic-allocation-diagnostics")) {Some(ns)} else {None},
-        "samples_ns":if r.operation=="prepare" || cfg!(feature = "classic-encode-sampling") || cfg!(any(feature = "classic-execution-diagnostics", feature = "classic-allocation-diagnostics")) {vec![]} else {vec![ns]},"raw_sha256":r.raw_sha256,
+        "diagnostic_facade_ns":if cfg!(any(feature = "classic-parallel-diagnostics", feature = "classic-execution-diagnostics", feature = "classic-allocation-diagnostics")) {Some(ns)} else {None},
+        "samples_ns":if r.operation=="prepare" || cfg!(feature = "classic-encode-sampling") || cfg!(any(feature = "classic-parallel-diagnostics", feature = "classic-execution-diagnostics", feature = "classic-allocation-diagnostics")) {vec![]} else {vec![ns]},"raw_sha256":r.raw_sha256,
         "stream_sha256":hash(&stream),"binary_sha256":binary_sha256,"stream_bytes":stream.len(),
         "working_bytes":requirements.working_bytes,"output_capacity_limit":requirements.output_capacity_limit,
-        "output_capacity":if r.operation == "decode" {None} else {Some(output_capacity)}}),
-    )
+        "output_capacity":if r.operation == "decode" {None} else {Some(output_capacity)}});
+    #[cfg(feature = "classic-parallel-diagnostics")]
+    let response = {
+        let mut response = response;
+        response["diagnostic_parallel"] = json!(true);
+        response["parallel_diagnostic"] = diagnostic;
+        response
+    };
+    Ok(response)
 }
 fn main() {
     let result = (|| -> Result<Value> {
