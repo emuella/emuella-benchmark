@@ -336,6 +336,19 @@ def assess(trace, observation):
     assessment['nr_throttled_delta']=throttle
     if throttle:
         assessment['issues'].append('throttle counter changed'); assessment['supported']=False
+    thermal = {}
+    before, after = (trace[key].get('cpu', {}) for key in ('environment_begin','environment_end'))
+    for cpu in sorted(before.keys() | after.keys()):
+        thermal[cpu] = {}
+        for key in ('thermal_throttle/core_throttle_count', 'thermal_throttle/package_throttle_count'):
+            a, b = before.get(cpu, {}).get(key), after.get(cpu, {}).get(key)
+            delta = None if a is None or b is None else int(b)-int(a)
+            thermal[cpu][key] = dict(before=a, after=b, delta=delta,
+                                     status='unavailable' if delta is None else 'available')
+            if delta:
+                assessment['issues'].append(f'CPU {cpu} {key} changed')
+                assessment['supported'] = False
+    assessment['thermal_throttle_counters'] = thermal
     return assessment
 
 

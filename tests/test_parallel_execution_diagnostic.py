@@ -118,6 +118,52 @@ class TraceTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'headline|diagnostic'):
                 d.analyse_trace(trace, observation)
 
+    def test_thermal_counters_are_advisory_when_absent_and_block_support_when_changed(self):
+        for key in ('thermal_throttle/core_throttle_count','thermal_throttle/package_throttle_count'):
+            for after in ('0','1',None):
+                trace, observation=fixture()
+                trace['environment_begin']=dict(trace['environment_begin'],cpu={'0':{key:'0'}})
+                trace['environment_end']=dict(trace['environment_end'],cpu={'0':{key:after}})
+                result=d.assess(trace,observation)
+                self.assertEqual(result['supported'],after!='1')
+                counter=result['thermal_throttle_counters']['0'][key]
+                self.assertEqual(counter['status'],'unavailable' if after is None else 'available')
+                self.assertEqual(counter['delta'],None if after is None else int(after))
+        trace['environment_begin']['cpu']['0'][key]='2'
+        trace['environment_end']['cpu']['0'][key]='1'
+        self.assertFalse(d.assess(trace,observation)['supported'])
+
+    def test_reconstruction_retains_thermal_failure_and_detects_assessment_tampering(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary)
+            trace, observation=fixture()
+            trace['environment_begin']=dict(trace['environment_begin'],cpu={'0':{'thermal_throttle/core_throttle_count':'0'}})
+            trace['environment_end']=dict(trace['environment_end'],cpu={'0':{'thermal_throttle/core_throttle_count':'1'}})
+            request=dict(operation='decode',case_id='authored',workers=8,style=0,raw_sha256='raw',stream_sha256='stream')
+            observation.update(request,binary_sha256='binary',exact=True)
+            binding=dict(schema=d.SCHEMA,caps=d.CAPS,criteria=d.CRITERIA,
+                cells=[dict(request=request,workers=8,operation='decode')]*4,
+                build=dict(binary_sha256='binary',benchmark={'source_revision':'worker'},codec={'source_revision':'codec'}),
+                runner={'source_revision':'runner'})
+            d.write(root/'binding.json',binding)
+            d.write(root/'launch.json',dict(binding_sha256=d.sha(root/'binding.json')))
+            d.write(root/'completion.json',dict(started_calls=4,failures=[],wall_seconds=1,evidence_bytes=100))
+            d.write(root/'restoration.json',dict(restored=True,worker_cgroup_empty=True))
+            assessment=d.assess(trace,observation)
+            for index in range(4):
+                folder=root/f'call-{index}';folder.mkdir()
+                d.write(folder/'result.json',dict(status=0,observation=observation))
+                (folder/'thread-samples.jsonl').write_text(''.join(json.dumps(v)+'\n' for v in trace['samples']))
+                d.write(root/f'call-{index}-markers.json',trace)
+                d.write(root/f'call-{index}-started.json',{})
+                d.write(root/f'call-{index}-assessment.json',assessment)
+            report=d.reconstruct(root)
+            self.assertTrue(report['operationally_complete'])
+            self.assertFalse(report['all_cells_supported'])
+            self.assertTrue(all(row['assessment']==assessment for row in report['rows']))
+            (root/'call-0-assessment.json').write_text(json.dumps(dict(assessment,supported=True)))
+            self.assertFalse(d.reconstruct(root)['operationally_complete'])
+
 
 class FrozenBindingTests(unittest.TestCase):
     def test_fixed_caps_are_explicit(self):
