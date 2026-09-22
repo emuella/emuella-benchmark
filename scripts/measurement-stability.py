@@ -228,7 +228,9 @@ def placement(receipt):
     return enter
 
 
-def estimator_identity(executable):
+def estimator_identity(executable, rounds=40):
+    if type(rounds) is not int or rounds not in (40, 160):
+        raise ValueError('only fixed forty- or 160-pair comparator identities are supported')
     executable = Path(executable).resolve()
     root = executable.parents[2]
     provenance = json.loads((root/'provenance.json').read_text())
@@ -238,8 +240,8 @@ def estimator_identity(executable):
     if (provenance.get('owner_sha256') != sha(analysis.COMPARE_SOURCE)
             or not owner_module.startswith(source)
             or provenance.get('wrapper_sha256') != hashlib.sha256(owner_module[len(source):].encode()).hexdigest()
-            or provenance.get('method') != 'Unchanged owner interval and classification; fixed40 independent means;5%;99% conservative per-comparison ratio interval; no outlier removal'):
-        raise ValueError('actual forty-pair comparator wrapper provenance differs')
+            or provenance.get('method') != f'Unchanged owner interval and classification; fixed{rounds} independent means;5%;99% conservative per-comparison ratio interval; no outlier removal'):
+        raise ValueError('actual fixed-count comparator wrapper provenance differs')
     return dict(path=str(executable), sha256=sha(executable), provenance=provenance,
                 provenance_sha256=sha(root/'provenance.json'),
                 owner_module_sha256=sha(root/'src/owner_compare.rs'),

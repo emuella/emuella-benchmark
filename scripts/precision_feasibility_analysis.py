@@ -214,8 +214,8 @@ def analyse_session(rows, estimator, valid=True, rounds=ROUNDS):
     The starting arm is inferred from the first round-zero, position-zero row.
     The caller supplies identity/environment validity through ``valid``.
     """
-    if type(rounds) is not int or rounds not in (20, 40):
-        raise ValueError("only inherited twenty- or forty-pair sessions are supported")
+    if type(rounds) is not int or rounds not in (20, 40, 160):
+        raise ValueError("only fixed twenty-, forty- or 160-pair sessions are supported")
     result = dict(complete=False, valid=False, issues=[], raw_rows=copy.deepcopy(rows),
                   vectors_ns={"A": [None]*rounds, "B": [None]*rounds},
                   estimator={}, diagnostics=None, projections=None)

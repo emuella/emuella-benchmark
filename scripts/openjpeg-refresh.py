@@ -34,7 +34,8 @@ def git(source, *args):
     return subprocess.check_output(['git', '-C', str(source), *args], text=True).strip()
 
 
-def build(source, output, sampling=False, execution_diagnostics=False, allocation_diagnostics=False, parallel_diagnostics=False):
+def build(source, output, sampling=False, execution_diagnostics=False, allocation_diagnostics=False, parallel_diagnostics=False, forward53_diagnostics=False):
+    execution_diagnostics = execution_diagnostics or forward53_diagnostics
     if sum((sampling, execution_diagnostics, allocation_diagnostics, parallel_diagnostics)) > 1:
         raise ValueError("diagnostic build modes are exclusive")
     benchmark = classic.clean_source(ROOT)
@@ -49,6 +50,8 @@ def build(source, output, sampling=False, execution_diagnostics=False, allocatio
         raise ValueError('source archive failed')
     command = ['cargo', 'build', '--profile', 'perf', '--manifest-path', str(snapshot / 'workers/Cargo.toml'),
                '--bin', 'classic-compare-worker', '--features', 'classic-parallel-diagnostics,emuella-j2k-codestream/classic-execution-diagnostics' if parallel_diagnostics else 'classic-encode-sampling' if sampling else ('classic-execution-diagnostics,emuella-j2k-codestream/classic-execution-diagnostics' if execution_diagnostics else ('classic-allocation-diagnostics' if allocation_diagnostics else 'classic-compare')), '--target-dir', str(output / 'target'), '--message-format=json', '-vv']
+    if forward53_diagnostics:
+        command[command.index('--features') + 1] = 'forward53-diagnostics,emuella-j2k-codestream/classic-execution-diagnostics'
     for package in ('emuella-j2k', 'emuella-j2k-codestream'):
         command += ['--config', 'patch."https://github.com/emuella/emuella-j2k".' + package + '.path=' + json.dumps(str(source / 'crates' / package))]
     env = dict(os.environ)
@@ -68,7 +71,7 @@ def build(source, output, sampling=False, execution_diagnostics=False, allocatio
     if classic.clean_source(ROOT) != benchmark or classic.clean_source(source) != codec or configs != build_support.cargo_config_files(snapshot, env):
         raise ValueError('source/configuration changed during build')
     libraries = {str(p): sha(p) for p in build_support.libraries(binary)}
-    write(output / 'build.json', dict(benchmark=benchmark, codec=codec, parallel_diagnostics=parallel_diagnostics, sampling=sampling, execution_diagnostics=execution_diagnostics, allocation_diagnostics=allocation_diagnostics,
+    write(output / 'build.json', dict(benchmark=benchmark, codec=codec, forward53_diagnostics=forward53_diagnostics, parallel_diagnostics=parallel_diagnostics, sampling=sampling, execution_diagnostics=execution_diagnostics, allocation_diagnostics=allocation_diagnostics,
           encoder_backend=env.get('EMUELLA_TIER1_ENCODER', 'default'), scheduling_window=env.get('EMUELLA_CLASSIC_WINDOW', 'default'), binary=str(binary), binary_sha256=sha(binary),
           libraries=libraries, rustc=subprocess.check_output(['rustc', '-vV'], text=True),
           openjpeg=subprocess.check_output(['pkg-config', '--modversion', 'libopenjp2'], text=True).strip(),
@@ -390,7 +393,7 @@ def analyse(folder, estimator, study='refresh'):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     sub=parser.add_subparsers(dest='command',required=True)
-    p=sub.add_parser('build'); p.add_argument('--codec-source',type=Path,required=True); p.add_argument('--output',type=Path,required=True); p.add_argument('--sampling',action='store_true'); p.add_argument('--execution-diagnostics',action='store_true'); p.add_argument('--allocation-diagnostics',action='store_true'); p.add_argument('--parallel-diagnostics',action='store_true')
+    p=sub.add_parser('build'); p.add_argument('--codec-source',type=Path,required=True); p.add_argument('--output',type=Path,required=True); p.add_argument('--sampling',action='store_true'); p.add_argument('--execution-diagnostics',action='store_true'); p.add_argument('--allocation-diagnostics',action='store_true'); p.add_argument('--parallel-diagnostics',action='store_true'); p.add_argument('--forward53-diagnostics',action='store_true')
     p=sub.add_parser('measure'); p.add_argument('--build',type=Path,required=True); p.add_argument('--prepared',type=Path,required=True); p.add_argument('--output',type=Path,required=True); p.add_argument('--cpus',required=True); p.add_argument('--probe',action='store_true'); p.add_argument('--encode-only',action='store_true'); p.add_argument('--streams',type=Path); p.add_argument('--study',choices=('refresh','front-end'),default='refresh'); p.add_argument('--budget',type=Path)
     p=sub.add_parser('analyse'); p.add_argument('--output',type=Path,required=True); p.add_argument('--estimator',type=Path,required=True); p.add_argument('--study',choices=('refresh','front-end'),default='refresh')
     p=sub.add_parser('estimator'); p.add_argument('--output',type=Path,required=True)
@@ -398,7 +401,7 @@ def main():
     for key in ('output','build','prepared','codec_source','estimator','streams','budget'):
         if getattr(args,key,None) is not None:
             setattr(args,key,getattr(args,key).resolve())
-    if args.command=='build': build(args.codec_source,args.output,args.sampling,args.execution_diagnostics,args.allocation_diagnostics,args.parallel_diagnostics)
+    if args.command=='build': build(args.codec_source,args.output,args.sampling,args.execution_diagnostics,args.allocation_diagnostics,args.parallel_diagnostics,args.forward53_diagnostics)
     elif args.command=='measure': return measure(args)
     elif args.command=='analyse': analyse(args.output,args.estimator,args.study)
     elif args.command=='estimator': classic.estimator_build(ROOT,args.output)

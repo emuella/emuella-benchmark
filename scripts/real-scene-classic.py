@@ -307,8 +307,8 @@ def schedule_cohort(binary, req, folder, index, cpus, concurrent):
 
 def estimator_build(repo, directory, rounds=20):
     """Use the historical exact owner module and classification-block wrapper."""
-    if type(rounds) is not int or rounds not in (20, 40):
-        raise ValueError("only fixed twenty- or forty-pair estimator wrappers are supported")
+    if type(rounds) is not int or rounds not in (20, 40, 160):
+        raise ValueError("only fixed twenty-, forty- or 160-pair estimator wrappers are supported")
     directory.mkdir()
     (directory / 'src').mkdir()
     source = (repo / 'src/compare.rs').read_text()

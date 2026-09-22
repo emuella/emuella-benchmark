@@ -52,3 +52,13 @@ protocol remain unchanged.
 The bounded [identical-binary precision feasibility study](precision-feasibility-results.md)
 retains eighteen real-workload sessions with the unchanged comparator. Its
 planning findings do not change the estimator, thresholds or candidate gates.
+
+The [finite forward-5/3 contract](classic-forward53-panels.md#finite-confirmation-closed-before-launch)
+adds offline fixed 40/160-pair wrappers around this unchanged owner comparator.
+Its candidate decision is separate from the legacy +/-5% timing verdict:
+directional critical upper bound at most +1%; sole primary upper strictly below
+−5% with at least 10 ms mean saving. Both-way A/A centring is not a candidate
+acceptance condition. Fixed counts and conservative degrees-of-freedom buckets
+remain unchanged within each route; incomplete blocks never enter inference.
+The one finite attempt was declined before launch and supplies no candidate
+performance measurements.

@@ -17,10 +17,26 @@ pub fn encode<T>(call: impl FnOnce() -> T) -> (T, Value, u64) {
             "sum_ns":$x.sum_ns as u64,"min_ns":$x.min_ns as u64,"max_ns":$x.max_ns as u64}) };
     }
     let t = &d.timings;
+    #[cfg(feature = "forward53-diagnostics")]
+    let forward53 = json!({
+        "level_backends": d.forward53.level_backends.map(|b| b.map(|v| format!("{v:?}"))),
+        "panel_width": d.forward53.panel_width,
+        "logical_slots": d.forward53.logical_slots,
+        "workspace_capacity_bytes": d.forward53.workspace_capacity_bytes,
+        "gather_lift_join_ns": d.forward53.gather_lift_join_ns as u64,
+        "scatter_join_ns": d.forward53.scatter_join_ns as u64,
+        "horizontal_join_ns": d.forward53.horizontal_join_ns as u64,
+        "peak_active_slots": d.forward53.peak_active_slots,
+        "participating_workers": d.forward53.participating_workers,
+        "boundary": "Panel stage wall time includes dispatch and join; distinct participants differ from peak overlapping jobs."
+    });
+    #[cfg(not(feature = "forward53-diagnostics"))]
+    let forward53 = Value::Null;
     (
         result,
         json!({
             "boundary":"facade_encode_with_separate_build_instrumentation",
+            "forward53":forward53,
             "allocation_peak_additional_requested_bytes":allocation_peak,
             "allocation_includes_output_and_reallocation_overlap":true,
             "blocks":distribution!(d.blocks),"batch_tails":distribution!(d.batch_tails),
