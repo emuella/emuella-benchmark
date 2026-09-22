@@ -1,12 +1,19 @@
 # Classic forward 5/3 panel observations
 
-The candidate is **qualification-pending**. The row-major engine passed source,
-correctness, portability and resource checks and completed the entire frozen
-168-call development schedule. The existing precision evidence cannot support
-the mandatory confirmation design. No Boca confirmation, OpenJPEG encode anchor
-or production promotion was attempted; this is not a performance rejection.
-The enabled candidate remains in draft codec PR #114, with its one-slot source
-comparison preserved separately. Production remains unchanged.
+The finite confirmation attempt is **DECLINED BEFORE LAUNCH**: zero corpus
+worker starts and no candidate confirmation measurements. A fresh exclusive
+balanced reservation required unavailable administrator authentication; the
+previous A/A reservation had been independently restored and its historical
+single-use receipt could not cover a new reservation. Production remains unchanged.
+Candidate source is preserved for recovery, without an automatic retest obligation.
+
+The row-major engine previously passed source, correctness, portability and
+resource checks and completed the entire frozen 168-call development schedule.
+Those descriptive observations and the original qualification-pending conclusion
+remain historical evidence. The later finite-attempt amendment supersedes that
+indefinite disposition only; it does not convert development results into a
+performance claim or the operational decline into a measured rejection. No Boca
+confirmation, OpenJPEG encode anchor or production promotion was attempted.
 
 The [protocol](classic-forward53-panels.md) retains the prospective policy and
 finite limits. [Factual evidence](evidence/classic-forward53-panels.json) includes
@@ -150,25 +157,31 @@ larger stages than the 18.488/17.981 ms forward DWT. Diagnostic clocks and
 allocation metering perturb execution; differences between independent diagnostic
 calls are not a causal overhead estimate or a publishable speed claim.
 
-## Disposition and next condition
+## Terminal disposition and evidence limits
 
-The actual [precision-feasibility result](precision-feasibility-results.md)
+The historical [precision-feasibility result](precision-feasibility-results.md)
 failed to establish +1% both-way equivalence for Boca encode at one/eight workers
 in any of its three sessions. Eight-worker reverse upper bounds were
 +5.253/+6.690/+6.594%; conditional 160-pair zero-centred projections remained
-+1.471–+1.781%. Tok and SpaceNet lack scope-specific A/A evidence, and no approved
-estimator successor applies. This blocks a defensible full mandatory confirmation
-protocol, independently of the promising descriptive Mansfield observations.
++1.471–+1.781%. Tok and SpaceNet had no scope-specific A/A evidence, and no
+approved estimator successor applied. The later balanced A/A evidence retains
+its own observations and unresolved representative RGB16 precision.
 
-Preserve these exact sources and observations. Resume only when a separate
-methodology outcome supports a finite, prospectively frozen confirmation design
-with the unchanged estimator (or an independently approved successor), meaningful
-critical margins and the full mandatory scope. The prospective sole primary is
-Boca RGB8 bypass/eight, 99% upper bound below −5% and at least 10 ms absolute
-saving. Style-zero, one-worker and critical non-regression/resource gates remain
-mandatory. No gate was widened, no critical case was removed, and no new automatic
-retesting obligation is created. Candidate source, benchmark evidence and the
-active coordination plan remain draft handoffs; they are not enabled merges.
+The engineering owner authorised one finite attempt despite incomplete A/A
+precision. Its operational admission failed before launch, closing this attempt
+as **DECLINED BEFORE LAUNCH**. All 28 endpoints are unstarted, with null means
+and intervals. The planned 2,648-call ceiling contains no observed performance
+samples. Offline authored tests establish fixed 40/160 counts, schedule and
+source binding, comparator parity, directional thresholds, stop semantics,
+retained failures and cap arithmetic. These checks establish neither a usable
+live runner nor successful source/correctness/resource evidence for a new run.
+
+The [protocol](classic-forward53-panels.md#finite-confirmation-closed-before-launch)
+records exact acceptance and uncertainty semantics. Recoverable source and factual
+evidence remain separate from production selection. No margin was widened,
+critical endpoint removed, estimator changed or historical failure rewritten.
+Future reuse requires a separately authorised objective and prospective evidence
+plan; this closed attempt creates no continuing qualification or retest obligation.
 
 Protected complete report SHA-256:
 `cd25a231a4c08e81675864b65abfa63d192c016d0b3ae4be8933790b66d4bfa7`.

@@ -11,7 +11,8 @@ is no runtime selector in ordinary observations. A structural forced-reference
 form used for authored correctness is outside this real-input schedule.
 
 The [completed development record](classic-forward53-panels-results.md) retains
-all observations and the qualification-pending disposition.
+all observations and the original qualification-pending disposition. The later
+finite attempt below closes that disposition without changing those observations.
 
 Development provides descriptive observations, exactness and resource evidence.
 It cannot qualify a production default or establish a speed claim. One policy
@@ -157,33 +158,82 @@ instrumented observations, and always leaves qualification pending. Reporting
 is offline and does not launch or replace calls. Output files are exclusive;
 choose a new report filename when inspecting a later stage.
 
-## Confirmation remains unsupported
+## Finite confirmation closed before launch
 
-The actual [precision study](precision-feasibility-results.md) completed all
+The historical [precision study](precision-feasibility-results.md) completed all
 18 sessions. Boca RGB8 encode at one and eight workers established the +1%
 both-direction predicate in 0/3 sessions each. Boca eight-worker reverse upper
-bounds were +5.253%, +6.690% and +6.594%; even conditional 160-pair, zero-centred
-projections leave the worst-direction upper bound at +1.471–+1.781%. The study
-contains no Tok or SpaceNet A/A evidence. No approved estimator successor exists.
-It does not support a practical design for the full mandatory regression matrix.
+bounds were +5.253%, +6.690% and +6.594%; conditional 160-pair, zero-centred
+projections left worst-direction upper bounds at +1.471–+1.781%. The later
+[balanced A/A study](balanced-measurement-stability-results.md) remains planning
+evidence, including its unresolved representative RGB16 precision. Neither study
+is candidate confirmation or a new estimator.
 
-Disposition is **qualification-pending**, not an established performance rejection.
-There is no confirmation command, automatically launched anchor or source
-retuning after a hypothetical freeze. Development success cannot discharge the
-missing precision evidence. Preserve the candidate source and factual results
-for a separately authorised qualification design; do not merge an enabled
-experimental default on descriptive observations.
+The engineering owner subsequently authorised one prospective
+`classic-forward53-finite-confirmation/v1` attempt despite incomplete A/A
+precision. That amendment removed the feasibility-based launch prohibition for
+this attempt only. It retained the source, estimator and all mandatory gates.
+Operational admission then failed: a fresh exclusive balanced reservation was
+unavailable without administrator authentication. The previous A/A reservation
+had been independently restored; its single-use receipt could not authorise a
+new reservation. The terminal disposition is **DECLINED BEFORE LAUNCH**, with
+**zero corpus worker starts**. Production remains unchanged. No statistical
+rejection, measured speedup or automatic retest obligation follows.
 
-The sole future promotion primary remains full Boca RGB8 bypass at eight
-workers, with unchanged ratio-of-arithmetic-means estimator, 99% relative-time
-upper bound strictly below −5% and mean absolute saving at least 10 ms.
-Style-zero corroboration and a prospectively justified, proportionate critical
-matrix remain mandatory, with critical non-regression upper bound at most +1%.
-Primary-first stopping applies. No primary substitution, gate relaxation,
-critical-case deletion, sample pooling, estimator adoption or methodology
-campaign is authorised here. The historical paired-column result remains
-unchanged. Missing confirmation feasibility blocks promotion, not bounded
-correctness/resource exploration.
+The workspace owns the complete 28-endpoint register, unchanged owner rows,
+source design, inherited resource/output requirements, exact manifest bytes and
+their independently pinned hashes. Public benchmark tooling imports those rows
+without reproducing that owner data here. The fixed plan uses 40 alternating
+AB/BA pairs for 27 endpoints, including the sole Boca RGB8 bypass/eight primary;
+only endpoint 11, Mansfield RGB16 bypass/eight, has 160 pairs. Endpoint order is
+`0, 2, 1, 3, 10, 11, 4, 5, 6, 7, 8, 9, 12..27`. Each endpoint's two preflights
+precede its allocation prerequisites and ordinary samples. Initial Boca RGB8
+and Mansfield RGB8 allocations precede primary timing; RGB16, PAN16, MS16, Tok
+and Vegas allocation groups precede endpoints 10, 4, 12, 16 and 24 respectively.
+The unchanged allocation matrix has both styles, workers 1/2/4/8 and both arms.
+
+The schedule contains 1,240 pairs / 2,480 ordinary calls, 56 preflights and 112
+allocation checks: at most 2,648 starts including failures. The 7,200-second
+clock begins at the first preflight and includes between-stage work. New evidence
+is capped at 2 GiB and registered builds at 30 GiB. Each new start requires
+150 seconds and 1 MiB remaining headroom, including its 120-second timeout.
+There are no retries, replacement observations, extra samples, interim
+performance decisions at 40/80 of 160 pairs, or second round.
+
+`scripts/finite_confirmation_analysis.py` is an offline library with no
+acquisition entry point. `make_manifest(register_path, source_design_path)`
+imports the full rows and freezes source, comparator, schedule and limits;
+`load_manifest(path, expected_sha256, register_path, source_design_path)` verifies
+externally pinned bytes and reconstitutes the same binding. Source-design hashes
+bind inherited owner requirements without treating a hash as proof of their
+correctness or authority. `analyse_endpoint` accepts exactly 40 or 160 pairs,
+uses the unchanged owner comparator and retains failed or missing observations.
+`analyse_attempt` reconciles the complete planned call prefix, owner checks and
+retained consumption counters. It preserves every unstarted endpoint and stops
+inference after the first failed or unresolved endpoint. Budget checks are
+arithmetic on supplied counters, not live resource enforcement.
+
+Candidate acceptance is directional. The primary requires a 99% relative-time
+upper bound strictly below −5% **and** arithmetic-mean saving at least 10 ms;
+each critical endpoint requires upper bound at most +1%. A primary saving below
+10 ms is **NOT SELECTED**, without implying slowdown. A primary interval wholly
+at or above −5%, or a critical interval wholly above +1%, also yields
+**NOT SELECTED** with its respective interval interpretation. A complete interval
+that does not resolve its required bound yields **NOT QUALIFIED WITHIN BUDGET**,
+even when its point estimate crosses the limit. Failed/missing observations,
+owner gates, environmental validity or exhausted caps yield **OPERATIONALLY
+INCOMPLETE**. Legacy +/-5% timing verdicts and both-way A/A diagnostics remain
+separate from these candidate gates. Primary gain cannot override a later
+unresolved critical endpoint.
+
+A favourable synthetic reconstruction is labelled **PASSES OFFLINE GATES** and
+never authorises promotion. The declined attempt did not implement or qualify
+live bindings for reservation, rights/locks, source review, preflights, independent
+decode receipts, allocation/output limits, start ledger, monitoring or restoration.
+Existing balanced reservation admission and restoration tests remain applicable
+to their own helper. No live confirmation runner or acquisition command is
+provided. Future source reuse requires a separately authorised objective and
+prospective evidence plan.
 
 RarePlanes Dataset, June 2020: J. Shermeyer et al.; In-Q-Tel – CosmiQ Works and
 AI.Reverie, CC BY-SA 4.0. SpaceNet Dataset, SpaceNet Partners and DigitalGlobe
