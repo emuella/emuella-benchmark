@@ -305,8 +305,10 @@ def schedule_cohort(binary, req, folder, index, cpus, concurrent):
     return row
 
 
-def estimator_build(repo, directory):
+def estimator_build(repo, directory, rounds=20):
     """Use the historical exact owner module and classification-block wrapper."""
+    if type(rounds) is not int or rounds not in (20, 40):
+        raise ValueError("only fixed twenty- or forty-pair estimator wrappers are supported")
     directory.mkdir()
     (directory / 'src').mkdir()
     source = (repo / 'src/compare.rs').read_text()
@@ -325,6 +327,8 @@ pub fn treatment(xs: &[f64], ys: &[f64]) -> serde_json::Value {
         "relative_change":y/x-1.0,"relative_interval_99":bounds})
 }
 '''
+    wrapper = wrapper.replace('assert_eq!(xs.len(), 20); assert_eq!(ys.len(), 20);',
+                              f'assert_eq!(xs.len(), {rounds}); assert_eq!(ys.len(), {rounds});')
     (directory / 'src/owner_compare.rs').write_text(source + wrapper)
     (directory / 'src/main.rs').write_text('''pub use emuella_benchmark::{Result, contract, metrics, runner};
 mod owner_compare;
@@ -337,7 +341,7 @@ fn main() -> Result<()> {
     (directory / 'Cargo.toml').write_text('[package]\nname="classic-treatment-estimator"\nversion="0.0.0"\nedition="2024"\n[dependencies]\nemuella-benchmark={path=' + json.dumps(str(repo)) + '}\nserde={version="1",features=["derive"]}\nserde_json="1"\n')
     write(directory / 'provenance.json', {'owner_revision': subprocess.check_output(['git', '-C', str(repo), 'rev-parse', 'HEAD'], text=True).strip(),
          'owner_sha256': digest(repo / 'src/compare.rs'), 'wrapper_sha256': hashlib.sha256(wrapper.encode()).hexdigest(),
-         'method': 'Unchanged owner interval and classification; fixed20 independent means;5%;99% conservative per-comparison ratio interval; no outlier removal',
+         'method': f'Unchanged owner interval and classification; fixed{rounds} independent means;5%;99% conservative per-comparison ratio interval; no outlier removal',
          'identity': 'separately named treatments, no forged Run/Case comparability'})
     subprocess.run(['cargo', 'build', '--release', '--manifest-path', str(directory / 'Cargo.toml'),
                     '--target-dir', str(directory / 'target')], check=True)

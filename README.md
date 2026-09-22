@@ -42,6 +42,7 @@ pixel payloads or secrets.
 [Protocol](docs/protocol.md) defines the JSON fields and measurement contract.
 [Comparison methodology](docs/comparisons.md) explains uncertainty and verdicts.
 [Multi-run series](docs/series.md) describes factual rate/distortion and progress extracts.
+[Controlled measurement stability](docs/measurement-stability.md) supplies an opt-in, reservation-gated identical-binary protocol.
 [Corpus integration](docs/corpus.md) describes runtime catalogue identities.
 [Refreshed Emuella–OpenJPEG results](docs/openjpeg-refresh-results.md) compare matched classic profiles and CPU budgets.
 [Packed encoder qualification](docs/classic-encoder-kernel-results.md) compares the retained reference with the qualified encoder and a fresh OpenJPEG anchor.
