@@ -194,10 +194,30 @@ def placement(receipt):
     return enter
 
 
+def estimator_identity(executable):
+    executable = Path(executable).resolve()
+    root = executable.parents[2]
+    provenance = json.loads((root/'provenance.json').read_text())
+    source = analysis.COMPARE_SOURCE.read_text()
+    owner_module = (root/'src/owner_compare.rs').read_text()
+    import hashlib
+    if (provenance.get('owner_sha256') != sha(analysis.COMPARE_SOURCE)
+            or not owner_module.startswith(source)
+            or provenance.get('wrapper_sha256') != hashlib.sha256(owner_module[len(source):].encode()).hexdigest()
+            or provenance.get('method') != 'Unchanged owner interval and classification; fixed40 independent means;5%;99% conservative per-comparison ratio interval; no outlier removal'):
+        raise ValueError('actual forty-pair comparator wrapper provenance differs')
+    return dict(path=str(executable), sha256=sha(executable), provenance=provenance,
+                provenance_sha256=sha(root/'provenance.json'),
+                owner_module_sha256=sha(root/'src/owner_compare.rs'),
+                entrypoint_sha256=sha(root/'src/main.rs'), manifest_sha256=sha(root/'Cargo.toml'))
+
+
 def verify_binding(binding):
     if any(os.environ.get(key) for key in ('EMUELLA_TIER1_ENCODER', 'EMUELLA_CLASSIC_WINDOW', 'LD_PRELOAD', 'LD_LIBRARY_PATH')):
         raise ValueError('runtime selector/library overrides must be unset')
     p.verify_build(binding['build'])
+    if estimator_identity(binding['estimator']['path']) != binding['estimator']:
+        raise ValueError('frozen comparator executable/provenance changed')
     specs = [('encode', 1, 8, 'emuella'), ('encode', 1, 8, 'emuella'), ('decode', 0, 8, 'openjpeg'), ('decode', 0, 1, 'openjpeg')]
     if len(binding['cells']) != 4:
         raise ValueError('four mandatory workload cells required')
@@ -256,7 +276,7 @@ def freeze(args):
         expected = RAW_STREAM[min(index, 2)]
         if (cell['request']['raw_sha256'], cell['request']['stream_sha256']) != expected:
             raise ValueError('inherited raw/stream identity differs')
-    binding = dict(policy=POLICY, build_path=str(args.build.resolve()), build=build,
+    binding = dict(policy=POLICY, estimator=estimator_identity(args.estimator), build_path=str(args.build.resolve()), build=build,
         codec_source=str(args.codec_source.resolve()), benchmark_source=str(args.worker_benchmark_source.resolve()),
         runner=refresh.classic.clean_source(refresh.ROOT), prepared_manifest=str(args.prepared/'prepared.json'),
         prepared_sha256=sha(args.prepared/'prepared.json'), cells=cells, schedule=schedule(), pairs=PAIRS,
@@ -412,6 +432,8 @@ def analyse(root, estimator, report):
     launch = json.loads((root/'launch.json').read_text())
     if binding['policy'] != POLICY or binding['schedule'] != schedule() or sha(root/'binding.json') != launch['binding_sha256']:
         raise ValueError('frozen identity/schedule differs')
+    if estimator_identity(estimator) != binding['estimator']:
+        raise ValueError('analysis must use the prospectively frozen comparator executable/provenance')
     if report.parent.resolve() != root.resolve():
         raise ValueError('raw report must stay in the approved evidence root')
     def optional(path):
@@ -477,7 +499,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='command', required=True)
     freeze_parser = sub.add_parser('freeze')
-    for name in ('build', 'codec-source', 'worker-benchmark-source', 'prepared', 'streams', 'authority', 'build-root', 'output'):
+    for name in ('build', 'codec-source', 'worker-benchmark-source', 'prepared', 'streams', 'authority', 'build-root', 'estimator', 'output'):
         freeze_parser.add_argument('--'+name, type=Path, required=True)
     freeze_parser.add_argument('--decisions', required=True, help='Exact reviewed workspace operational/design decision permalink')
     estimator_parser = sub.add_parser('estimator')

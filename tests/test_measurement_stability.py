@@ -154,10 +154,10 @@ class StabilityTests(unittest.TestCase):
                     stream_path='/mock/stream', stream_sha256=stream, max_working_bytes=s.refresh.classic.WORKING, max_output_bytes=s.refresh.classic.OUTPUT)
                 cells.append(dict(operation=op,style=style,workers=workers,origin=origin,request=request))
             binding = dict(policy=s.POLICY, schedule=s.schedule(), pairs=40, limits=s.limits(), launch_cadence=s.cadence(),
-                runner={'revision':'authored'}, authority_path='/mock/authority', authority_sha256='authorised', condition={},
+                runner={'revision':'authored'}, estimator={'path':'/mock/estimator'}, authority_path='/mock/authority', authority_sha256='authorised', condition={},
                 build_root=tmp, build=build, cells=cells, boundary=s.refresh.BOUNDARY, warmups=0, samples_per_process=1,
                 prepared_sha256=s.refresh.classic.MANIFEST)
-            with patch.object(s.refresh.classic,'clean_source',return_value=binding['runner']), patch.object(s,'sha',return_value='authorised'), patch.object(s,'reservation'), patch.dict(os.environ, {}, clear=True):
+            with patch.object(s.refresh.classic,'clean_source',return_value=binding['runner']), patch.object(s,'sha',return_value='authorised'), patch.object(s,'reservation'), patch.object(s,'estimator_identity',return_value=binding['estimator']), patch.dict(os.environ, {}, clear=True):
                 s.verify_binding(binding)
                 cases = []
                 for key, value in [('pairs',20),('warmups',1),('samples_per_process',2),('prepared_sha256','wrong'),('boundary','other')]:
@@ -170,6 +170,8 @@ class StabilityTests(unittest.TestCase):
                 changed = copy.deepcopy(binding); changed['limits']['total_calls']=965; cases.append(changed)
                 for bad in cases:
                     with self.assertRaises(ValueError): s.verify_binding(bad)
+                with patch.object(s,'estimator_identity',return_value={'path':'/changed/comparator'}):
+                    with self.assertRaisesRegex(ValueError,'comparator'): s.verify_binding(binding)
 
     def test_cleanup_normal_exit_and_keyboard_interruption(self):
         for interrupt in (False, True):
@@ -192,7 +194,7 @@ class StabilityTests(unittest.TestCase):
     def test_late_missing_session_retains_earlier_session_analysis(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            binding = dict(policy=s.POLICY, schedule=s.schedule(), cells=[dict(operation='encode', workers=8, asset=dict(id=str(i))) for i in range(4)])
+            binding = dict(policy=s.POLICY, estimator={'path':'/mock/estimator'}, schedule=s.schedule(), cells=[dict(operation='encode', workers=8, asset=dict(id=str(i))) for i in range(4)])
             s.write(root/'binding.json', binding)
             digest = s.sha(root/'binding.json')
             s.write(root/'launch.json', dict(binding_sha256=digest))
@@ -203,7 +205,7 @@ class StabilityTests(unittest.TestCase):
             s.write(folder/'session.json', dict(session=s.schedule()[0], binding_sha256=digest, rows=observations, valid=True, complete=True, issues=[]))
             executable = root/'mock-estimator'; executable.write_text('authored mock')
             original = s.analysis._estimate
-            with patch.object(s.analysis, '_estimate', side_effect=lambda ignored,a,b:original(estimator,a,b)):
+            with patch.object(s.analysis, '_estimate', side_effect=lambda ignored,a,b:original(estimator,a,b)), patch.object(s,'estimator_identity',return_value=binding['estimator']):
                 s.analyse(root, executable, root/'report.json')
             report = json.loads((root/'report.json').read_text())
             self.assertFalse(report['operationally_complete'])
@@ -223,8 +225,17 @@ class StabilityTests(unittest.TestCase):
             self.assertTrue(all(not x['valid'] and not x['complete'] for x in result['sessions']))
             worker.assert_not_called()
 
+    def test_actual_estimator_identity_rejects_changed_provenance(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp); executable=root/'target/release/comparator'; executable.parent.mkdir(parents=True); executable.write_text('authored binary')
+            (root/'src').mkdir(); (root/'src/owner_compare.rs').write_text(s.analysis.COMPARE_SOURCE.read_text()+'changed wrapper')
+            s.write(root/'provenance.json',dict(owner_sha256=s.sha(s.analysis.COMPARE_SOURCE), wrapper_sha256='wrong', method='fixed20'))
+            with self.assertRaisesRegex(ValueError,'provenance'): s.estimator_identity(executable)
+
     @unittest.skipUnless(os.environ.get('STABILITY_ESTIMATOR'), 'existing comparator executable supplied by owner')
     def test_actual_comparator_parity_at_forty_pairs(self):
+        identity=s.estimator_identity(Path(os.environ['STABILITY_ESTIMATOR']))
+        self.assertEqual(identity['sha256'],s.sha(os.environ['STABILITY_ESTIMATOR']))
         result = s.analysis.analyse_session(rows(), Path(os.environ['STABILITY_ESTIMATOR']), rounds=40)
         self.assertTrue(result['valid'], result['issues'])
         projected = result['projections']['values'][1]['observed_displacement']

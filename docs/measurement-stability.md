@@ -58,7 +58,8 @@ boundary checks cannot detect every transient unauthorised membership change.
 
 The manifest freezes driver/governor/EPP/boost/min/max, online/core/sibling/cache
 and NUMA topology, cpuset memory nodes, direct and ancestor CPU/memory limits,
-compiler, linked libraries, build source and executable hashes, exact workload
+compiler, linked libraries, build source and executable hashes, the exact estimator
+executable/wrapper/provenance hashes, exact workload
 identities, cadence, method and decision permalink. Host policy is read-only.
 No cache dropping, selective warmup, cooldown, SMT/IRQ/scheduler change or host
 administration occurs. Sampled frequency is not effective-frequency evidence.
@@ -170,6 +171,7 @@ classification are unchanged and historical wrappers still default to twenty. Th
 python3 scripts/measurement-stability.py check-reservation --authority RECEIPT.json
 python3 scripts/measurement-stability.py freeze \
   --build BUILD/build.json --codec-source CLEAN-REFERENCE-CODEC \
+  --estimator ESTIMATOR/target/release/classic-treatment-estimator \
   --worker-benchmark-source CLEAN-WORKER-BENCHMARK --build-root REGISTERED-SCRATCH \
   --prepared APPROVED-STORE/prepared-final --streams APPROVED-STORE/openjpeg-refresh-main-01 \
   --authority RECEIPT.json --decisions EXACT-REVIEWED-WORKSPACE-PERMALINK \
@@ -182,7 +184,7 @@ python3 scripts/measurement-stability.py analyse \
   --report APPROVED-STORE/measurement-stability-qualification-v1/report.json
 ```
 
-Freeze from clean committed runner source; `--worker-benchmark-source` names the
+Freeze from clean committed runner source; analysis requires the same frozen estimator identity; `--worker-benchmark-source` names the
 clean source bound by the production build, which may differ from runner source.
 One operational owner/watcher runs the study. Retain build/authority/restoration,
 all observation and analysis receipts within the approved persistent store before

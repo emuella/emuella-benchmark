@@ -9,7 +9,8 @@ separately labelled in [precision feasibility results](precision-feasibility-res
 The runnable [protocol and reservation admission](measurement-stability.md) reject
 affinity-only or runner-lock-only arrangements. The workspace owns the observed
 resource/authority receipt and the full mandatory confirmation endpoint register
-in its [active operational plan](https://github.com/emuella/emuella-workspace/blob/5faec064076c04937237673fdc0227124ef59b3b/docs/plans/active/measurement-stability-qualification.md).
+in the [operational record](https://github.com/emuella/emuella-workspace/blob/bcf593da5723d3063a51f057ed2488f6550c15f8/docs/measurement-stability-qualification.md).
+The [initial plan checkpoint](https://github.com/emuella/emuella-workspace/blob/5faec064076c04937237673fdc0227124ef59b3b/docs/plans/active/measurement-stability-qualification.md) records the coordination scope.
 
 | Sessions | Workload cell | Observation state | Scoped precision verdict |
 |---|---|---|---|
