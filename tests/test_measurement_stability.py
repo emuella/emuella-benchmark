@@ -142,6 +142,53 @@ class StabilityTests(unittest.TestCase):
         self.assertFalse(s.analysis.interval_metrics([-.01,.01])['excludes_positive']['1%'])
         self.assertIn('not measured precision', result['projections']['interpretation'])
 
+    def test_manifest_production_boundary_and_schedule_fail_closed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            build = dict(codec={'source_revision':s.p.CODEC}, encoder_backend='default', scheduling_window='default',
+                         command=['--features','classic-compare','--profile','perf'], binary='/same/binary')
+            cells = []
+            for index, (op, style, workers, origin) in enumerate([('encode',1,8,'emuella'),('encode',1,8,'emuella'),('decode',0,8,'openjpeg'),('decode',0,1,'openjpeg')]):
+                raw, stream = s.RAW_STREAM[min(index,2)]
+                request = dict(codec='emuella', operation=op, case_id=str(index), round=0, width=1, height=1, components=3, bits=8,
+                    layout='interleaved', style=style, workers=workers, raw_path='/mock/raw', raw_sha256=raw,
+                    stream_path='/mock/stream', stream_sha256=stream, max_working_bytes=s.refresh.classic.WORKING, max_output_bytes=s.refresh.classic.OUTPUT)
+                cells.append(dict(operation=op,style=style,workers=workers,origin=origin,request=request))
+            binding = dict(policy=s.POLICY, schedule=s.schedule(), pairs=40, limits=s.limits(), launch_cadence=s.cadence(),
+                runner={'revision':'authored'}, authority_path='/mock/authority', authority_sha256='authorised', condition={},
+                build_root=tmp, build=build, cells=cells, boundary=s.refresh.BOUNDARY, warmups=0, samples_per_process=1,
+                prepared_sha256=s.refresh.classic.MANIFEST)
+            with patch.object(s.refresh.classic,'clean_source',return_value=binding['runner']), patch.object(s,'sha',return_value='authorised'), patch.object(s,'reservation'), patch.dict(os.environ, {}, clear=True):
+                s.verify_binding(binding)
+                cases = []
+                for key, value in [('pairs',20),('warmups',1),('samples_per_process',2),('prepared_sha256','wrong'),('boundary','other')]:
+                    cases.append(dict(binding,**{key:value}))
+                changed = copy.deepcopy(binding); changed['schedule'][0]['starting_arm']='B'; cases.append(changed)
+                changed = copy.deepcopy(binding); changed['build']['codec']['source_revision']='candidate'; cases.append(changed)
+                changed = copy.deepcopy(binding); changed['build']['encoder_backend']='reference'; cases.append(changed)
+                changed = copy.deepcopy(binding); changed['cells'][0]['request']['arm']='A'; cases.append(changed)
+                changed = copy.deepcopy(binding); changed['cells'][0]['request']['raw_sha256']='other'; cases.append(changed)
+                changed = copy.deepcopy(binding); changed['limits']['total_calls']=965; cases.append(changed)
+                for bad in cases:
+                    with self.assertRaises(ValueError): s.verify_binding(bad)
+
+    def test_cleanup_normal_exit_and_keyboard_interruption(self):
+        for interrupt in (False, True):
+            with tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp); cgroup=root/'cg'; cgroup.mkdir(); (cgroup/'cgroup.procs').write_text('')
+                state=[set(range(16))]
+                def set_affinity(pid, cpus): state[0]=set(cpus)
+                receipt=dict(controller_cpus=list(range(8,16)),cgroup=str(cgroup))
+                with patch.object(s.os,'sched_getaffinity',side_effect=lambda pid:state[0]), patch.object(s.os,'sched_setaffinity',side_effect=set_affinity):
+                    try:
+                        with s.controller_placement(receipt,root):
+                            if interrupt: raise KeyboardInterrupt('authored signal substitute')
+                    except KeyboardInterrupt:
+                        self.assertTrue(interrupt)
+                result=json.loads((root/'restoration.json').read_text())
+                self.assertTrue(result['restored'])
+                self.assertTrue(result['worker_cgroup_empty'])
+                self.assertEqual(state[0],set(range(16)))
+
     def test_late_missing_session_retains_earlier_session_analysis(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

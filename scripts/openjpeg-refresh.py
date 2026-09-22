@@ -137,6 +137,8 @@ def run_process(binary, request, directory, cpus, execution_diagnostics=False, a
             elif (not isinstance(samples,list) or len(samples)!=1 or type(samples[0]) is not int or samples[0]<=0 or value.get('stream_sha256') != request['stream_sha256']):
                 raise ValueError('timing/stream identity differs')
             resources = (directory/'resources.txt').read_text().split()
+            if len(resources) != (5 if placement else 3):
+                raise ValueError('resource accounting fields differ')
             user, system, rss = resources[:3]
             if placement:
                 result.update(process_voluntary_context_switches=int(resources[3]),

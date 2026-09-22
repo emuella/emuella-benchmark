@@ -213,6 +213,9 @@ def verify_binding(binding):
             raise ValueError('unexpected worker request fields')
     if binding['policy'] != POLICY or binding['schedule'] != schedule() or binding['pairs'] != PAIRS:
         raise ValueError('frozen protocol/schedule differs')
+    if (binding['boundary'] != refresh.BOUNDARY or binding['warmups'] != 0 or binding['samples_per_process'] != 1
+            or binding['prepared_sha256'] != refresh.classic.MANIFEST):
+        raise ValueError('inherited fresh-process boundary or prepared identity differs')
     if binding['limits'] != limits() or binding['launch_cadence'] != cadence():
         raise ValueError('frozen budgets/cadence differ')
     if refresh.classic.clean_source(refresh.ROOT) != binding['runner']:
@@ -296,6 +299,7 @@ def observe(root, binding, folder, cell, identity, start_ns):
         result = refresh.run_process(binding['build']['binary'], dict(cell['request'], round=identity['round']),
             folder/name, binding['condition']['worker_cpus'][:cell['workers']], placement=placement(binding['condition']))
         p.verify_call(binding, cell)
+        verify_binding(binding)
         after = environment(binding['condition'])
         issues = environment_issues(binding['environment'], after, binding['condition'])
         write(folder/(name+'-environment.json'), dict(before=before, after=after, issues=issues))
