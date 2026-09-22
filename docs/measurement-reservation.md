@@ -8,8 +8,9 @@ change and one local `sudo` authentication. No sudoers or polkit policy is chang
 
 The default `isolated` mode retains the existing stability protocol, runtime
 directory, schemas and three-hour lease. The explicit `balanced` mode described
-below supplies a separate short diagnostic reservation; it does not alter or
-retire an earlier stability reservation or its receipts.
+below supplies a separate short diagnostic reservation. `balanced-aa` supplies a
+three-hour reservation for the identical-production-binary A/A study. Each uses
+its own runtime directory and receipts, preserving earlier reservations.
 
 This bounded implementation admits systemd 261, cgroup v2, logical CPUs 0–31,
 sibling pairs `n,n+16`, sixteen distinct physical cores and NUMA node 0. It reserves
@@ -231,6 +232,57 @@ verification rejects a historical restoration receipt. Systemd's copied-helper
 the selected mode through expiry and failure cleanup. Restoration still compares
 the original snapshot, validates the unit invocation, and reverses only values
 and ownership that match the journalled changes.
+
+## Explicit balanced A/A condition
+
+Place `--condition balanced-aa` **before** the subcommand on every invocation:
+
+```sh
+/usr/bin/python3 -I scripts/measurement_reservation.py --condition balanced-aa inspect
+sudo /usr/bin/python3 -I scripts/measurement_reservation.py --condition balanced-aa start \
+  --uid "$(id -u)" --authority 'REVIEWED-BALANCED-AA-RESOURCE-OWNER-AUTHORITY-LOCATOR'
+/usr/bin/python3 -I /run/emuella-balanced-aa-measurement-reservation/helper.py \
+  --condition balanced-aa run -- /absolute/path/to/prepared-aa-wrapper
+/usr/bin/python3 -I /run/emuella-balanced-aa-measurement-reservation/helper.py \
+  --condition balanced-aa verify
+```
+
+This condition uses `/run/emuella-balanced-aa-measurement-reservation`, created
+exclusively and retained after completion. It neither reuses nor retires either
+historical runtime directory. An existing A/A directory prevents a new `start`.
+The selected root-owned copied helper carries `--condition balanced-aa` through
+systemd's `serve` and `ExecStopPost` recovery commands. For early cancellation:
+
+```sh
+sudo /usr/bin/python3 -I /run/emuella-balanced-aa-measurement-reservation/helper.py \
+  --condition balanced-aa stop
+```
+
+The lease is **10,800 seconds**, including setup and waiting for the single
+ordinary-user command, followed by the existing 150-second termination grace.
+The A/A runner separately enforces its **7,200-second observation cap**, frozen
+call budget and evidence limit. Preparation must leave at least two hours in the
+authority receipt at freeze and launch. The diagnostic mode remains limited to
+1,800 seconds and retains its original schemas and receipts.
+
+The A/A reservation uses the same `root` worker partition and admission checks as
+the balanced diagnostic: CPUs **0–7,16–23** are exclusive, while supervisor,
+controller and other ordinary workloads use **8–15,24–31**. Normal scheduling
+load balancing remains enabled inside the worker partition. The inherited
+exclusion and round-trip migration probes still run before receipt publication.
+Frequency/boost, global SMT, IRQ and security settings remain unchanged.
+
+The journal schema is `measurement-balanced-aa-reservation/v1`; the authority
+receipt at `public/authority.json` uses `measurement-balanced-aa-qualification/v1`.
+Both include `condition: "balanced-aa"` and `partition_mode: "root"`. The receipt
+retains the authority, issuer, validity interval, worker cgroup, worker/reserved/
+controller CPU sets and residual-interference statement. Restoration receipts
+also carry the condition and partition mode. Journal admission, command transport
+and recovery reject either historical mode's identity; verification refuses their
+restoration receipts. The original snapshot and intervention-safe restoration
+rules apply unchanged. A pre-readiness failure can only be preserved with the
+selected condition's explicit, guarded `retire-failed` command; this never restarts
+a reservation or authorises replacement observations.
 
 ## Verification status
 

@@ -19,6 +19,8 @@ p = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(p)
 refresh, write, sha = p.refresh, p.write, p.sha
 POLICY = 'measurement-stability-qualification/v1'
+BALANCED_AA_SCHEMA = 'measurement-balanced-aa-qualification/v1'
+PREPARATION_SCHEMA = 'balanced-measurement-stability-preparation/v1'
 PAIRS, CALL_CAP, WALL_CAP, BYTE_CAP, BUILD_CAP = 40, 964, 7200, 2*1024**3, 30*1024**3
 ORDERS = ((0, 1, 2, 3), (2, 3, 0, 1), (3, 2, 1, 0))
 RAW_STREAM = (
@@ -54,7 +56,7 @@ def calls(entry):
             for r in range(PAIRS) for position, arm in enumerate(order if r % 2 == 0 else order[::-1])]
 
 
-def reservation(receipt, *, sysroot=Path('/sys'), now=None, expected_partition='isolated', expected_schema=POLICY, occupied_group=None):
+def reservation(receipt, *, sysroot=Path('/sys'), now=None, expected_partition='isolated', expected_schema=POLICY, occupied_group=None, expected_condition='balanced'):
     """Read-only admission of an existing delegated isolated cpuset, never creation.
 
     The authority record is supplied by the operational owner after review; its
@@ -64,7 +66,7 @@ def reservation(receipt, *, sysroot=Path('/sys'), now=None, expected_partition='
                 'cgroup', 'worker_cpus', 'reserved_cpus', 'controller_cpus', 'residual_interference'}
     if expected_partition == 'root':
         required |= {'condition', 'partition_mode'}
-        if receipt.get('condition') != 'balanced' or receipt.get('partition_mode') != 'root':
+        if receipt.get('condition') != expected_condition or receipt.get('partition_mode') != 'root':
             raise ValueError('explicit balanced partition identity required')
     elif expected_partition != 'isolated':
         raise ValueError('unsupported partition mode')
@@ -117,11 +119,34 @@ def reservation(receipt, *, sysroot=Path('/sys'), now=None, expected_partition='
     return values
 
 
-def environment(receipt, reservation_check=reservation):
+
+def admit(receipt, *, sysroot=Path('/sys'), now=None):
+    """Explicit balanced A/A receipt; historical isolated admission is unchanged."""
+    if receipt.get('schema') != BALANCED_AA_SCHEMA:
+        return reservation(receipt, sysroot=sysroot, now=now)
+    if (receipt['worker_cpus'] != list(range(8))
+            or receipt['reserved_cpus'] != list(range(8))+list(range(16,24))
+            or receipt['controller_cpus'] != list(range(8,16))+list(range(24,32))):
+        raise ValueError('balanced A/A requires the diagnostically checked allocation')
+    value = reservation(receipt, sysroot=sysroot, now=now, expected_partition='root',
+                        expected_schema=BALANCED_AA_SCHEMA, expected_condition='balanced-aa')
+    if value['cpu.max'].split()[0] != 'max' or any(
+            row['cpu.max'] is not None and row['cpu.max'].split()[0] != 'max'
+            for row in value['ancestor_limits']):
+        raise ValueError('balanced A/A requires unlimited task and available ancestor CPU quotas')
+    owner = Path(receipt['cgroup']).parent
+    for child in (sysroot/'fs/cgroup').iterdir():
+        if child.is_dir() and child != owner:
+            if set(cpulist((child/'cpuset.cpus.effective').read_text())) & set(receipt['reserved_cpus']):
+                raise ValueError('ordinary workload exclusion differs')
+    return value
+
+
+def environment(receipt, reservation_check=None):
     """Allowlisted external counters only; never enumerate unrelated commands."""
     value = dict(monotonic_ns=time.monotonic_ns(), utc_epoch=time.time(),
                  controller_affinity=sorted(os.sched_getaffinity(0)),
-                 reservation=reservation_check(receipt), cpu={},
+                 reservation=(reservation_check or admit)(receipt), cpu={},
                  boost=p.read_optional('/sys/devices/system/cpu/cpufreq/boost'),
                  proc={key: p.read_optional('/proc/'+key) for key in ('stat', 'loadavg', 'pressure/cpu', 'pressure/memory', 'pressure/io')},
                  effective_frequency='unavailable; frequency snapshots are not effective frequency',
@@ -221,7 +246,7 @@ def estimator_identity(executable):
                 entrypoint_sha256=sha(root/'src/main.rs'), manifest_sha256=sha(root/'Cargo.toml'))
 
 
-def verify_binding(binding):
+def verify_core(binding):
     if any(os.environ.get(key) for key in ('EMUELLA_TIER1_ENCODER', 'EMUELLA_CLASSIC_WINDOW', 'LD_PRELOAD', 'LD_LIBRARY_PATH')):
         raise ValueError('runtime selector/library overrides must be unset')
     p.verify_build(binding['build'])
@@ -249,13 +274,23 @@ def verify_binding(binding):
         raise ValueError('frozen budgets/cadence differ')
     if refresh.classic.clean_source(refresh.ROOT) != binding['runner']:
         raise ValueError('runner source changed')
-    if sha(binding['authority_path']) != binding['authority_sha256']:
-        raise ValueError('authority receipt changed')
-    reservation(binding['condition'])
     if not Path(binding['build_root']).is_dir():
         raise ValueError('registered build root missing')
     if p.bytes_used(Path(binding['build_root'])) > BUILD_CAP:
         raise ValueError('registered disposable build cap exceeded')
+
+
+def verify_binding(binding):
+    verify_core(binding)
+    if sha(binding['authority_path']) != binding['authority_sha256']:
+        raise ValueError('authority receipt changed')
+    admit(binding['condition'])
+    if binding['condition'].get('schema') == BALANCED_AA_SCHEMA:
+        preparation = read_preparation(Path(binding['preparation_path']), binding['preparation_sha256'])
+        if any(binding.get(key) != value for key,value in preparation['binding'].items()):
+            raise ValueError('prepared production identities changed')
+        if binding['condition']['authority'] != binding['decisions']:
+            raise ValueError('live authority differs from the reviewed decision')
 
 
 def limits():
@@ -267,11 +302,7 @@ def cadence():
     return 'Sequential fresh processes; zero warmups; external identity/reservation checks and telemetry before/after each call; no inserted sleep or outcome-dependent delay.'
 
 
-def freeze(args):
-    condition = json.loads(args.authority.read_text())
-    reservation(condition)
-    if condition['valid_until_epoch']-time.time() < WALL_CAP:
-        raise ValueError('authorised reservation must cover the complete two-hour window')
+def planned_binding(args):
     build = refresh.bind(args.build)
     p.verify_build(build)
     store = args.prepared.parent.resolve()
@@ -289,18 +320,83 @@ def freeze(args):
         codec_source=str(args.codec_source.resolve()), benchmark_source=str(args.worker_benchmark_source.resolve()),
         runner=refresh.classic.clean_source(refresh.ROOT), prepared_manifest=str(args.prepared/'prepared.json'),
         prepared_sha256=sha(args.prepared/'prepared.json'), cells=cells, schedule=schedule(), pairs=PAIRS,
-        authority_path=str(args.authority.resolve()), authority_sha256=sha(args.authority), condition=condition,
-        environment=environment(condition), build_root=str(args.build_root.resolve()), limits=limits(),
+        build_root=str(args.build_root.resolve()), limits=limits(),
         launch_cadence=cadence(), boundary=refresh.BOUNDARY, warmups=0, samples_per_process=1,
         decisions=args.decisions, invalidity='Identity, reservation, policy, topology, affinity, throttle counter increase, failed/missing call or cap failure stops the cohort; retain all attempts. Timing outcomes never invalidate.')
-    verify_binding(binding)
+    verify_core(binding)
     for cell in cells:
         p.verify_call(binding, cell)
-    args.output.mkdir(exist_ok=False)
-    (args.output/'LICENSE.txt').write_bytes((store/'source/LICENSE.txt').read_bytes())
-    (args.output/'NOTICE.txt').write_text('RarePlanes Dataset (June 2020), J. Shermeyer et al.; In-Q-Tel – CosmiQ Works and AI.Reverie. CC BY-SA 4.0. Local A/A observations; unchanged inputs, streams and lineage remain in their authorised store. No imagery redistribution.\n')
-    write(args.output/'binding.json', binding)
-    print('Frozen binding SHA-256: '+sha(args.output/'binding.json'))
+    return binding
+
+
+def publish_binding(output, binding):
+    store = output.parent.resolve()
+    output.mkdir(exist_ok=False)
+    (output/'LICENSE.txt').write_bytes((store/'source/LICENSE.txt').read_bytes())
+    (output/'NOTICE.txt').write_text('RarePlanes Dataset (June 2020), J. Shermeyer et al.; In-Q-Tel – CosmiQ Works and AI.Reverie. CC BY-SA 4.0. Local A/A observations; unchanged inputs, streams and lineage remain in their authorised store. No imagery redistribution.\n')
+    write(output/'binding.json', binding)
+    print('Frozen binding SHA-256: '+sha(output/'binding.json'))
+
+
+def freeze(args):
+    condition = json.loads(args.authority.read_text())
+    # Historical entry point stays isolated; balanced A/A uses a frozen preparation.
+    reservation(condition)
+    if condition['valid_until_epoch']-time.time() < WALL_CAP:
+        raise ValueError('authorised reservation must cover the complete two-hour window')
+    binding = planned_binding(args)
+    binding.update(authority_path=str(args.authority.resolve()), authority_sha256=sha(args.authority),
+                   condition=condition, environment=environment(condition))
+    verify_binding(binding)
+    publish_binding(args.output, binding)
+
+
+def read_preparation(path, digest):
+    import measurement_reservation as helper
+    if sha(path) != digest:
+        raise ValueError('frozen preparation changed')
+    prepared = json.loads(path.read_text())
+    if (prepared['schema'] != PREPARATION_SCHEMA or prepared['condition'] != 'balanced-aa'
+            or prepared['helper_sha256'] != sha(Path(__file__).with_name('measurement_reservation.py'))
+            or prepared['host_policy'] != helper.policy()):
+        raise ValueError('prepared condition, helper or frequency/boost/SMT policy changed')
+    if Path(prepared['output']).parent.resolve() != Path(prepared['binding']['prepared_manifest']).parent.parent.resolve():
+        raise ValueError('prepared output leaves approved store')
+    return prepared
+
+
+def prepare_balanced(args):
+    import measurement_reservation as helper
+    if args.preparation.parent.resolve() != args.build_root.resolve() or args.output.exists():
+        raise ValueError('new preparation belongs in registered scratch; output must be unlaunched')
+    binding = planned_binding(args)
+    write(args.preparation, dict(schema=PREPARATION_SCHEMA, condition='balanced-aa',
+          binding=binding, output=str(args.output.resolve()), host_policy=helper.policy(),
+          helper_sha256=sha(Path(__file__).with_name('measurement_reservation.py')),
+          scope='Unlaunched production A/A; same fixed 964 starts, two hours, 2 GiB. Live reservation admission remains mandatory.'))
+    print('Frozen preparation SHA-256: '+sha(args.preparation))
+
+
+def launch_balanced(args):
+    prepared = read_preparation(args.preparation, args.preparation_sha256)
+    binding = dict(prepared['binding'])
+    verify_core(binding)
+    condition = json.loads(args.authority.read_text())
+    if condition.get('schema') != BALANCED_AA_SCHEMA or condition.get('authority') != binding['decisions']:
+        raise ValueError('balanced A/A requires its exact reviewed live authority')
+    admit(condition)
+    if condition['valid_until_epoch']-time.time() < WALL_CAP:
+        raise ValueError('authorised reservation must cover the complete two-hour window')
+    for cell in binding['cells']:
+        p.verify_call(binding,cell)
+    binding.update(authority_path=str(args.authority.resolve()), authority_sha256=sha(args.authority),
+                   condition=condition, environment=environment(condition),
+                   preparation_path=str(args.preparation.resolve()), preparation_sha256=args.preparation_sha256)
+    verify_binding(binding)
+    output = Path(prepared['output'])
+    publish_binding(output, binding)
+    write(output/'preparation.json',prepared)
+    study(output)
 
 
 def budget_check(root, start_ns):
@@ -514,6 +610,14 @@ def main():
     for name in ('build', 'codec-source', 'worker-benchmark-source', 'prepared', 'streams', 'authority', 'build-root', 'estimator', 'output'):
         freeze_parser.add_argument('--'+name, type=Path, required=True)
     freeze_parser.add_argument('--decisions', required=True, help='Exact reviewed workspace operational/design decision permalink')
+    prepare_parser = sub.add_parser('prepare-balanced')
+    for name in ('build','codec-source','worker-benchmark-source','prepared','streams','build-root','estimator','output','preparation'):
+        prepare_parser.add_argument('--'+name,type=Path,required=True)
+    prepare_parser.add_argument('--decisions',required=True)
+    launch_parser = sub.add_parser('launch-balanced')
+    launch_parser.add_argument('--preparation',type=Path,required=True)
+    launch_parser.add_argument('--preparation-sha256',required=True)
+    launch_parser.add_argument('--authority',type=Path,required=True)
     estimator_parser = sub.add_parser('estimator')
     estimator_parser.add_argument('--output', type=Path, required=True)
     inspect_parser = sub.add_parser('inspect')
@@ -531,12 +635,16 @@ def main():
     args = parser.parse_args()
     if args.command == 'freeze':
         freeze(args)
+    elif args.command == 'prepare-balanced':
+        prepare_balanced(args)
+    elif args.command == 'launch-balanced':
+        launch_balanced(args)
     elif args.command == 'inspect':
         inspect(args.output)
     elif args.command == 'estimator':
         refresh.classic.estimator_build(refresh.ROOT, args.output, rounds=PAIRS)
     elif args.command == 'check-reservation':
-        print(json.dumps(reservation(json.loads(args.authority.read_text())), indent=2))
+        print(json.dumps(admit(json.loads(args.authority.read_text())), indent=2))
     elif args.command == 'study':
         study(args.output)
     elif args.command == 'session':

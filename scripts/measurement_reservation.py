@@ -24,9 +24,11 @@ import uuid
 ROOT = Path('/run/emuella-measurement-reservation')
 ISOLATED_ROOT = ROOT
 BALANCED_ROOT = Path('/run/emuella-balanced-measurement-reservation')
+BALANCED_AA_ROOT = Path('/run/emuella-balanced-aa-measurement-reservation')
 CONDITION = 'isolated'
 BALANCED_LEASE = 1800  # Setup included; diagnostic call/time caps are runner-owned.
 BALANCED_SCHEMA = 'measurement-balanced-reservation/v1'
+BALANCED_AA_SCHEMA = 'measurement-balanced-aa-reservation/v1'
 CG = Path('/sys/fs/cgroup')
 SYS = Path('/sys/devices/system/cpu')
 RESERVED = set(range(8)) | set(range(16, 24))
@@ -39,18 +41,25 @@ SCHEMA = 'measurement-stability-reservation/v1'
 
 def select_condition(condition):
     global CONDITION, ROOT
+    root = {'isolated': ISOLATED_ROOT, 'balanced': BALANCED_ROOT,
+            'balanced-aa': BALANCED_AA_ROOT}[condition]
     CONDITION = condition
-    ROOT = BALANCED_ROOT if condition == 'balanced' else ISOLATED_ROOT
+    ROOT = root
 
 
 def condition_args():
-    return ['--condition', 'balanced'] if CONDITION == 'balanced' else []
+    return ['--condition', CONDITION] if CONDITION != 'isolated' else []
+
+
+def reservation_schema():
+    return {'isolated': SCHEMA, 'balanced': BALANCED_SCHEMA,
+            'balanced-aa': BALANCED_AA_SCHEMA}[CONDITION]
 
 
 def validate_condition(state):
     # Journals predating the optional mode have no condition fields.
-    if CONDITION == 'balanced':
-        if state.get('condition') != 'balanced' or state.get('partition_mode') != 'root':
+    if CONDITION != 'isolated':
+        if state.get('condition') != CONDITION or state.get('partition_mode') != 'root':
             raise ValueError('reservation condition or partition mode differs')
     elif state.get('condition', 'isolated') != 'isolated' or state.get('partition_mode', 'isolated') != 'isolated':
         raise ValueError('reservation condition or partition mode differs')
@@ -157,7 +166,7 @@ def load():
         if not stat.S_ISREG(info.st_mode) or info.st_uid != 0 or info.st_mode & 0o022:
             raise ValueError('unsafe root-owned recovery file')
     state = json.loads(read(ROOT / 'journal.json'))
-    schema = BALANCED_SCHEMA if CONDITION == 'balanced' else SCHEMA
+    schema = reservation_schema()
     if state['schema'] != schema or state['boot'] != read('/proc/sys/kernel/random/boot_id'):
         raise ValueError('recovery journal belongs to another schema or boot')
     validate_condition(state)
@@ -201,7 +210,7 @@ def verify_partition(state):
     validate_condition(state)
     group = unit_group(state)
     worker = group / 'workers'
-    partition = 'root' if CONDITION == 'balanced' else 'isolated'
+    partition = 'isolated' if CONDITION == 'isolated' else 'root'
     if (read(worker / 'cpuset.cpus.partition') != partition
             or cpus(read(worker / 'cpuset.cpus.effective')) != RESERVED
             or cpus(read(worker / 'cpuset.cpus.exclusive.effective')) != RESERVED
@@ -214,7 +223,7 @@ def verify_partition(state):
             effective = child / 'cpuset.cpus.effective'
             if not effective.exists() or cpus(read(effective)) & RESERVED:
                 raise ValueError('ordinary cgroup exclusion is not established')
-    if CONDITION == 'balanced':
+    if CONDITION != 'isolated':
         if (read(group / 'cpuset.cpus.partition') != 'member'
                 or read(group / 'cgroup.procs')
                 or cpus(read(group / 'cpuset.cpus.effective')) != HOUSE
@@ -272,7 +281,7 @@ def configure(state):
         mutate(state, child / 'cpuset.mems', '0')
     mutate(state, group / 'workers/cpuset.cpus.exclusive', mask(RESERVED))
     mutate(state, group / 'workers/cpuset.cpus.partition',
-           'root' if CONDITION == 'balanced' else 'isolated')
+           'isolated' if CONDITION == 'isolated' else 'root')
     for path in (group / 'cgroup.procs', group / 'controller/cgroup.procs', group / 'workers/cgroup.procs'):
         delegate_procs(state, path)
     verify_partition(state)
@@ -393,9 +402,9 @@ def serve():
                'cgroup': str(unit_group(state) / 'workers'), 'worker_cpus': list(range(8)),
                'reserved_cpus': sorted(RESERVED), 'controller_cpus': sorted(HOUSE),
                'residual_interference': 'Shared package and NUMA memory; hard IRQ and root kernel activity remain. No frequency, boost, SMT or IRQ changes.'}
-    if CONDITION == 'balanced':
-        receipt.update(schema='measurement-balanced-qualification/v1',
-                       condition='balanced', partition_mode='root')
+    if CONDITION != 'isolated':
+        receipt.update(schema='measurement-' + CONDITION + '-qualification/v1',
+                       condition=CONDITION, partition_mode='root')
     atomic(ROOT / 'public/authority.json', receipt)
     state['admission_probe'] = 'passed; no codec or real input invoked'
     state['ready'] = True
@@ -454,8 +463,8 @@ def _restore():
     receipt = {'issues': issues, 'cleanup_executed': True,
            'final_verification': 'run verify after unit cgroup removal',
            'before': state['before'], 'unit': state['unit']}
-    if CONDITION == 'balanced':
-        receipt.update(condition='balanced', partition_mode='root')
+    if CONDITION != 'isolated':
+        receipt.update(condition=CONDITION, partition_mode='root')
     atomic(ROOT / 'public/restoration.json', receipt)
     return bool(issues)
 
@@ -493,14 +502,14 @@ def start(uid, authority):
     (ROOT / 'helper.py').chmod(0o444)
     identity = str(uuid.uuid4())
     lease = BALANCED_LEASE if CONDITION == 'balanced' else LEASE
-    state = {'schema': BALANCED_SCHEMA if CONDITION == 'balanced' else SCHEMA, 'id': identity,
+    state = {'schema': reservation_schema(), 'id': identity,
              'unit': 'emuella-measurement-reservation-' + identity + '.service',
              'uid': uid, 'gid': account.pw_gid, 'issuer': account.pw_name,
              'authority': authority, 'boot': read('/proc/sys/kernel/random/boot_id'),
              'helper_sha256': hashlib.sha256(source).hexdigest(), 'before': before,
              'expires_epoch': time.time() + lease, 'changes': [], 'ownership': []}
-    if CONDITION == 'balanced':
-        state.update(condition='balanced', partition_mode='root')
+    if CONDITION != 'isolated':
+        state.update(condition=CONDITION, partition_mode='root')
     save(state)
     ROOT.chmod(0o755)  # Controller can now traverse to its private socket directory.
     helper = str(ROOT / 'helper.py')
@@ -510,7 +519,7 @@ def start(uid, authority):
             '-p', 'CPUAffinity=8-15 24-31', '-p', 'RuntimeMaxSec=' + str(lease),
             '-p', 'TimeoutStopSec=150', '-p', 'KillMode=control-group',
             '-p', 'ExecStopPost=/usr/bin/python3 -I ' + helper +
-            (' --condition balanced' if CONDITION == 'balanced' else '') + ' restore',
+            (' ' + ' '.join(condition_args()) if condition_args() else '') + ' restore',
             '/usr/bin/python3', '-I', helper, *condition_args(), 'serve']
     try:
         command(*args)
@@ -518,7 +527,8 @@ def start(uid, authority):
         while time.monotonic() < deadline:
             if (ROOT / 'public/authority.json').exists():
                 print('Reservation ready. Authority: ' + str(ROOT / 'public/authority.json'))
-                print('Run exactly one ordinary-user command through this helper run -- /absolute/program ...')
+                print('Run exactly one ordinary-user command through this helper ' +
+                      ' '.join([*condition_args(), 'run', '--', '/absolute/program', '...']))
                 return
             if (ROOT / 'public/restoration.json').exists():
                 raise ValueError('setup failed; inspect restoration receipt')
@@ -541,7 +551,7 @@ def start(uid, authority):
 def run(argv):
     if os.geteuid() == 0:
         raise PermissionError('run the measurement command as the ordinary task user')
-    if CONDITION == 'balanced':
+    if CONDITION != 'isolated':
         load()  # Bind the new mode to its safe, hash-bound journal before admission.
     if argv and argv[0] == '--':
         argv = argv[1:]
@@ -639,8 +649,8 @@ def retire_failed():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--condition', choices=('isolated', 'balanced'), default='isolated',
-                        help='balanced uses a separate finite load-balanced exclusive reservation')
+    parser.add_argument('--condition', choices=('isolated', 'balanced', 'balanced-aa'), default='isolated',
+                        help='balanced and balanced-aa use separate finite load-balanced exclusive reservations')
     commands = parser.add_subparsers(dest='action', required=True)
     launch = commands.add_parser('start')
     launch.add_argument('--uid', type=int, required=True)
