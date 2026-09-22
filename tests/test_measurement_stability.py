@@ -233,16 +233,19 @@ class StabilityTests(unittest.TestCase):
             original=s.analysis._estimate
             cases=[('missing-restoration',None,1,100),
                    ('failed-restoration',dict(restored=False,worker_cgroup_empty=True),1,100),
+                   ('worker-cgroup-not-empty',dict(restored=True,worker_cgroup_empty=False),1,100),
                    ('wall-cap',dict(restored=True,worker_cgroup_empty=True),s.WALL_CAP+1,100),
-                   ('evidence-cap',dict(restored=True,worker_cgroup_empty=True),1,s.BYTE_CAP+1)]
+                   ('evidence-cap',dict(restored=True,worker_cgroup_empty=True),1,s.BYTE_CAP+1),
+                   ('valid',dict(restored=True,worker_cgroup_empty=True),1,100)]
             with patch.object(s.analysis,'_estimate',side_effect=lambda ignored,a,b:original(estimator,a,b)), patch.object(s,'estimator_identity',return_value=binding['estimator']), patch.object(s.p,'started_count',return_value=964):
                 for label,restoration,wall,size in cases:
                     (root/'completion.json').write_text(json.dumps(dict(started_calls=964,failures=[],wall_seconds=wall,new_evidence_bytes=size)))
                     if restoration is not None: (root/'restoration.json').write_text(json.dumps(restoration))
                     report_path=root/(label+'.json');s.analyse(root,executable,report_path)
                     report=json.loads(report_path.read_text())
-                    self.assertFalse(report['operationally_complete'])
-                    self.assertTrue(all(cell['disposition']==s.analysis.INCOMPLETE for cell in report['cells']))
+                    self.assertEqual(report['operationally_complete'],label=='valid')
+                    expected=s.analysis.DEMONSTRATED if label=='valid' else s.analysis.INCOMPLETE
+                    self.assertTrue(all(cell['disposition']==expected for cell in report['cells']))
                     self.assertTrue(all(cell['session_only_disposition']==s.analysis.DEMONSTRATED for cell in report['cells']))
                     self.assertTrue(all(session['valid'] and session['estimator'] and session['projections'] for session in report['sessions']))
 
