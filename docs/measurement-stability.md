@@ -4,7 +4,8 @@
 > single-core execution for the nominal eight-worker calls. The original interval
 > arithmetic and restoration record stand, but parallel execution and transfer to
 > panel confirmation are not qualified. See the [follow-up audit](measurement-execution-integrity.md).
-> No new A/A study or panel confirmation has been launched.
+> The subsequent [balanced-condition A/A study](balanced-measurement-stability-results.md)
+> is a separate completed record. Panel confirmation remains unlaunched.
 
 `measurement-stability-qualification/v1` is an opt-in prospective condition check
 using the unchanged production comparator and the inherited
@@ -270,3 +271,8 @@ post-run helper verification; the runner's affinity receipt alone is insufficien
 A successful preparation, tooling merge or diagnostic result is not a precision
 verdict. Fresh study results must assess all sessions in both orientations and
 retain full-matrix planning gaps before reconsidering the suspended confirmation.
+
+The completed balanced cohort is recorded in
+[balanced production A/A results](balanced-measurement-stability-results.md).
+It preserves the historical isolated observations separately and does not
+authorise or launch panel confirmation.
