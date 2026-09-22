@@ -4,7 +4,8 @@
 > single-core execution for the nominal eight-worker calls. The original interval
 > arithmetic and restoration record stand, but parallel execution and transfer to
 > panel confirmation are not qualified. See the [follow-up audit](measurement-execution-integrity.md).
-> No new A/A study or panel confirmation has been launched.
+> The subsequent [balanced-condition A/A study](balanced-measurement-stability-results.md)
+> is a separate completed record. Panel confirmation remains unlaunched.
 
 `measurement-stability-qualification/v1` is an opt-in prospective condition check
 using the unchanged production comparator and the inherited
