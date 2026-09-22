@@ -23,6 +23,9 @@ This implementation supports one enforceable arrangement: an **existing delegate
 cgroup-v2 isolated cpuset partition**, empty before/between worker calls, with no
 child cgroups, exclusive effective CPUs covering the eight selected physical
 cores and all their SMT siblings. It never creates or alters that partition.
+The optional [temporary reservation helper](measurement-reservation.md) can
+provision this arrangement after explicit administrative authorisation and local
+authentication; the measurement runner itself remains read-only for host settings.
 A reviewed resource-owner authority receipt must identify the active window,
 issuer and authority, reservation and controller CPUs, and residual shared-cache,
 package, memory and interrupt interference. Authority is independently checked by
