@@ -1,4 +1,4 @@
-"""Authored offline diagnostic evidence; no codec calls or host policy changes."""
+"""Authored diagnostics; opt-in synthetic codec checks, no protected inputs or host policy changes."""
 import copy
 from contextlib import ExitStack, contextmanager
 import importlib.util
@@ -6,6 +6,8 @@ import json
 import os
 from pathlib import Path
 import tempfile
+import socket
+import subprocess
 from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
@@ -128,7 +130,7 @@ class FrozenBindingTests(unittest.TestCase):
             root = Path(temporary); original = root/'original.json'
             cells = [dict(index=i) for i in range(4)]
             original.write_text(json.dumps(dict(cells=cells)))
-            build = dict(parallel_diagnostics=True,codec=dict(source_revision=d.p.CODEC),
+            build = dict(benchmark={},parallel_diagnostics=True,codec=dict(source_revision=d.p.CODEC),
                 encoder_backend='default',scheduling_window='default',
                 command=['cargo','--features',d.FEATURES,'--profile','perf'])
             binding = dict(schema=d.SCHEMA,caps=copy.deepcopy(d.CAPS),criteria=copy.deepcopy(d.CRITERIA),
@@ -137,6 +139,7 @@ class FrozenBindingTests(unittest.TestCase):
             stack.enter_context(patch.dict(os.environ,{},clear=True))
             stack.enter_context(patch.object(d.helper,'policy',return_value='policy'))
             stack.enter_context(patch.object(d.refresh,'bind',return_value=build))
+            stack.enter_context(patch.object(d.refresh,'worker_sources',return_value={}))
             stack.enter_context(patch.object(d.refresh.classic,'clean_source',return_value='runner'))
             stack.enter_context(patch.object(d,'sha',side_effect=lambda path:d.ORIGINAL if str(path)==str(original) else d.refresh.classic.MANIFEST))
             stack.enter_context(patch.object(d.p,'bytes_used',return_value=0))
@@ -251,6 +254,38 @@ class SharedRunnerTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'monitor'):
                 d.refresh.run_process('unused',{},Path('/unused'),[0],parallel_diagnostics=True)
             spawn.assert_not_called()
+
+
+@unittest.skipUnless(os.environ.get('EMUELLA_PARALLEL_DIAGNOSTIC_TEST_WORKER'), 'opt-in built diagnostic worker')
+class AuthoredWorkerJourney(unittest.TestCase):
+    def test_actual_fresh_decoder_transport_exactness_and_cpu_boundaries(self):
+        binary=Path(os.environ['EMUELLA_PARALLEL_DIAGNOSTIC_TEST_WORKER']).resolve()
+        with tempfile.TemporaryDirectory(prefix='emuella-authored-') as temporary:
+            root=Path(temporary)
+            raw=bytes((i*37+i//13)%256 for i in range(128*128*3))
+            (root/'raw').write_bytes(raw)
+            (root/'input.ppm').write_bytes(b'P6\n128 128\n255\n'+raw)
+            subprocess.run(['opj_compress','-i',str(root/'input.ppm'),'-o',str(root/'stream.j2k'),'-n','3','-b','64,64','-mct','1'],check=True,capture_output=True)
+            for workers in (1,8):
+                request=dict(codec='emuella',operation='decode',case_id='authored-128-rgb',round=0,width=128,height=128,
+                             components=3,bits=8,style=0,workers=workers,layout='interleaved',raw_path=str(root/'raw'),
+                             raw_sha256=d.sha(root/'raw'),stream_path=str(root/'stream.j2k'),stream_sha256=d.sha(root/'stream.j2k'),
+                             max_working_bytes=d.refresh.classic.WORKING,max_output_bytes=d.refresh.classic.OUTPUT)
+                folder=root/f'call-{workers}'; endpoint=root/f'socket-{workers}'
+                with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as server:
+                    server.bind(str(endpoint)); server.listen(1)
+                    monitor=d.Monitor(server,folder,{},dict(operation='decode',workers=workers),str(binary))
+                    with patch.object(d.s,'environment',return_value={'task_cgroup':{'cpu.stat':'nr_throttled 0'}}):
+                        result=d.refresh.run_process(str(binary),request,folder,list(range(workers)),placement=lambda:None,
+                              parallel_diagnostics=True,monitor=monitor,environment=dict(os.environ,EMUELLA_PARALLEL_DIAGNOSTIC_SOCKET=str(endpoint)))
+                    self.assertEqual(result['status'],0,result)
+                    self.assertEqual(result['observation']['samples_ns'],[])
+                    self.assertTrue(result['observation']['exact'])
+                    assessed=d.assess(monitor.trace,result['observation'])
+                    self.assertGreater(assessed['operation_ns'],0)
+                    self.assertEqual(len(assessed['runtime_deltas_ns']),workers+1)
+                    self.assertEqual(monitor.trace['begin']['pool_threads'],workers)
+                    # Tiny authored input is transport validation, never a stability/parallel qualification.
 
 
 if __name__=='__main__': unittest.main()

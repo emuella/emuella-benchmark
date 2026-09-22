@@ -197,6 +197,7 @@ def verify_binding(binding):
     require(helper.policy()==binding['policy_identity'], 'frozen frequency/boost/SMT policy differs')
     require(not any(os.environ.get(v) for v in ('EMUELLA_TIER1_ENCODER','EMUELLA_CLASSIC_WINDOW','LD_PRELOAD','LD_LIBRARY_PATH')), 'runtime override set')
     b = refresh.bind(Path(binding['build_path']))
+    require(refresh.worker_sources(b['benchmark'])==refresh.worker_sources(binding['runner']), 'compiled worker source differs from runner tree')
     require(b==binding['build'] and b.get('parallel_diagnostics') is True and b['codec']['source_revision']==p.CODEC, 'diagnostic build identity differs')
     require(not any(b.get(k) for k in ('sampling','execution_diagnostics','allocation_diagnostics')), 'mixed diagnostic features')
     require(b['encoder_backend']==b['scheduling_window']=='default' and b['command'][b['command'].index('--features')+1]==FEATURES
@@ -216,7 +217,7 @@ def freeze(args):
     require(args.binding.parent.resolve()==Path(args.build_root).resolve(), 'binding must be in registered build root')
     require(sha(store/'source/LICENSE.txt')==p.NOTICE, 'reviewed rights notice differs')
     binding=dict(schema=SCHEMA, caps=CAPS, criteria=CRITERIA, build_path=str(args.build.resolve()), build=refresh.bind(args.build),
-                 benchmark_source=str(refresh.ROOT), codec_source=str(args.codec_source.resolve()), runner=refresh.classic.clean_source(refresh.ROOT),
+                 benchmark_source=str(args.worker_benchmark_source.resolve()), codec_source=str(args.codec_source.resolve()), runner=refresh.classic.clean_source(refresh.ROOT),
                  original_binding=str(args.original_binding.resolve()), prepared_manifest=old['prepared_manifest'], prepared_sha256=old['prepared_sha256'],
                  cells=old['cells'], build_root=str(args.build_root.resolve()), store=str(store), decisions=args.decisions,
                  policy_identity=helper.policy(), condition='exclusive CPUs0–7 and16–23; partition=root, ordinary internal balancing; unchanged frequency/boost/SMT/IRQ/security',
@@ -268,17 +269,9 @@ def run(args):
                 after=s.environment(receipt,admission)
                 write(args.output/f'call-{index}-environment.json',dict(before=before,after=after))
                 require(not stable_issues(initial,after,receipt), 'condition identity changed')
-                assessment=analyse_trace(monitor.trace,result['observation'])
+                assessment=assess(monitor.trace,result['observation'])
                 for boundary in ('environment_begin','environment_end'):
                     require(not stable_issues(initial,monitor.trace[boundary],receipt), 'operation condition changed')
-                counters=[]
-                for boundary in ('environment_begin','environment_end'):
-                    raw=monitor.trace[boundary]['task_cgroup']['cpu.stat']
-                    counters.append(dict(line.split() for line in raw.splitlines()) if raw else {})
-                require(all('nr_throttled' in c for c in counters), 'mandatory throttle accounting missing')
-                throttle=int(counters[1]['nr_throttled'])-int(counters[0]['nr_throttled'])
-                assessment['nr_throttled_delta']=throttle
-                if throttle: assessment['issues'].append('throttle counter changed'); assessment['supported']=False
                 write(args.output/f'call-{index}-assessment.json',assessment)
                 rows.append(dict(index=index,assessment=assessment))
                 # Valid diagnostic inadequacy remains reportable; no favourable-result stopping.
@@ -293,15 +286,75 @@ def run(args):
                  wall_seconds=(time.monotonic_ns()-start)/1e9,evidence_bytes=p.bytes_used(args.output)))
 
 
+def reconstruct(root):
+    """Offline reconstruction from retained metadata; no live resources or codec."""
+    binding=json.loads((root/'binding.json').read_text())
+    launch=json.loads((root/'launch.json').read_text())
+    require(binding['schema']==SCHEMA and binding['caps']==CAPS and binding['criteria']==CRITERIA
+            and sha(root/'binding.json')==launch['binding_sha256'], 'retained binding identity differs')
+    completion=json.loads((root/'completion.json').read_text())
+    restoration=json.loads((root/'restoration.json').read_text())
+    rows=[]
+    for index,cell in enumerate(binding['cells']):
+        folder=root/f'call-{index}'
+        try:
+            markers=json.loads((root/f'call-{index}-markers.json').read_text())
+            result=json.loads((folder/'result.json').read_text())
+            require(result['status']==0, 'failed worker result')
+            observation=result['observation']
+            for key in ('operation','case_id','workers','style','raw_sha256','stream_sha256'):
+                require(observation[key]==cell['request'][key], 'retained request/response differs')
+            require(observation['binary_sha256']==binding['build']['binary_sha256'] and observation['exact'] is True, 'retained binary/exactness differs')
+            markers['samples']=[json.loads(line) for line in (folder/'thread-samples.jsonl').read_text().splitlines()]
+            assessment=assess(markers,observation)
+            require(assessment==json.loads((root/f'call-{index}-assessment.json').read_text()), 'retained assessment differs from reconstruction')
+            rows.append(dict(index=index,case_id=cell['request']['case_id'],workers=cell['workers'],operation=cell['operation'],assessment=assessment))
+        except (OSError,KeyError,ValueError) as error:
+            rows.append(dict(index=index,incomplete=str(error)))
+    started=len(list(root.glob('call-*-started.json')))
+    complete=(started==completion['started_calls']==4 and not completion['failures']
+              and completion['wall_seconds']<=CAPS['window_seconds']
+              and completion['evidence_bytes']<=CAPS['evidence_bytes']
+              and restoration.get('restored') is True and restoration.get('worker_cgroup_empty') is True
+              and len(rows)==4 and all('assessment' in row for row in rows))
+    return dict(schema=SCHEMA,binding_sha256=launch['binding_sha256'],binary_sha256=binding['build']['binary_sha256'],
+                worker_benchmark_revision=binding['build']['benchmark']['source_revision'],runner_revision=binding['runner']['source_revision'],
+                codec_revision=binding['build']['codec']['source_revision'],started_calls=started,
+                operationally_complete=complete,all_cells_supported=complete and all(r['assessment']['supported'] for r in rows),rows=rows,
+                reservation_restoration='Separate helper verification receipt required; runner restoration alone is insufficient.',
+                scope='Diagnostic only. No headline timings, A/A precision, causal contrast or candidate qualification.')
+
+
+def assess(trace, observation):
+    assessment=analyse_trace(trace,observation)
+    counters=[]
+    for boundary in ('environment_begin','environment_end'):
+        raw=trace[boundary]['task_cgroup']['cpu.stat']
+        counters.append(dict(line.split() for line in raw.splitlines()) if raw else {})
+    require(all('nr_throttled' in c for c in counters), 'mandatory throttle accounting missing')
+    throttle=int(counters[1]['nr_throttled'])-int(counters[0]['nr_throttled'])
+    assessment['nr_throttled_delta']=throttle
+    if throttle:
+        assessment['issues'].append('throttle counter changed'); assessment['supported']=False
+    return assessment
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__); sub=parser.add_subparsers(dest='command',required=True)
     f=sub.add_parser('freeze')
-    for key in ('build','codec-source','original-binding','build-root','binding'): f.add_argument('--'+key,type=Path,required=True)
+    for key in ('build','codec-source','worker-benchmark-source','original-binding','build-root','binding'): f.add_argument('--'+key,type=Path,required=True)
     f.add_argument('--decisions',required=True)
     r=sub.add_parser('run')
     for key in ('binding','authority','output'): r.add_argument('--'+key,type=Path,required=True)
     r.add_argument('--binding-sha256',required=True)
-    args=parser.parse_args(); (freeze if args.command=='freeze' else run)(args)
+    a=sub.add_parser('analyse')
+    a.add_argument('--output',type=Path,required=True); a.add_argument('--report',type=Path,required=True)
+    args=parser.parse_args()
+    if args.command=='analyse':
+        require(not args.report.exists() and args.report.parent.resolve()==args.output.resolve(), 'report must be a new file in retained evidence root')
+        write(args.report,reconstruct(args.output))
+    else:
+        (freeze if args.command=='freeze' else run)(args)
 
 
 if __name__=='__main__': main()

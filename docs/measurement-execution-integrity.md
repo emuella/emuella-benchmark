@@ -113,3 +113,7 @@ corrected scheduling condition needs new bounded A/A evidence before renewed
 confirmation planning. Keep all 28 mandatory contrasts and their original gates;
 no estimator, margin, codec implementation or panel draft changes follow from
 this finding. The candidate remains qualification-pending.
+
+The opt-in [four-call balanced-partition diagnostic](parallel-execution-diagnostic.md)
+implements this next investigation. Tooling availability does not establish a
+measured condition or lift the confirmation hold.

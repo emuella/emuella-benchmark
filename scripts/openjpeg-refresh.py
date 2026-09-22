@@ -110,11 +110,17 @@ def run_process(binary, request, directory, cpus, execution_diagnostics=False, a
         try:
             status = monitor(process, time.monotonic()+120) if monitor else process.wait(timeout=120)
         except subprocess.TimeoutExpired:
-            os.killpg(process.pid, signal.SIGKILL)
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
             process.wait()
             status = 'timeout'
         except BaseException:
-            os.killpg(process.pid, signal.SIGKILL)
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
             process.wait()
             raise
     result = dict(status=status, process_wall_ns=time.monotonic_ns()-start)
