@@ -1,5 +1,68 @@
 # Parallel forward 5/3 dispatch treatment
 
+The one authorised attempt is closed as **NOT QUALIFIED WITHIN BUDGET**.
+Production retains the existing forward transform and defaults. The candidate
+is preserved as a source-only archive in [codec PR #115](https://github.com/emuella/emuella-j2k/pull/115).
+There is no further confirmation, rescue change or retest authorised by this
+result. Historical finite-confirmation v1/v2 remain closed and unchanged.
+
+The [factual evidence](evidence/classic-forward53-parallel-dispatch.json) records
+all 28 endpoint statuses, exact source/build/comparator identities, retained
+receipt locators and SHA-256 bindings, resource observations and restoration.
+The one acquisition used runner `7c5e24c4e07221e2f401b8ee4374f28a969dd406`,
+candidate `4f5bfb39f02e043c9a1f594a8159d3cf86d52c3f` and preparation SHA-256
+`f84c3a97f0bbabf4f7e9530934d853f01ec9da082849fb275f5e76ccbf5e67e8`.
+
+## Terminal observations
+
+Each completed endpoint received exactly 40 AB/BA pairs. These are arithmetic
+means of operation samples and unchanged 99% candidate/baseline relative-time
+intervals; the primary also requires at least 10 ms absolute mean saving.
+
+| Endpoint | Boca RGB8 encode workload | Baseline mean (ms) | Candidate mean (ms) | Relative interval | Required gate |
+|---|---|---:|---:|---|---|
+| 00, sole primary | Bypass, eight workers | 736.661 | 462.905 | −37.7405% to −36.5760% | Pass |
+| 02 | Style zero, eight workers | 788.585 | 524.972 | −33.9847% to −32.8679% | Pass |
+| 01 | Style zero, one worker | 2,434.578 | 2,457.712 | +0.76909% to +1.13169% | Unresolved |
+
+The primary saved **273.75549005 ms** and passed both required predicates.
+Endpoint 01 took **23.13435745 ms more** on the observed means. Its upper bound
+of **+1.1316918582%** exceeded the mandatory +1% limit, while its lower bound
+remained below +1%. The fixed-count interval therefore leaves the non-regression
+gate unresolved; it does not demonstrate regression beyond the unacceptable
+margin. Its legacy ±5% verdict was `equivalent`, which cannot satisfy or replace
+the +1% engineering gate. Primary gains cannot waive that gate.
+
+The runner stopped after **278 starts**: 240 ordinary calls, six preflights and
+32 separate allocation calls. There were no failed worker calls, retries,
+replacement observations or intermediate endpoint decisions. The remaining
+**25 endpoints and 2,370 calls were unstarted**, including endpoint 11's 160-pair
+session and all RGB16 timing endpoints. Acquisition consumed **745.527180032
+seconds**, 67,604,495 evidence bytes and 3,218,419,656 registered build bytes.
+The stopping reason was the unresolved endpoint predicate, not exhaustion of
+the two-hour or storage caps.
+
+All 32 initial allocation calls passed the query-equality and absolute resource
+gates. Across Boca and Mansfield RGB8, styles zero/bypass and worker budgets
+1/2/4/8, both arms' observed requested allocation peaks ranged from 197,314,500
+to 366,357,664 bytes, with unchanged working queries and output capacities.
+These facts cover only the initial matrix; 80 later allocation calls were
+unstarted. Allocation request counts and whole-process CPU/wall/RSS are retained
+as separate descriptive quantities in the factual extract. They do not identify
+the cause of the observed timing difference. Selecting the original serial
+helper is a source-routing property and supplies no serial speed guarantee.
+
+Retained reconstruction reproduced all three decisions with no issues, missing
+terminal receipts or orphaned receipts. Mandatory checks passed for reviewed
+prerequisites and the **observed prefix only**. One successful reservation setup
+hosted the one execution, under lease `df30047d-2a49-4eec-a25c-1f369ac8cd8c`.
+Ordinary restoration and independent installed verification both passed with
+no issues. The exact journal, authority, restoration and privileged verification
+locators/digests remain in the factual evidence. No historical samples were
+pooled; the incomplete matrix does not qualify the candidate for production.
+
+## Frozen acquisition protocol
+
 `classic-forward53-parallel-dispatch/v1` explicitly admits one new source
 comparison through the existing finite runner. Historical finite-confirmation
 v1/v2 contracts and results remain unchanged. This implementation supplies no
