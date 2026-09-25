@@ -121,6 +121,13 @@ def source_treatment(config):
     return source
 
 
+def validate_build_environment(environment):
+    allowed = {'RUSTC', 'CC', 'CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER',
+               'PKG_CONFIG_PATH', 'CARGO_HOME'}
+    if set(environment) - allowed:
+        raise ValueError('build flags/profile/instrumentation override forbidden')
+
+
 def builds(config):
     source = source_treatment(config)
     worker = refresh.classic.clean_source(absolute(config['worker_source']))
@@ -146,9 +153,7 @@ def builds(config):
             profile = tomllib.loads((path.parent/'source/workers/Cargo.toml').read_text())['profile']['perf']
             if profile.get('lto') != 'thin' or profile.get('codegen-units') != 1 or build['cargo_configs']:
                 raise ValueError('matched unmodified build recipe required')
-            allowed_environment = {'RUSTC', 'CC', 'CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER', 'PKG_CONFIG_PATH'}
-            if set(build['environment']) - allowed_environment:
-                raise ValueError('build flags/profile/instrumentation override forbidden')
+            validate_build_environment(build['environment'])
             lines = [line for line in (path.parent/'cargo.stderr').read_text().splitlines() if 'Running ' in line and '--crate-name classic_compare_worker ' in line]
             if len(lines) != 1 or any(flag not in lines[0] for flag in ('opt-level=3','lto=thin','codegen-units=1','debuginfo=line-tables-only')):
                 raise ValueError('effective ordinary compiler flags differ')

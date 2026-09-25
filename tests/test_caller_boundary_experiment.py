@@ -80,6 +80,17 @@ class BoundaryTests(unittest.TestCase):
         for bad in (None,float('nan'),-1):
             self.assertTrue(c.budget_issues(dict(value,wall_seconds=bad)))
 
+    def test_bound_tool_and_cache_environment_rejects_flag_overrides(self):
+        environment = dict(RUSTC='/toolchain/rustc', CC='/usr/bin/cc',
+            CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER='/usr/bin/cc',
+            PKG_CONFIG_PATH='/native/lib/pkgconfig', CARGO_HOME='/cache/cargo')
+        c.validate_build_environment(environment)
+        c.validate_build_environment({})
+        for key in ('RUSTFLAGS', 'CARGO_ENCODED_RUSTFLAGS', 'CARGO_PROFILE_PERF_LTO',
+                    'RUSTC_WRAPPER', 'CFLAGS', 'CARGO_BUILD_TARGET'):
+            with self.subTest(key=key), self.assertRaisesRegex(ValueError, 'override forbidden'):
+                c.validate_build_environment(dict(environment, **{key:'changed'}))
+
     def test_request_cannot_change_treatment_endpoint(self):
         request=dict(codec='emuella',operation='encode',case_id='106_authored-RGB8',round=0,width=5577,height=5036,components=3,bits=8,layout='interleaved',style=0,workers=1,raw_path='/raw',stream_path='/stream',raw_sha256=c.RAW,stream_sha256=c.STREAM,max_working_bytes=c.refresh.classic.WORKING,max_output_bytes=c.refresh.classic.OUTPUT)
         c.validate_request(request)
