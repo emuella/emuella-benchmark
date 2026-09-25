@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Separately authorised v2 finite acquisition; never reopen the closed v1 attempt."""
+"""Explicitly bound finite acquisitions; historical attempts remain closed."""
 import argparse
 import copy
 import fcntl
@@ -26,6 +26,7 @@ panels = refresh.module('finite_panels', 'classic-forward53-panels.py')
 launcher = refresh.module('finite_launcher', 'measurement_launcher.py')
 SCHEMA = 'classic-forward53-finite-confirmation/v2'
 PREPARATION = 'classic-forward53-finite-confirmation-preparation/v2'
+DISPATCH_PREPARATION = 'classic-forward53-parallel-dispatch-preparation/v1'
 RESERVATION = 'measurement-balanced-reusable-qualification/v1'
 INSTALL = Path('/usr/local/libexec/emuella-measurement')
 LEASES = Path('/var/lib/emuella-measurement/leases')
@@ -45,10 +46,42 @@ def derive(v1, digest, register, design, authority):
     return result
 
 
+def derive_dispatch(v1, digest, register, design, authority, source_text, source_sha, review_text):
+    """Import the complete old design, replacing only the reviewed treatment."""
+    result = derive(v1, digest, register, design, authority)
+    source = json.loads(source_text)
+    result.update(schema=finite.DISPATCH_SCHEMA, source_treatment_text=source_text,
+                  source_treatment_sha256=source_sha, source_review_text=review_text)
+    result['sources'].update(baseline_codec=source['baseline_codec'], candidate_codec=source['candidate_codec'])
+    finite.dispatch_source(result)
+    return result
+
+
+def source_texts(path, digest):
+    text = Path(path).read_bytes().decode('utf-8')
+    if hashlib.sha256(text.encode('utf-8')).hexdigest() != digest:
+        raise ValueError('externally pinned source treatment digest differs')
+    review = json.loads(text)['independent_review']
+    return text, absolute(review['path']).read_bytes().decode('utf-8')
+
+
+def preparation_schema(contract):
+    return {SCHEMA: PREPARATION, finite.DISPATCH_SCHEMA: DISPATCH_PREPARATION}[contract['schema']]
+
+
+def record_schema(binding):
+    return binding['manifest']['schema']
+
+
 def manifest(config):
     paths = config['contract']
     value = derive(absolute(paths['v1']), paths['v1_sha256'], absolute(paths['register']),
                    absolute(paths['design']), config['authority'])
+    if 'source_treatment' in paths or 'source_treatment_sha256' in paths:
+        text, review = source_texts(absolute(paths['source_treatment']), paths['source_treatment_sha256'])
+        value = derive_dispatch(absolute(paths['v1']), paths['v1_sha256'], absolute(paths['register']),
+                                absolute(paths['design']), config['authority'], text,
+                                paths['source_treatment_sha256'], review)
     if sha(absolute(paths['manifest'])) != paths['manifest_sha256']:
         raise ValueError('v2 manifest digest differs')
     if json.loads(Path(paths['manifest']).read_text()) != value:
@@ -56,15 +89,46 @@ def manifest(config):
     return value
 
 
+def verify_source_treatment(config, contract):
+    """Bind clean live trees and deterministic full Git diffs before any input use."""
+    source = finite.dispatch_source(contract)
+    checkout = absolute(config['codec_sources']['candidate'])
+    def git(*args):
+        return subprocess.check_output(['git', '-C', str(checkout), *args])
+    for arm in ('baseline', 'candidate', 'donor'):
+        if git('rev-parse', source[arm+'_codec']+'^{tree}').decode().strip() != source[arm+'_tree']:
+            raise ValueError('reviewed source tree differs: '+arm)
+    for key, before, after in (
+            ('production_to_candidate_diff_sha256', 'baseline_codec', 'candidate_codec'),
+            ('donor_to_candidate_diff_sha256', 'donor_codec', 'candidate_codec'),
+            ('recorded_to_baseline_diff_sha256', 'recorded_production_codec', 'baseline_codec')):
+        diff = git('diff', '--no-ext-diff', '--no-textconv', '--binary', '--full-index',
+                   '--no-renames', '--no-color', '--diff-algorithm=myers', '--no-indent-heuristic',
+                   '--unified=3', '--src-prefix=a/', '--dst-prefix=b/', source[before], source[after], '--')
+        if hashlib.sha256(diff).hexdigest() != source[key]:
+            raise ValueError('reviewed source diff differs: '+key)
+    drift = git('diff', '--name-only', source['recorded_production_codec'], source['baseline_codec'], '--').decode().splitlines()
+    if drift != ['docs/forward53-panels.md', 'docs/performance-candidates.md',
+                 'docs/performance-candidates/classic-forward53-panels.patch.txt']:
+        raise ValueError('recorded production to live baseline documentation drift differs')
+    return source
+
+
 def build_bindings(config):
     if set(config['arms']) != {'baseline', 'candidate'}:
         raise ValueError('exactly two frozen source arms required')
     builds = {}
+    sources = dict(baseline_codec=finite.BASELINE, candidate_codec=finite.CANDIDATE)
+    if 'source_treatment' in config.get('contract', {}):
+        sources = verify_source_treatment(config, manifest(config))
     benchmark = refresh.classic.clean_source(absolute(config['benchmark_source']))
-    for arm, revision in (('baseline', finite.BASELINE), ('candidate', finite.CANDIDATE)):
+    for arm in ('baseline', 'candidate'):
+        revision = sources[arm+'_codec']
         source = refresh.classic.clean_source(absolute(config['codec_sources'][arm]))
         if source['source_revision'] != revision or set(config['arms'][arm]) != {'ordinary', 'resource'}:
             raise ValueError('frozen source or separate build modes differ')
+        if arm+'_tree' in sources and source['source_tree'] != sources[arm+'_tree']:
+            raise ValueError('clean source tree differs from independently reviewed treatment')
         builds[arm] = {}
         for mode in ('ordinary', 'resource'):
             path = absolute(config['arms'][arm][mode])
@@ -199,9 +263,11 @@ def file_identity(path):
 def evidence_roots(config):
     scratch = absolute(config['build_root'])
     marker = scratch/'.emuella-campaign-scratch.json'
-    if (scratch.name != 'classic-forward53-finite-confirmation-v2' or marker.is_symlink()
+    slug = ('classic-forward53-parallel-dispatch' if 'source_treatment' in config.get('contract', {})
+            else 'classic-forward53-finite-confirmation-v2')
+    if (scratch.name != slug or marker.is_symlink()
             or json.loads(marker.read_text()) != dict(kind='emuella-campaign-scratch', schema_version=1,
-                                                     slug='classic-forward53-finite-confirmation-v2')):
+                                                     slug=slug)):
         raise ValueError('registered finite v2 build scratch required')
     roots = [absolute(p) for p in config['evidence_roots']]
     outputs = {absolute(s['output']) for s in config['stores'].values()}
@@ -222,6 +288,12 @@ def host_policy():
     return result
 
 
+def validate_prerequisite_treatment(contract, key, evidence):
+    if (contract['schema'] == finite.DISPATCH_SCHEMA and key != 'independent_decode'
+            and evidence.get('source_treatment_sha256') != contract['source_treatment_sha256']):
+        raise ValueError('new source prerequisite must bind the reviewed treatment: '+key)
+
+
 def prepare_checkpoint(config_path, output, previous=None, previous_sha=None):
     config = json.loads(config_path.read_text())
     contract = manifest(config)
@@ -232,6 +304,7 @@ def prepare_checkpoint(config_path, output, previous=None, previous_sha=None):
         raise ValueError('both fixed comparators and complete reviewed prerequisites required')
     prerequisites = {}
     for key, evidence in config['prerequisites'].items():
+        validate_prerequisite_treatment(contract, key, evidence)
         if sha(absolute(evidence['path'])) != evidence['sha256']:
             raise ValueError('reviewed prerequisite evidence differs: '+key)
         prerequisites[key] = evidence
@@ -247,7 +320,7 @@ def prepare_checkpoint(config_path, output, previous=None, previous_sha=None):
         for info in config['stores'].values():
             if Path(info['output']).exists():
                 raise ValueError('fresh output roots required; use an explicit zero-start preparation checkpoint')
-    binding = dict(schema=PREPARATION, config=config, manifest=contract, builds=builds, stores=stores,
+    binding = dict(schema=preparation_schema(contract), config=config, manifest=contract, builds=builds, stores=stores,
                    requests=requests, estimators=estimators, prerequisites=prerequisites,
                    runner=refresh.classic.clean_source(refresh.ROOT), installation=installed_binding(),
                    warmups=0, samples_per_process=1, boundary=refresh.BOUNDARY, host_policy=host_policy())
@@ -268,6 +341,8 @@ def prepare_checkpoint(config_path, output, previous=None, previous_sha=None):
         files.update([estimator['path'], *map(str, [root/'provenance.json', root/'src/owner_compare.rs', root/'src/main.rs', root/'Cargo.toml'])])
     files.update(str(p) for p in (refresh.ROOT/'scripts').glob('*.py'))
     files.update(config['contract'][k] for k in ('v1', 'register', 'design', 'manifest'))
+    if contract['schema'] == finite.DISPATCH_SCHEMA:
+        files.update((config['contract']['source_treatment'], finite.dispatch_source(contract)['independent_review']['path']))
     files.update(str(path) for path in chain)
     if previous is not None:
         binding['prelaunch_predecessor'] = dict(path=str(previous), sha256=previous_sha, zero_starts_verified=True)
@@ -281,7 +356,8 @@ def prepare_checkpoint(config_path, output, previous=None, previous_sha=None):
             root = Path(info['output']); root.mkdir()
             notice = Path(info['prepared']).parent/panels.NOTICES[name][0]
             (root/'LICENSE.txt').write_bytes(notice.read_bytes())
-            (root/'NOTICE.txt').write_text(panels.ATTRIBUTIONS[name]+' CC BY-SA 4.0. Local finite v2 observations; protected payloads remain in the approved store.\n')
+            label = 'parallel dispatch v1' if contract['schema'] == finite.DISPATCH_SCHEMA else 'finite v2'
+            (root/'NOTICE.txt').write_text(panels.ATTRIBUTIONS[name]+' CC BY-SA 4.0. Local '+label+' observations; protected payloads remain in the approved store.\n')
     write(output, binding)
     return binding
 
@@ -296,7 +372,7 @@ def check_prelaunch_checkpoint(config, output, previous, digest):
         if pointer in chain or pointer.parent != root or pointer.is_symlink() or sha(pointer) != expected:
             raise ValueError('immutable preparation predecessor differs')
         old = json.loads(pointer.read_text())
-        if (old.get('schema') != PREPARATION or old['manifest'] != manifest(config)
+        if (old.get('schema') != preparation_schema(old['manifest']) or old['manifest'] != manifest(config)
                 or {k:v for k,v in old['config'].items() if k != 'prerequisites'} !=
                    {k:v for k,v in config.items() if k != 'prerequisites'}):
             raise ValueError('prelaunch checkpoint cannot change the acquisition identity or treatment')
@@ -327,8 +403,13 @@ def read_preparation(path, digest):
     if sha(path) != digest:
         raise ValueError('externally pinned preparation digest differs')
     value = json.loads(path.read_text())
-    if value['schema'] != PREPARATION or value['manifest'] != manifest(value['config']):
+    if value['schema'] != preparation_schema(value['manifest']) or value['manifest'] != manifest(value['config']):
         raise ValueError('prepared schema/contract differs')
+    if value['manifest']['schema'] == finite.DISPATCH_SCHEMA:
+        if value['prerequisites'] != value['config']['prerequisites'] or set(value['prerequisites']) != set(PREREQUISITES):
+            raise ValueError('prepared source prerequisites differ')
+        for key, evidence in value['prerequisites'].items():
+            validate_prerequisite_treatment(value['manifest'], key, evidence)
     return value
 
 
@@ -583,7 +664,7 @@ def acquire(binding, preparation_path, digest, authority_path):
                 raise
         finally:
             if start is not None:
-                write(root/'completion.json', dict(schema=SCHEMA, disposition=disposition, issues=issues,
+                write(root/'completion.json', dict(schema=record_schema(binding), disposition=disposition, issues=issues,
                     decisions=decisions, started_calls=len(rows), consumption=consumption(binding, start, len(rows)),
                     preparation_sha256=digest, missing_call_ids=binding['manifest']['schedule']['call_order'][len(rows):],
                     promotion_authorised=False, independent_restoration='required after controller exit'))
@@ -690,7 +771,7 @@ def execute_owned(binding, preparation_path, digest, authority_path):
         finally:
             for signum, handler in old_handlers.items():
                 signal.signal(signum, handler)
-        write(root/'execution-complete.json', dict(schema=SCHEMA, status=status, error=error,
+        write(root/'execution-complete.json', dict(schema=record_schema(binding), status=status, error=error,
             lease_id=lease.name, restoration_verified=terminal is not None,
             production_decision='requires complete retained evidence and independent engineering review'))
     return 1 if error is not None or status != 0 else 0
@@ -706,11 +787,15 @@ def execute(preparation_path, digest, authority_path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
-    derive_command = commands.add_parser('derive')
-    for key in ('v1', 'register', 'design', 'output'):
-        derive_command.add_argument('--'+key, type=Path, required=True)
-    derive_command.add_argument('--sha256', required=True)
-    derive_command.add_argument('--authority', required=True)
+    for name in ('derive', 'derive-dispatch'):
+        derive_command = commands.add_parser(name)
+        for key in ('v1', 'register', 'design', 'output'):
+            derive_command.add_argument('--'+key, type=Path, required=True)
+        derive_command.add_argument('--sha256', required=True)
+        derive_command.add_argument('--authority', required=True)
+        if name == 'derive-dispatch':
+            derive_command.add_argument('--source-treatment', type=Path, required=True)
+            derive_command.add_argument('--source-treatment-sha256', required=True)
     command = commands.add_parser('prepare')
     for key in ('config', 'output'):
         command.add_argument('--'+key, type=Path, required=True)
@@ -724,6 +809,10 @@ def main():
     args = parser.parse_args()
     if args.command == 'derive':
         write(args.output, derive(args.v1, args.sha256, args.register, args.design, args.authority))
+    elif args.command == 'derive-dispatch':
+        text, review = source_texts(args.source_treatment, args.source_treatment_sha256)
+        write(args.output, derive_dispatch(args.v1, args.sha256, args.register, args.design, args.authority,
+                                          text, args.source_treatment_sha256, review))
     elif args.command == 'prepare':
         prepare(args.config, args.output, args.previous_preparation, args.previous_sha256)
     elif args.command == 'execute':

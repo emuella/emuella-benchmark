@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reconstruct retained finite v2 evidence without corpus calls or a live lease."""
+"""Reconstruct retained finite evidence without corpus calls or a live lease."""
 import argparse
 import hashlib
 import json
@@ -15,10 +15,16 @@ def retained_binding(path, digest, v1, register, design):
     if live.sha(path) != digest:
         raise ValueError('externally pinned preparation digest differs')
     binding = json.loads(path.read_text())
-    if binding.get('schema') != live.PREPARATION:
+    if binding.get('schema') != live.preparation_schema(binding['manifest']):
         raise ValueError('retained v2 preparation required')
-    expected = live.derive(v1, binding['manifest']['predecessor_sha256'], register, design,
-                           binding['config']['authority'])
+    contract = binding['manifest']
+    if contract['schema'] == finite.DISPATCH_SCHEMA:
+        expected = live.derive_dispatch(v1, contract['predecessor_sha256'], register, design,
+            binding['config']['authority'], contract['source_treatment_text'],
+            contract['source_treatment_sha256'], contract['source_review_text'])
+    else:
+        expected = live.derive(v1, contract['predecessor_sha256'], register, design,
+                               binding['config']['authority'])
     if binding['manifest'] != expected:
         raise ValueError('retained v2 derivation differs')
     return binding
@@ -132,6 +138,7 @@ def reconstruct(binding, digest, estimators):
     for key in live.PREREQUISITES:
         record = binding['prerequisites'][key]
         try:
+            live.validate_prerequisite_treatment(binding['manifest'], key, record)
             if live.sha(record['path']) != record['sha256']:
                 raise ValueError('prerequisite digest differs')
             evidence[record['path']] = record['sha256']
@@ -146,7 +153,7 @@ def reconstruct(binding, digest, estimators):
         checks['restoration'] = runner_restored(root, started, evidence, json.loads(restoration['authority_text'])['controller_cpus'])
         if not checks['restoration']:
             raise ValueError('ordinary runner restoration absent or invalid')
-        if (not terminal or terminal['schema'] != live.SCHEMA or terminal['lease_id'] != execution['lease_id']
+        if (not terminal or terminal['schema'] != live.record_schema(binding) or terminal['lease_id'] != execution['lease_id']
                 or terminal.get('restoration_verified') is not True):
             raise ValueError('outside execution completion absent or restoration failed')
     except (OSError, ValueError, KeyError, TypeError) as error:
@@ -165,7 +172,7 @@ def reconstruct(binding, digest, estimators):
     except (OSError, ValueError, KeyError, TypeError) as error:
         issues.append('retained call gates: '+str(error))
     consumption = completion.get('consumption', {}) if completion else {}
-    if (not completion or completion.get('schema') != live.SCHEMA or completion.get('preparation_sha256') != digest
+    if (not completion or completion.get('schema') != live.record_schema(binding) or completion.get('preparation_sha256') != digest
             or completion.get('started_calls') != len(started)
             or completion.get('missing_call_ids') != binding['manifest']['schedule']['call_order'][len(started):]):
         issues.append('complete bound acquisition accounting absent or inconsistent')
@@ -183,9 +190,10 @@ def reconstruct(binding, digest, estimators):
     result['issues'].extend(issues)
     if result['issues']:
         result['disposition'] = finite.INCOMPLETE
+    label = 'parallel dispatch v1' if binding['manifest']['schema'] == finite.DISPATCH_SCHEMA else 'v2'
     result.update(preparation_sha256=digest, started_receipts=started, missing_terminal_call_ids=missing,
                   orphaned_receipts=orphaned, evidence_sha256=evidence, independent_restoration=restoration,
-                  interpretation='Retained v2 reconstruction; no corpus invocation, live lease or production authority')
+                  interpretation='Retained '+label+' reconstruction; no corpus invocation, live lease or production authority')
     return result
 
 

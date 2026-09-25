@@ -14,6 +14,12 @@ import precision_feasibility_analysis as analysis
 
 SCHEMA = 'classic-forward53-finite-confirmation/v1'
 V2_SCHEMA = 'classic-forward53-finite-confirmation/v2'
+DISPATCH_SCHEMA = 'classic-forward53-parallel-dispatch/v1'
+DISPATCH_BASELINE = 'a7576ad03486e097ac923b8e49cac39a1cbef5d2'
+SOURCE_FIELDS = ('recorded_production_codec', 'baseline_codec', 'donor_codec', 'candidate_codec',
+                 'baseline_tree', 'donor_tree', 'candidate_tree',
+                 'production_to_candidate_diff_sha256', 'donor_to_candidate_diff_sha256',
+                 'recorded_to_baseline_diff_sha256')
 ORDER = (0, 2, 1, 3, 10, 11, 4, 5, 6, 7, 8, 9, *range(12, 28))
 BASELINE = '975a5e734773578f61abf76d5fddfbd837f3bd7d'
 CANDIDATE = 'd60859a8595554be52c8748a8e8c85b69614fea5'
@@ -28,6 +34,40 @@ CHECKS = ('source_correctness', 'independent_decode', 'resources', 'output_failu
 
 def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def hex_identity(value, size):
+    return isinstance(value, str) and len(value) == size and all(c in '0123456789abcdef' for c in value)
+
+
+def dispatch_source(manifest):
+    """Validate retained immutable source/review bytes without accessing live files."""
+    text = manifest['source_treatment_text']
+    if hashlib.sha256(text.encode('utf-8')).hexdigest() != manifest['source_treatment_sha256']:
+        raise ValueError('source treatment digest differs')
+    source = json.loads(text)
+    if (set(source) != {'schema', 'independent_review', *SOURCE_FIELDS}
+            or source['schema'] != 'classic-forward53-parallel-dispatch-source/v1'
+            or source['recorded_production_codec'] != BASELINE
+            or source['baseline_codec'] != DISPATCH_BASELINE or source['donor_codec'] != CANDIDATE
+            or source['candidate_codec'] in (BASELINE, DISPATCH_BASELINE, CANDIDATE)
+            or any(not hex_identity(source[key], 64 if key.endswith('_sha256') else 40) for key in SOURCE_FIELDS)):
+        raise ValueError('explicit parallel dispatch source identities required')
+    evidence = source['independent_review']
+    review_text = manifest['source_review_text']
+    if (set(evidence) != {'path', 'sha256'} or not isinstance(evidence['path'], str) or not evidence['path']
+            or hashlib.sha256(review_text.encode('utf-8')).hexdigest() != evidence['sha256']):
+        raise ValueError('independent source review digest differs')
+    review = json.loads(review_text)
+    if (review.get('schema') != 'classic-forward53-parallel-dispatch-source-review/v1'
+            or review.get('verdict') != 'PASS'
+            or any(not isinstance(review.get(k), str) or not review[k].strip() for k in ('reviewer', 'locator'))
+            or review.get('sources') != {k: source[k] for k in SOURCE_FIELDS}):
+        raise ValueError('independent review must pass and bind every source identity and diff')
+    if (manifest['sources']['baseline_codec'] != source['baseline_codec']
+            or manifest['sources']['candidate_codec'] != source['candidate_codec']):
+        raise ValueError('manifest and reviewed treatment identities differ')
+    return source
 
 
 def limits():
@@ -169,7 +209,7 @@ def analyse_attempt(manifest, rows, estimators, *, checks, consumption, declined
     """
     schedule = sorted((row for stage in ('allocation', 'preflight', 'ordinary')
                        for row in manifest['schedule'][stage]), key=lambda row: row['index'])
-    if manifest['schema'] == V2_SCHEMA:
+    if manifest['schema'] in (V2_SCHEMA, DISPATCH_SCHEMA):
         predecessor = manifest.get('predecessor_sha256')
         if (not isinstance(predecessor, str) or len(predecessor) != 64
                 or any(c not in '0123456789abcdef' for c in predecessor)
@@ -177,7 +217,11 @@ def analyse_attempt(manifest, rows, estimators, *, checks, consumption, declined
                 or manifest.get('reservation_schema') != 'measurement-balanced-reusable-qualification/v1'
                 or manifest.get('condition') != 'balanced-reusable'):
             raise ValueError('explicit verified v2 predecessor, authority and condition required')
-    if manifest['schema'] not in (SCHEMA, V2_SCHEMA) or manifest['limits'] != limits() or len(schedule) != 2648:
+    if manifest['schema'] == DISPATCH_SCHEMA:
+        dispatch_source(manifest)
+    elif any(k in manifest for k in ('source_treatment_text', 'source_treatment_sha256', 'source_review_text')):
+        raise ValueError('parallel dispatch treatment requires its distinct schema')
+    if manifest['schema'] not in (SCHEMA, V2_SCHEMA, DISPATCH_SCHEMA) or manifest['limits'] != limits() or len(schedule) != 2648:
         raise ValueError('verified finite manifest required')
     issues = budget_issues(consumption)
     if consumption.get('started_calls') != len(rows):
@@ -195,9 +239,12 @@ def analyse_attempt(manifest, rows, estimators, *, checks, consumption, declined
                                   baseline_mean_ns=None, candidate_mean_ns=None, relative_interval_99=None) for i in ORDER],
                   missing_call_ids=[row['call_id'] for row in schedule if row['call_id'] not in observed_call_ids],
                   checks=copy.deepcopy(checks), consumption=copy.deepcopy(consumption))
-    if manifest['schema'] == V2_SCHEMA:
+    if manifest['schema'] in (V2_SCHEMA, DISPATCH_SCHEMA):
         result.update(predecessor_sha256=manifest['predecessor_sha256'], authority=manifest['authority'],
                       reservation_schema=manifest['reservation_schema'], condition=manifest['condition'])
+    if manifest['schema'] == DISPATCH_SCHEMA:
+        result.update(source_treatment_sha256=manifest['source_treatment_sha256'],
+                      source_treatment=dispatch_source(manifest))
     if declined_reason is not None:
         if rows or consumption.get('started_calls') != 0:
             raise ValueError('declined before launch requires zero starts')
