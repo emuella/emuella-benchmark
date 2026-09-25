@@ -1,0 +1,198 @@
+{
+  "schema": "classic-forward53-serial-attribution-identities/v1",
+  "policy": "incremental-performance-policy/v1",
+  "preparation_sha256": "f84c3a97f0bbabf4f7e9530934d853f01ec9da082849fb275f5e76ccbf5e67e8",
+  "acquisition_revision": "7c5e24c4e07221e2f401b8ee4374f28a969dd406",
+  "worker_revision": "0db375523ead4ff5113d7e73a77a39b04cff6644",
+  "arms": {
+    "baseline": {
+      "codec_revision": "a7576ad03486e097ac923b8e49cac39a1cbef5d2",
+      "codec_tree": "5e7dfa48280c6d1d0abfe376d69af243e879359f",
+      "historical_build_receipt_sha256": "141a2422c02d0c3ccdbc9992fa234e44459450ab5691cc4b1a8585437bee4d60",
+      "historical_executable_sha256": "a58280ce1c3f4c69c05b5258108b82d5a6e7724db74a77173ac6ac9b39deb187",
+      "reconstructed_build_receipt_sha256": "5527ba02bb024ef62fa1e67345460d393a961cf2af1ab8121cea0d5b42f50afb",
+      "reconstructed_executable_sha256": "1066f9d95250b32bdf0be4dcc31efcb5ba9951fb2d8b567bf25916507222b335",
+      "whole_file_matches_history": false,
+      "ordinary_reconstruction_count": 1,
+      "resolved_worker_lock_sha256": "5cb1a2d7d5d098c347cc0ccdca0e52ca0315bb3190830ebd45d4c51f616788e8",
+      "codec_lock_sha256": "d6ce7b1ce85b2b7bf8b8b61c3e443caed81403d04f93d458f41a935c89d0cd27",
+      "worker_source_sha256": "59f7d732ab9e4ae3ad0465ec1499ee0df124c5fc2b3a0656df4f58d809232add",
+      "toolchain": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.97.1\nLLVM version: 22.1.6\n",
+      "explicit_build_environment": {},
+      "cargo_configs": [],
+      "ordinary_profile": {
+        "opt_level": 3,
+        "lto": "thin",
+        "codegen_units": 1,
+        "debuginfo": "line-tables-only",
+        "target": "x86_64-unknown-linux-gnu (implicit host)",
+        "features": [
+          "classic-compare",
+          "default",
+          "emuella",
+          "openjpeg"
+        ],
+        "codec_features": [
+          "parallel",
+          "std"
+        ],
+        "simd": false
+      },
+      "historical_and_reconstructed_sources_equal": true,
+      "linked_libraries_match_recorded_hashes": true,
+      "libraries": [
+        {
+          "name": "libgcc_s.so.1",
+          "sha256": "e1e904051f77f9569c2ea53c83bb4083c26575e0fbd4010e46f1cb8b21037ad1"
+        },
+        {
+          "name": "libopenjp2.so.2.5.4",
+          "sha256": "37c756f2fef023a265ba8419105ee2ab6ad08fc5e29e855235fbd583b39122a4"
+        },
+        {
+          "name": "ld-linux-x86-64.so.2",
+          "sha256": "d52fe2ff87fff536ed5c5eae8e954cb50655884e4709fedd24cf57f9ec98ad80"
+        },
+        {
+          "name": "libc.so.6",
+          "sha256": "9bf40a540836d90c7d46c95eeb222a217597834eea29ab9e537428317c021c3a"
+        },
+        {
+          "name": "libm.so.6",
+          "sha256": "8f85ea3a02885cda4ecff8758e6e758c69ccaa25b6580cb97b5713ac512f0a1b"
+        },
+        {
+          "name": "libpthread.so.0",
+          "sha256": "efd89a5cf95482cd92f1230320e95c3ab5f1f27bbf099fd166db36e2122a2882"
+        }
+      ],
+      "historical_logs": {
+        "cargo.jsonl": "12e4f718e7c15a3386096f159e914ef8b65e81169d396ac086838952baba3093",
+        "cargo.stderr": "42dc8bcb69a58b197832a06a3f8fc5310c898ba283a5e2da92011c0963488c6f"
+      },
+      "reconstructed_logs": {
+        "cargo.jsonl": "fc0be6113b14e2e3cd663239fde8af920541c2f6656953d4de39f358bc47863f",
+        "cargo.stderr": "0b5f602b8b2b4c3d5d57a16533d7e1a2fe9d11442a01cca91e35205ffb1bd845"
+      }
+    },
+    "candidate": {
+      "codec_revision": "4f5bfb39f02e043c9a1f594a8159d3cf86d52c3f",
+      "codec_tree": "259066112bda675e67a8d3eab3dbf9088d18fe91",
+      "historical_build_receipt_sha256": "cfba7a8d16cae851a505ae8c41b5693e12474253ea7f696bba650b1a384e3a17",
+      "historical_executable_sha256": "682f2e85811157619c14b7635c24b8d3bcc289666269bb59f408902c535616f9",
+      "reconstructed_build_receipt_sha256": "08cbff0e134129f7feef2e76c8da26276d11662a743b55b83d02e8679297f4e7",
+      "reconstructed_executable_sha256": "6a29754a59c8be33b4a0777f60cbf1a49479924a1bd331e132e15546ceda73ea",
+      "whole_file_matches_history": false,
+      "ordinary_reconstruction_count": 1,
+      "resolved_worker_lock_sha256": "5cb1a2d7d5d098c347cc0ccdca0e52ca0315bb3190830ebd45d4c51f616788e8",
+      "codec_lock_sha256": "d6ce7b1ce85b2b7bf8b8b61c3e443caed81403d04f93d458f41a935c89d0cd27",
+      "worker_source_sha256": "59f7d732ab9e4ae3ad0465ec1499ee0df124c5fc2b3a0656df4f58d809232add",
+      "toolchain": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.97.1\nLLVM version: 22.1.6\n",
+      "explicit_build_environment": {},
+      "cargo_configs": [],
+      "ordinary_profile": {
+        "opt_level": 3,
+        "lto": "thin",
+        "codegen_units": 1,
+        "debuginfo": "line-tables-only",
+        "target": "x86_64-unknown-linux-gnu (implicit host)",
+        "features": [
+          "classic-compare",
+          "default",
+          "emuella",
+          "openjpeg"
+        ],
+        "codec_features": [
+          "parallel",
+          "std"
+        ],
+        "simd": false
+      },
+      "historical_and_reconstructed_sources_equal": true,
+      "linked_libraries_match_recorded_hashes": true,
+      "libraries": [
+        {
+          "name": "libgcc_s.so.1",
+          "sha256": "e1e904051f77f9569c2ea53c83bb4083c26575e0fbd4010e46f1cb8b21037ad1"
+        },
+        {
+          "name": "libopenjp2.so.2.5.4",
+          "sha256": "37c756f2fef023a265ba8419105ee2ab6ad08fc5e29e855235fbd583b39122a4"
+        },
+        {
+          "name": "ld-linux-x86-64.so.2",
+          "sha256": "d52fe2ff87fff536ed5c5eae8e954cb50655884e4709fedd24cf57f9ec98ad80"
+        },
+        {
+          "name": "libc.so.6",
+          "sha256": "9bf40a540836d90c7d46c95eeb222a217597834eea29ab9e537428317c021c3a"
+        },
+        {
+          "name": "libm.so.6",
+          "sha256": "8f85ea3a02885cda4ecff8758e6e758c69ccaa25b6580cb97b5713ac512f0a1b"
+        },
+        {
+          "name": "libpthread.so.0",
+          "sha256": "efd89a5cf95482cd92f1230320e95c3ab5f1f27bbf099fd166db36e2122a2882"
+        }
+      ],
+      "historical_logs": {
+        "cargo.jsonl": "d1e66311daabdae0075d1e40bf391e7f6545b86f408e7a0e8cf1c82ac9504bbf",
+        "cargo.stderr": "7c561d6bb90d3a4e7a6362fab46f991c12d494a31bda0ccf8993bc25f61b1459"
+      },
+      "reconstructed_logs": {
+        "cargo.jsonl": "cf1a9fddc394077620dbca931530494334780587ea324fb6e476569957b9b92d",
+        "cargo.stderr": "a94732b877587ee02320afc3c99459373ce541a1b62bac7d88eaef9cb9546f2e"
+      }
+    }
+  },
+  "historical_endpoint": {
+    "id": "endpoint-01",
+    "case_id": "106_10400100413CDF00-RGB8",
+    "dimensions": [
+      5577,
+      5036,
+      3
+    ],
+    "precision": 8,
+    "layout": "interleaved",
+    "style": 0,
+    "workers": 1,
+    "operation": "encode",
+    "raw_sha256": "aaf064a2d6b302d839e7f3c13b99e1344ba749fed53be6daf64f8a6c4c67bfe7",
+    "stream_sha256": "5686eb89ffbf5152d5572441347ec388ae107d0e6790086a817a5529b702843c",
+    "stream_bytes": 14339292,
+    "baseline_mean_ms": 2434.577962,
+    "candidate_mean_ms": 2457.712319,
+    "relative_99_percent": [
+      0.7690855906496319,
+      1.1316918582269686
+    ],
+    "pairs": 40,
+    "status": "Historical +1% upper-bound gate unresolved; closed comparison unchanged"
+  },
+  "new_observations": {
+    "corpus_starts": 0,
+    "ordinary_preflights": 0,
+    "ordinary_context": 0,
+    "sampled": 0,
+    "stage_diagnostics": 0,
+    "lease_started": false,
+    "restoration": "Not applicable: no reservation or measurement environment mutation",
+    "ceiling": 24,
+    "failed_starts": 0,
+    "ordinary_preflights_disposition": "unperformed",
+    "ordinary_context_disposition": "unperformed",
+    "sampled_disposition": "unperformed",
+    "stage_diagnostics_disposition": "unperformed",
+    "conditional_acquisition": "Not taken: compiled differences identified; new reconstruction profiles would not recover historical executable identity or establish causality.",
+    "diagnostic_builds": 0,
+    "acquisition_tooling_added": false
+  },
+  "limitations": [
+    "Historical executables and section/symbol hashes unavailable in inspected retained locations.",
+    "Matching recorded inputs do not establish historical machine-code identity.",
+    "Full inherited environment and actual historical linker executable/version were not retained.",
+    "Reconstruction paths differ; no path remapping, layout search or extra emission flags were added."
+  ]
+}
