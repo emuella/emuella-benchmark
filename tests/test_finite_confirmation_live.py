@@ -181,7 +181,8 @@ class LiveTests(unittest.TestCase):
     def test_execute_restores_after_success_failure_and_interrupt(self):
         for index, effect in enumerate((None, ValueError('transport failure'), KeyboardInterrupt('interrupted'))):
             root = self.root/str(index); root.mkdir()
-            binding = dict(installation={}, config=dict(stores=dict(rareplanes=dict(output=str(root)))))
+            binding = dict(installation={}, manifest=self.contract,
+                           config=dict(stores=dict(rareplanes=dict(output=str(root)))))
             calls = []
             def run(command, **kwargs):
                 calls.append(command)
