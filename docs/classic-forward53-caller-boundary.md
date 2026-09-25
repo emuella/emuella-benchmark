@@ -6,6 +6,15 @@ nor production qualification. Codec owns the source-only C archive and compiled
 code interpretation; benchmark owns the opt-in controller and unchanged estimator;
 workspace owns the frozen experiment and disposition.
 
+The completed acquisition found **no worthwhile supported repair at this budget**.
+C/B's observed change was +2.421219 ms (+0.098508%), with a 99% interval
+[−0.120744%, +0.318239%]. Benefit and an adverse intervention effect both remain
+unresolved. C/A passed the serial endpoint bound, but that favourable comparison
+cannot establish that the boundary change helped. All 126 starts completed
+successfully and independent restoration passed. The
+[factual evidence](evidence/classic-forward53-caller-boundary.json) retains every
+observation, order identity, source/build identity and comparison.
+
 `scripts/caller_boundary_experiment.py` wraps the unchanged worker source
 `0db375523ead4ff5113d7e73a77a39b04cff6644`. A is codec
 `a7576ad03486e097ac923b8e49cac39a1cbef5d2`; B is archived codec
@@ -149,3 +158,144 @@ experiment follows. The entire source-level refactoring is the treatment when
 helper bytes or placement also differ; static stack/copy/instruction observations
 are never converted to estimated milliseconds. Missing historical binary identity
 limits historical interpretation, not this prospective experiment.
+
+## Completed result
+
+The 40 ordinary observations per arm have arithmetic means A **2480.778231 ms**,
+B **2457.900420 ms** and C **2460.321638 ms**. The following signed changes are
+candidate minus reference; positive values mean slower encoding. Mean savings
+have the opposite sign. The JSON retains full precision and all samples.
+
+| Contrast | Mean change | Mean saving | Relative change | 99% relative interval | Legacy ±5% verdict |
+|---|---:|---:|---:|---:|---|
+| **C/B, sole primary** | +2.421219 ms | −2.421219 ms | +0.098508% | [−0.120744%, +0.318239%] | Equivalent |
+| B/A | −22.877811 ms | +22.877811 ms | −0.922203% | [−1.136246%, −0.707702%] | Equivalent |
+| C/A | −20.456592 ms | +20.456592 ms | −0.824604% | [−1.039415%, −0.609333%] | Equivalent |
+
+The primary interval contains zero, so this budget supports neither a measured
+benefit nor a resolved adverse intervention effect. C/A's upper bound is below
++1%, establishing the existing serial bound for this endpoint only. It does not
+resolve the missing C/B benefit. The recorded disposition is **no worthwhile
+supported repair at this budget**; C remains an exact source-only archive with
+its tests and identities. No repair is promoted and no next experiment is
+scheduled automatically.
+
+B/A is faster in this prospective acquisition: it does **not** reproduce the
+historical slowdown. Different ordinary executable identities and acquisition
+conditions prevent rewriting the closed confirmation or assigning a historical
+cause. The previous dispatch and static attribution outcomes remain unchanged.
+
+### Source, compiled boundary and build provenance
+
+C is revision `c6c07420e90cd7b871f7e6b0e3bc813ab384bf8c`, tree
+`ff33aaeac39abbbf2d55f4cfa24f2afbfe58c0db`. Its complete B-to-C patch SHA-256 is
+`3224ce3fa2412f2317aac3bdb24abcfefe7baca5979eb5e93fb3ac3c358fc9b1`.
+The ordinary executable hashes are:
+
+| Arm | Whole-file SHA-256 | `.text` SHA-256 |
+|---|---|---|
+| A | `459734d9abb32f6090ccaeb6ba660fe26cc95b386a93248554917ffa86b29664` | `93b89dfd851ab69a519671303142b2c01603fd734872f4124c553276018ac7aa` |
+| B | `15c1a64ae941a64849a5c2b440bd1f28c760de4ff3af97d01f79e9b2fcff7019` | `2549e52ad8da0279db27149cdfd021410a6f8290a1286080bb9db16efb615e5c` |
+| C | `f4167cafc6065ba11d0c2267476a362710bc8d8e2bb0475e44cfbb97e67e4a91` | `c3a251c849d3718cf0c75aa021ed05bbb8b82b4ff9e88b2a361121643b67fbd0` |
+
+The [codec-owned compiled analysis](https://github.com/emuella/emuella-j2k/blob/main/docs/forward53-caller-boundary.md)
+proves the requested boundary in these actual executables. C's serial admission
+skips the owning helper. Panel preparation, all component execution and panel
+destruction remain inside it; no large optional plan/workspace crosses into the
+writer. The writer's explicit stack reservation falls from B's 1,144 bytes to
+C's 840 bytes, compared with A's 792 bytes. B's two fixed 176-byte option copies
+are absent from C's writer. These are structural facts, not time estimates.
+
+Selected B/C original multi-level, bounded 2D and lifting helpers match under
+the documented limited normalisation. Their raw bytes and placement differ;
+the writer/component boundary also changes instruction and stack context, and
+`.text` grows by 256 bytes. Conversion/RCT and assembly remain within that
+changed context. Consequently this result measures the complete source-level
+refactoring, with the narrower caller-state mechanism only partially isolated.
+No claim of identical placement or runtime effects follows from normalisation.
+
+Before any corpus timing, a matched fresh recipe was selected for all arms.
+The retained ordinary A/B reconstruction receipts lacked the complete inherited
+environment and actual linker identity needed to establish compatibility with
+new C. This was a provenance decision with no timing-based binary selection.
+Exactly one successful ordinary build and one separate allocation build per arm
+were made. No measured executable was rebuilt in response to timings.
+
+The unchanged worker source is `0db375523ead4ff5113d7e73a77a39b04cff6644`;
+controller source is `8f00b8efb1ff29305b68b0b62643facd117afceb`.
+All builds used rustc 1.97.1 (`8bab26f4f68e0e26f0bb7960be334d5b520ea452`),
+LLVM 22.1.6 and the implicit `x86_64-unknown-linux-gnu` host target. Observed
+build execution binds the GCC 16.1.1 driver and Rust LLD 22.1.6 linker chain.
+The verbose compiler logs retain perf/opt-level 3, ThinLTO, one codegen unit,
+existing line-table debug information, parallel, no SIMD and no ordinary
+diagnostics. Resolved worker lock SHA-256 is
+`5cb1a2d7d5d098c347cc0ccdca0e52ca0315bb3190830ebd45d4c51f616788e8`.
+The matched existing OpenJPEG 2.5.4 library was linked; no new external-codec
+operation or external implementation inspection was performed.
+
+The approved binding store retains all six executables, symbols, build logs,
+source inventories, resolved locks, full minimal build environment and observed
+compiler/linker receipts. Public factual evidence records identity hashes and
+omits private host paths and linked third-party payloads. Whole-file, executable
+section and relevant symbol identity remain distinct. Historical binary equality
+is unproved; every measured arm is prospective.
+
+### Correctness, resources, accounting and restoration
+
+All 126 invocations checked the encoded stream hash and reconstructed every
+sample exactly. The authenticated existing independent-decoder receipt applies
+only to that identical stream; it caused zero additional corpus calls.
+Three ordinary preflights and three separate allocation calls were excluded from
+inference. All 120 ordinary calls finished before interpretation. There were
+zero failures, missing terminal receipts, retries, replacements or unstarted
+slots. No sampled or stage-diagnostic corpus operation was performed.
+
+Each separate allocation call reported the same 562,015,740-byte working query,
+362,401,748-byte peak additional requested allocation, 707 successful allocation
+or reallocation requests, 16,777,216-byte output capacity and 67,108,864-byte
+output capacity limit. Every existing resource predicate passed. Allocation
+request counts and requested-byte peaks are distinct from process RSS and CPU.
+
+| Ordinary arm | Mean process wall | Mean process CPU | Observed peak-RSS range |
+|---|---:|---:|---:|
+| A | 5.039759 s | 4.976500 s | 541,818,880–542,912,512 bytes |
+| B | 5.016808 s | 4.953250 s | 541,982,720–543,875,072 bytes |
+| C | 5.028201 s | 4.960000 s | 541,900,800–542,941,184 bytes |
+
+These descriptive process observations include setup and verification and are
+not substitutes for the operation clock. Per-call wall, CPU, RSS and context
+switch records remain in the factual extract. Optional unavailable throttle
+counters were unavailable; no PMU or dynamic attribution observation is claimed.
+
+The complete observation interval was **653.847357509 seconds**, within the
+2,700-second cap. At acquisition completion, counted evidence was 131,217,671
+bytes of the 2 GiB cap and registered scratch was 3,476,247,330 bytes of the
+30 GiB cap. These are completion snapshots; terminal artifact retention and
+scratch lifecycle are owned by final landing evidence.
+
+Installed balanced-reusable lease `8bf30dc9-cab8-46cf-ba0b-149fc206532b` used
+the required exclusive `root` partition with normal balancing, workers on CPU 0,
+unused reserved SMT sibling 16 and the off-core controller. All before/after
+identity and environment gates passed. The outside owner executed independent
+stop and verification; ordinary controller restoration and installed host
+restoration both passed. No helper modification or global tuning occurred.
+
+Frozen preparation SHA-256 is
+`75ee7c802962648bacd8e6909c71b53a4a9b7f9f756480eec4e8c096b94c2d76`;
+the original retained offline report SHA-256 is
+`25bd665805f4c15076b83c7b8030415a9f12b0920d2c396a99adf97b67cb92c8`.
+The report command above reconstructs the completed evidence without launching
+another corpus operation. The factual JSON carries its provenance and the raw
+observation vectors so reviewers can trace each contrast to its 40 samples.
+
+### Attribution and handling
+
+RarePlanes Dataset, June 2020. J. Shermeyer et al.; In-Q-Tel – CosmiQ Works and
+AI.Reverie. [Source](https://registry.opendata.aws/rareplanes/),
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+This record adds factual measurements of the existing full Boca RGB8 interleaved
+derivative. Catalogue revision `96443cb19dddf756938d87c350067a02cff82648`
+and the pinned reviewed rights/notice records authorise this existing local use.
+Protected input and derivative payloads remain in their approved store. No new
+imagery was acquired; no image, derivative, executable or linked library is
+redistributed by this factual record.
