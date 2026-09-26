@@ -69,10 +69,14 @@ with both executable instances in the approved binding store before scratch
 cleanup. `build.json` binds exact benchmark/codec source inventory, executable
 and library SHA-256, command, rustc version, Cargo artefacts, lockfile, selected
 features and captured build environment. The verbose stderr records effective
-compiler and linker invocations. Retain the actual compiler/linker paths and
-versions, complete inherited build environment and any path-remapping decision
-in a separately reviewed private `build_provenance` receipt. Pin its path and
-SHA-256 as a prerequisite. Review those bytes and
+compiler commands; the linked ELF records its linker identity. Retain the
+compiler command path, observed compiler/linker identities, effective
+build-affecting environment and Cargo
+configuration, and any path-remapping decision in a separately reviewed private
+`build_provenance` receipt. Distinguish contemporaneous observations from later
+path/hash snapshots; disclose any missing exact linker invocation path or full
+inherited environment for independent compatibility judgement. Pin the
+receipt's path and SHA-256 as a prerequisite. Review those bytes and
 the matched perf/optimisation-3/ThinLTO/one-codegen-unit/line-table flags,
 parallel enabled, SIMD and ordinary diagnostics disabled, unset backend
 overrides, and separate allocation feature. The preparer checks the effective
@@ -154,4 +158,8 @@ python3 scripts/finite_confirmation_report.py --preparation APPROVED_OUTPUT/prep
 
 Offline success means complete bound evidence and all 31 numerical predicates;
 independent engineering acceptance and source-owner-first delivery remain
-separate decisions. No assessment corpus acquisition has been run by this change.
+separate decisions. The [completed assessment report](https://github.com/emuella/emuella-workspace/blob/c42441be0d6d5f26616ffcfdb94ec5c285ee9caf/docs/evidence/classic-forward53-integration-assessment/adoption-report.md)
+records the authorised acquisition and independent engineering acceptance at
+measured benchmark source `019dff0925511680747b40e10bfe9154b266a8cc`.
+This later documentation clarification changes no worker, comparator or runner
+source used by that acquisition.
