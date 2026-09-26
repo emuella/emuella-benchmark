@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -11,14 +12,21 @@ import finite_confirmation_live as live
 finite = live.finite
 
 
-def retained_binding(path, digest, v1, register, design):
+def retained_binding(path, digest, v1, register, design, predecessor=None):
     if live.sha(path) != digest:
         raise ValueError('externally pinned preparation digest differs')
     binding = json.loads(path.read_text())
     if binding.get('schema') != live.preparation_schema(binding['manifest']):
         raise ValueError('retained v2 preparation required')
     contract = binding['manifest']
-    if contract['schema'] == finite.DISPATCH_SCHEMA:
+    if contract['schema'] == live.assessment.SCHEMA:
+        if predecessor is None:
+            raise ValueError('assessment predecessor manifest required for reconstruction')
+        expected = live.assessment.derive(v1, binding['config']['contract']['v1_sha256'], register, design,
+            predecessor, contract['predecessor_sha256'], binding['config']['authority'], contract['source_treatment_text'],
+            contract['source_treatment_sha256'], contract['source_review_text'],
+            contract['assessment_register_text'], contract['assessment_register_sha256'])
+    elif contract['schema'] == finite.DISPATCH_SCHEMA:
         expected = live.derive_dispatch(v1, contract['predecessor_sha256'], register, design,
             binding['config']['authority'], contract['source_treatment_text'],
             contract['source_treatment_sha256'], contract['source_review_text'])
@@ -102,7 +110,8 @@ def row_checks(binding, rows, launch):
             if observed.get(key) != request[key]:
                 raise ValueError('retained result identity differs: '+key)
         mode = 'resource' if planned['stage'] == 'allocation' else 'ordinary'
-        build = binding['builds'][planned['arm']][mode]['build']
+        builds = binding['builds'][planned.get('build_instance', 'main')] if binding['manifest']['schema'] == live.assessment.SCHEMA else binding['builds']
+        build = builds[planned['arm']][mode]['build']
         if (observed.get('binary_sha256') != build['binary_sha256'] or observed.get('exact') is not True
                 or observed.get('boundary') != live.refresh.BOUNDARY):
             raise ValueError('retained binary/boundary/exactness differs')
@@ -124,7 +133,58 @@ def row_checks(binding, rows, launch):
     return True
 
 
-def reconstruct(binding, digest, estimators):
+def retained_assessment_builds(binding, preparation_sha, path, expected_sha, evidence):
+    """Bind approved-store copies to the frozen measured executable receipts."""
+    if path is None or expected_sha is None:
+        raise ValueError('externally pinned retained assessment builds required')
+    path = live.absolute(str(path))
+    approved_roots = [live.absolute(root) for root in binding['config']['evidence_roots']]
+    if not path.is_file() or not any(path.is_relative_to(root) for root in approved_roots):
+        raise ValueError('retained build mapping missing or outside approved evidence roots')
+    if live.sha(path) != expected_sha:
+        raise ValueError('retained build mapping digest differs')
+    mapping = json.loads(path.read_text())
+    frozen = binding['build_reproducibility']
+    if (set(mapping) != {'schema', 'preparation_sha256', 'build_reproducibility_sha256', 'instances'}
+            or mapping['schema'] != 'classic-forward53-integration-retained-builds/v1'
+            or mapping['preparation_sha256'] != preparation_sha
+            or mapping['build_reproducibility_sha256'] != binding['prerequisites']['build_reproducibility']['sha256']
+            or set(mapping['instances']) != {'main', 'repeat'}):
+        raise ValueError('retained build mapping identity differs')
+    seen = set()
+    for instance in ('main', 'repeat'):
+        if set(mapping['instances'][instance]) != {'baseline', 'candidate'}:
+            raise ValueError('retained build arms differ')
+        for arm in ('baseline', 'candidate'):
+            if set(mapping['instances'][instance][arm]) != {'ordinary', 'resource'}:
+                raise ValueError('retained build modes differ')
+            for mode in ('ordinary', 'resource'):
+                item = mapping['instances'][instance][arm][mode]
+                if set(item) != {'path', 'binary_sha256', 'text_sha256'}:
+                    raise ValueError('retained build entry fields differ')
+                retained = live.absolute(item['path'])
+                if (retained.is_symlink() or not retained.is_file()
+                        or not any(retained.is_relative_to(root) for root in approved_roots)
+                        or retained in seen):
+                    raise ValueError('retained executable missing, duplicated or outside approved evidence roots')
+                seen.add(retained)
+                measured = binding['builds'][instance][arm][mode]['build']
+                original = frozen['instances'][instance][arm][mode]
+                if (item['binary_sha256'] != measured['binary_sha256']
+                        or item['binary_sha256'] != original['binary_sha256']
+                        or item['text_sha256'] != original['text_sha256']
+                        or live.sha(retained) != item['binary_sha256']):
+                    raise ValueError('retained executable or frozen build identity differs')
+                section = subprocess.check_output(['objcopy', '--only-section=.text', '-O', 'binary',
+                                                   str(retained), '/dev/stdout'])
+                if hashlib.sha256(section).hexdigest() != item['text_sha256']:
+                    raise ValueError('retained executable section differs')
+                evidence[str(retained)] = item['binary_sha256']
+    evidence[str(path)] = expected_sha
+    return mapping
+
+
+def reconstruct(binding, digest, estimators, *, retained_builds=None, retained_builds_sha256=None):
     root = Path(binding['config']['stores']['rareplanes']['output'])
     evidence, issues = {}, []
     rows, started, missing, orphaned, collection_issues = collect_rows(binding, evidence)
@@ -134,8 +194,9 @@ def reconstruct(binding, digest, estimators):
     execution = read_optional(root/'execution-started.json', evidence)
     terminal = read_optional(root/'execution-complete.json', evidence)
     restoration = read_optional(root/'independent-restoration.json', evidence)
-    checks = dict.fromkeys(finite.CHECKS, False)
-    for key in live.PREREQUISITES:
+    assessment_mode = binding['manifest']['schema'] == live.assessment.SCHEMA
+    checks = dict.fromkeys(live.assessment.CHECKS if assessment_mode else finite.CHECKS, False)
+    for key in live.prerequisite_keys(binding['manifest']):
         record = binding['prerequisites'][key]
         try:
             live.validate_prerequisite_treatment(binding['manifest'], key, record)
@@ -146,6 +207,14 @@ def reconstruct(binding, digest, estimators):
                 checks[key] = True
         except (OSError, ValueError) as error:
             issues.append('retained prerequisite '+key+': '+str(error))
+    if assessment_mode and checks['build_reproducibility']:
+        try:
+            if json.loads(Path(binding['prerequisites']['build_reproducibility']['path']).read_text()) != binding['build_reproducibility']:
+                raise ValueError('frozen build receipt differs from preparation')
+            retained_assessment_builds(binding, digest, retained_builds, retained_builds_sha256, evidence)
+        except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
+            checks['build_reproducibility'] = False
+            issues.append('retained build reproducibility: '+str(error))
     try:
         if not execution or execution['preparation_sha256'] != digest:
             raise ValueError('bound execution record absent')
@@ -177,10 +246,13 @@ def reconstruct(binding, digest, estimators):
             or completion.get('missing_call_ids') != binding['manifest']['schedule']['call_order'][len(started):]):
         issues.append('complete bound acquisition accounting absent or inconsistent')
     consumption = dict(consumption, started_calls=len(started))
-    result = finite.analyse_attempt(binding['manifest'], rows, estimators, checks=checks, consumption=consumption)
+    result = (live.assessment.analyse_attempt(binding['manifest'], rows, estimators, checks=checks,
+              consumption=consumption) if assessment_mode else finite.analyse_attempt(binding['manifest'], rows,
+              estimators, checks=checks, consumption=consumption))
     if completion:
         for retained in completion.get('decisions', []):
-            recomputed = next((r for r in result['endpoints'] if r['endpoint_id'] == retained['endpoint_id']), None)
+            recomputed = next((r for r in result['endpoints'] + result.get('repeats', [])
+                               if r['endpoint_id'] == retained['endpoint_id']), None)
             if recomputed != retained:
                 issues.append('retained endpoint decision was not reproduced: '+retained['endpoint_id'])
         if completion.get('disposition') != result['disposition'] or completion.get('issues'):
@@ -190,7 +262,8 @@ def reconstruct(binding, digest, estimators):
     result['issues'].extend(issues)
     if result['issues']:
         result['disposition'] = finite.INCOMPLETE
-    label = 'parallel dispatch v1' if binding['manifest']['schema'] == finite.DISPATCH_SCHEMA else 'v2'
+    label = ('integration assessment v1' if assessment_mode else
+             'parallel dispatch v1' if binding['manifest']['schema'] == finite.DISPATCH_SCHEMA else 'v2')
     result.update(preparation_sha256=digest, started_receipts=started, missing_terminal_call_ids=missing,
                   orphaned_receipts=orphaned, evidence_sha256=evidence, independent_restoration=restoration,
                   interpretation='Retained '+label+' reconstruction; no corpus invocation, live lease or production authority')
@@ -198,7 +271,8 @@ def reconstruct(binding, digest, estimators):
 
 
 def report(args):
-    binding = retained_binding(args.preparation, args.sha256, args.v1, args.register, args.design)
+    binding = retained_binding(args.preparation, args.sha256, args.v1, args.register, args.design,
+                               args.predecessor)
     output = live.absolute(str(args.output))
     if output.parent != Path(binding['config']['stores']['rareplanes']['output']):
         raise ValueError('report must remain in its approved observation root')
@@ -210,7 +284,9 @@ def report(args):
         if any(identity[k] != original[k] for k in ('owner_module_sha256', 'entrypoint_sha256', 'manifest_sha256')):
             raise ValueError('reconstruction comparator differs from frozen owner/wrapper')
         estimators[count], identities[str(count)] = path, identity
-    result = reconstruct(binding, args.sha256, estimators)
+    result = reconstruct(binding, args.sha256, estimators,
+                         retained_builds=args.retained_builds,
+                         retained_builds_sha256=args.retained_builds_sha256)
     result['reconstruction_estimators'] = identities
     live.write(output, result)
     return result
@@ -220,6 +296,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for key in ('preparation', 'v1', 'register', 'design', 'estimator-40', 'estimator-160', 'output'):
         parser.add_argument('--'+key, type=Path, required=True)
+    parser.add_argument('--predecessor', type=Path)
+    parser.add_argument('--retained-builds', type=Path)
+    parser.add_argument('--retained-builds-sha256')
     parser.add_argument('--sha256', required=True)
     args = parser.parse_args()
     result = report(args)
