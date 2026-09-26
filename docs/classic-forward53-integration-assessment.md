@@ -94,6 +94,18 @@ compatibility explanation; unresolved material divergence blocks preparation.
 Whole-executable equality is an observation, not a hidden gate. These build
 receipts and source-review receipts are separate from timing evidence.
 
+Before registered scratch cleanup, retain all eight exact executables in a
+separate approved `evidence_roots` directory. Write a mapping JSON there with
+schema `classic-forward53-integration-retained-builds/v1`, the exact
+`preparation_sha256`, `build_reproducibility_sha256` of the pinned prerequisite,
+and `instances` with the same two-instance/arm/mode shape. Each leaf contains
+exactly the approved-store absolute `path`, `binary_sha256` and `text_sha256`.
+Pin the mapping file's SHA-256 externally. Offline reconstruction verifies
+every copy's full and `.text` hashes against the measured build and frozen
+reviewed receipt. It rejects missing, altered, duplicated or out-of-store
+copies. Original measured-binary paths and preparation bytes remain unchanged;
+prelaunch and live admission still verify the binaries in registered scratch.
+
 ## Configuration and offline commands
 
 Use the historical finite configuration's approved `stores`, exact 14
@@ -134,6 +146,8 @@ Retained reconstruction uses no corpus worker or live lease:
 python3 scripts/finite_confirmation_report.py --preparation APPROVED_OUTPUT/preparation.json \
   --sha256 PREPARATION_SHA --v1 V1.json --register HISTORICAL_REGISTER.json \
   --design HISTORICAL_DESIGN.json --predecessor DISPATCH.json \
+  --retained-builds APPROVED_EVIDENCE/retained-builds.json \
+  --retained-builds-sha256 RETAINED_BUILDS_SHA \
   --estimator-40 ESTIMATOR40 --estimator-160 ESTIMATOR160 \
   --output APPROVED_OUTPUT/report.json
 ```

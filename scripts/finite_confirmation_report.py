@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -132,7 +133,58 @@ def row_checks(binding, rows, launch):
     return True
 
 
-def reconstruct(binding, digest, estimators):
+def retained_assessment_builds(binding, preparation_sha, path, expected_sha, evidence):
+    """Bind approved-store copies to the frozen measured executable receipts."""
+    if path is None or expected_sha is None:
+        raise ValueError('externally pinned retained assessment builds required')
+    path = live.absolute(str(path))
+    approved_roots = [live.absolute(root) for root in binding['config']['evidence_roots']]
+    if not path.is_file() or not any(path.is_relative_to(root) for root in approved_roots):
+        raise ValueError('retained build mapping missing or outside approved evidence roots')
+    if live.sha(path) != expected_sha:
+        raise ValueError('retained build mapping digest differs')
+    mapping = json.loads(path.read_text())
+    frozen = binding['build_reproducibility']
+    if (set(mapping) != {'schema', 'preparation_sha256', 'build_reproducibility_sha256', 'instances'}
+            or mapping['schema'] != 'classic-forward53-integration-retained-builds/v1'
+            or mapping['preparation_sha256'] != preparation_sha
+            or mapping['build_reproducibility_sha256'] != binding['prerequisites']['build_reproducibility']['sha256']
+            or set(mapping['instances']) != {'main', 'repeat'}):
+        raise ValueError('retained build mapping identity differs')
+    seen = set()
+    for instance in ('main', 'repeat'):
+        if set(mapping['instances'][instance]) != {'baseline', 'candidate'}:
+            raise ValueError('retained build arms differ')
+        for arm in ('baseline', 'candidate'):
+            if set(mapping['instances'][instance][arm]) != {'ordinary', 'resource'}:
+                raise ValueError('retained build modes differ')
+            for mode in ('ordinary', 'resource'):
+                item = mapping['instances'][instance][arm][mode]
+                if set(item) != {'path', 'binary_sha256', 'text_sha256'}:
+                    raise ValueError('retained build entry fields differ')
+                retained = live.absolute(item['path'])
+                if (retained.is_symlink() or not retained.is_file()
+                        or not any(retained.is_relative_to(root) for root in approved_roots)
+                        or retained in seen):
+                    raise ValueError('retained executable missing, duplicated or outside approved evidence roots')
+                seen.add(retained)
+                measured = binding['builds'][instance][arm][mode]['build']
+                original = frozen['instances'][instance][arm][mode]
+                if (item['binary_sha256'] != measured['binary_sha256']
+                        or item['binary_sha256'] != original['binary_sha256']
+                        or item['text_sha256'] != original['text_sha256']
+                        or live.sha(retained) != item['binary_sha256']):
+                    raise ValueError('retained executable or frozen build identity differs')
+                section = subprocess.check_output(['objcopy', '--only-section=.text', '-O', 'binary',
+                                                   str(retained), '/dev/stdout'])
+                if hashlib.sha256(section).hexdigest() != item['text_sha256']:
+                    raise ValueError('retained executable section differs')
+                evidence[str(retained)] = item['binary_sha256']
+    evidence[str(path)] = expected_sha
+    return mapping
+
+
+def reconstruct(binding, digest, estimators, *, retained_builds=None, retained_builds_sha256=None):
     root = Path(binding['config']['stores']['rareplanes']['output'])
     evidence, issues = {}, []
     rows, started, missing, orphaned, collection_issues = collect_rows(binding, evidence)
@@ -157,9 +209,10 @@ def reconstruct(binding, digest, estimators):
             issues.append('retained prerequisite '+key+': '+str(error))
     if assessment_mode and checks['build_reproducibility']:
         try:
-            if live.assessment_build_receipt(binding) != binding['build_reproducibility']:
-                raise ValueError('retained build identity differs')
-        except (OSError, ValueError, KeyError, TypeError) as error:
+            if json.loads(Path(binding['prerequisites']['build_reproducibility']['path']).read_text()) != binding['build_reproducibility']:
+                raise ValueError('frozen build receipt differs from preparation')
+            retained_assessment_builds(binding, digest, retained_builds, retained_builds_sha256, evidence)
+        except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
             checks['build_reproducibility'] = False
             issues.append('retained build reproducibility: '+str(error))
     try:
@@ -231,7 +284,9 @@ def report(args):
         if any(identity[k] != original[k] for k in ('owner_module_sha256', 'entrypoint_sha256', 'manifest_sha256')):
             raise ValueError('reconstruction comparator differs from frozen owner/wrapper')
         estimators[count], identities[str(count)] = path, identity
-    result = reconstruct(binding, args.sha256, estimators)
+    result = reconstruct(binding, args.sha256, estimators,
+                         retained_builds=args.retained_builds,
+                         retained_builds_sha256=args.retained_builds_sha256)
     result['reconstruction_estimators'] = identities
     live.write(output, result)
     return result
@@ -242,6 +297,8 @@ def main():
     for key in ('preparation', 'v1', 'register', 'design', 'estimator-40', 'estimator-160', 'output'):
         parser.add_argument('--'+key, type=Path, required=True)
     parser.add_argument('--predecessor', type=Path)
+    parser.add_argument('--retained-builds', type=Path)
+    parser.add_argument('--retained-builds-sha256')
     parser.add_argument('--sha256', required=True)
     args = parser.parse_args()
     result = report(args)

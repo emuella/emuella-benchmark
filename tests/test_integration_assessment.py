@@ -3,6 +3,7 @@ import copy
 import hashlib
 import json
 from pathlib import Path
+import shutil
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
@@ -13,6 +14,7 @@ import finite_confirmation_report as report
 import integration_assessment as assessment
 import test_finite_confirmation_analysis as authored
 import test_finite_confirmation_live as acquisition
+import test_finite_confirmation_repairs as retained
 
 
 class AssessmentTests(unittest.TestCase):
@@ -294,6 +296,155 @@ class AssessmentTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'source prerequisite'):
             live.validate_prerequisite_treatment(self.manifest, 'source_review',
                 dict(descriptor, sha256='0'*64))
+
+    def test_complete_reconstruction_after_scratch_cleanup_and_retained_rejection(self):
+        case = retained.RepairTests()
+        case.setUp()
+        self.addCleanup(case.doCleanups)
+        binding = case.binding
+        binding['schema'] = assessment.PREPARATION
+        binding['manifest'] = self.manifest
+        binding['config']['authority'] = 'reviewed assessment authority'
+        binding['config']['contract'] = dict(v1_sha256=finite.sha(self.v1))
+        binding['config']['evidence_roots'] = [str(case.output), str(case.other)]
+        scratch = case.root/'registered-scratch'
+        scratch.mkdir()
+        binding['config']['build_root'] = str(scratch)
+        _, lease, _, _, authority = case.fixture()
+        restoration = case.restoration(authority)
+        authority_sha = hashlib.sha256(restoration['authority_text'].encode()).hexdigest()
+        environment = dict(controller_affinity=authority['controller_cpus'], reservation={},
+                           boost=None, cpu={}, task_cgroup={})
+        builds, frozen_instances, copies = {}, {}, {}
+        retained_root = case.output/'retained-builds'
+        retained_root.mkdir()
+        for instance in ('main', 'repeat'):
+            builds[instance], frozen_instances[instance], copies[instance] = {}, {}, {}
+            for arm in ('baseline', 'candidate'):
+                builds[instance][arm], frozen_instances[instance][arm], copies[instance][arm] = {}, {}, {}
+                for mode in ('ordinary', 'resource'):
+                    label = f'{instance}-{arm}-{mode}'
+                    original = scratch/label
+                    original.mkdir()
+                    binary = original/'worker'
+                    binary.write_bytes(label.encode())
+                    build_json = original/'build.json'
+                    build_json.write_text(json.dumps(dict(authored=label)))
+                    binary_sha = live.sha(binary)
+                    text_sha = hashlib.sha256(b'authored text section').hexdigest()
+                    builds[instance][arm][mode] = dict(path=str(build_json), sha256=live.sha(build_json),
+                        build=dict(binary=str(binary), binary_sha256=binary_sha))
+                    frozen_instances[instance][arm][mode] = dict(binary_sha256=binary_sha,
+                        text_sha256=text_sha, build_sha256=live.sha(build_json))
+                    copied = retained_root/(label+'-worker')
+                    shutil.copyfile(binary, copied)
+                    copies[instance][arm][mode] = dict(path=str(copied), binary_sha256=binary_sha,
+                        text_sha256=text_sha)
+        binding['builds'] = builds
+        frozen = dict(schema='classic-forward53-integration-builds/v1', instances=frozen_instances,
+            review=dict(verdict='PASS', reviewer='independent reviewer', locator='authored fixture',
+                explanation='All corresponding sections agree', section_differences=[]))
+        binding['build_reproducibility'] = frozen
+        binding['prerequisites'] = {}
+        source_review = self.source['independent_review']
+        Path(source_review['path']).write_text(self.review_text)
+        for key in live.ASSESSMENT_PREREQUISITES:
+            path = Path(source_review['path']) if key == 'source_review' else case.root/(key+'.json')
+            if key == 'build_reproducibility':
+                path.write_text(json.dumps(frozen))
+            elif key != 'source_review':
+                path.write_text('{}')
+            binding['prerequisites'][key] = dict(path=str(path), sha256=live.sha(path))
+            if key != 'independent_decode':
+                binding['prerequisites'][key]['source_treatment_sha256'] = self.manifest['source_treatment_sha256']
+        binding['requests'] = {}
+        rows = []
+        for planned in self.schedule:
+            request = dict(codec='emuella', operation='encode', case_id=planned.get('case_id', 'authored'),
+                round=planned.get('round', 0), style=planned.get('style', 1),
+                workers=planned.get('workers', 8), raw_sha256='raw', stream_sha256='stream',
+                max_working_bytes=768*1024**2, max_output_bytes=64*1024**2)
+            instance = planned.get('build_instance', 'main')
+            binary_sha = builds[instance][planned['arm']]['resource' if planned['stage'] == 'allocation'
+                                                         else 'ordinary']['build']['binary_sha256']
+            observed = dict(request, exact=True, binary_sha256=binary_sha,
+                boundary=live.refresh.BOUNDARY,
+                samples_ns=[100_000_000 if planned['arm'] == 'baseline' else 80_000_000])
+            if planned['stage'] == 'allocation':
+                observed.update(samples_ns=[], working_bytes=100, output_capacity=20,
+                    output_capacity_limit=30, allocation_diagnostic=dict(
+                        allocation_peak_additional_requested_bytes=90,
+                        successful_allocation_or_reallocation_requests=3))
+            row = dict(planned=planned, result=dict(status=0, observation=observed), gates_passed=True,
+                       environment=dict(before=environment, after=environment, issues=[]))
+            if planned['stage'] == 'allocation':
+                row['resources'] = live.panels.resources.resource_observation(observed, request)
+            binding['requests'][planned['call_id']] = dict(store='rareplanes', request=request)
+            folder = case.output/planned['call_id']
+            folder.mkdir()
+            (folder/'request.json').write_text(json.dumps(request))
+            (case.output/(planned['call_id']+'-started.json')).write_text(json.dumps(
+                dict(planned=planned, monotonic_ns=planned['index']+1)))
+            (case.output/(planned['call_id']+'-receipt.json')).write_text(json.dumps(row))
+            rows.append(row)
+        # The bound preparation is written once; report never rewrites it.
+        preparation = case.output/'preparation.json'
+        preparation.write_text(json.dumps(binding))
+        digest = live.sha(preparation)
+        preparation_bytes = preparation.read_bytes()
+        consumption = dict(started_calls=2900, wall_seconds=100, evidence_bytes=100, build_bytes=100)
+        estimators = {40:authored.estimator, 160:authored.estimator}
+        expected = assessment.analyse_attempt(self.manifest, rows, estimators,
+            checks=dict.fromkeys(assessment.CHECKS, True), consumption=consumption)
+        records = {
+            'execution-started.json':dict(preparation_sha256=digest, authority_sha256=authority_sha,
+                                          lease_id=lease.name),
+            'execution-complete.json':dict(schema=assessment.SCHEMA, status=0, error=None,
+                                           restoration_verified=True, lease_id=lease.name),
+            'launch.json':dict(preparation_sha256=digest, authority_sha256=authority_sha,
+                               condition=live.common_authority(authority), environment=environment),
+            'independent-restoration.json':restoration,
+            'placement-original.json':dict(original=[0], intended=authority['controller_cpus']),
+            'restoration.json':dict(restored=True, worker_cgroup_empty=True, intervening_change=False,
+                                    host_policy_changes=False, original=[0], final=[0],
+                                    observed_before_restore=authority['controller_cpus']),
+            'completion.json':dict(schema=assessment.SCHEMA, preparation_sha256=digest,
+                started_calls=2900, consumption=consumption, missing_call_ids=[],
+                disposition=finite.PASS, issues=[], decisions=expected['endpoints']+expected['repeats'])}
+        for name, value in records.items():
+            (case.output/name).write_text(json.dumps(value))
+        mapping = dict(schema='classic-forward53-integration-retained-builds/v1',
+            preparation_sha256=digest,
+            build_reproducibility_sha256=binding['prerequisites']['build_reproducibility']['sha256'],
+            instances=copies)
+        mapping_path = case.output/'retained-builds.json'
+        mapping_path.write_text(json.dumps(mapping))
+        mapping_sha = live.sha(mapping_path)
+        shutil.rmtree(scratch)
+        self.assertFalse(scratch.exists())
+        with patch.object(live, 'assessment_build_receipt', side_effect=AssertionError('original scratch reopened')), \
+             patch.object(report.subprocess, 'check_output', return_value=b'authored text section'):
+            result = report.reconstruct(binding, digest, estimators,
+                retained_builds=mapping_path, retained_builds_sha256=mapping_sha)
+            self.assertEqual((result['disposition'], result['issues']), (finite.PASS, []))
+            self.assertEqual((len(result['endpoints']), len(result['repeats'])), (28, 3))
+            self.assertEqual(preparation.read_bytes(), preparation_bytes)
+            unbound = report.reconstruct(binding, digest, estimators)
+            self.assertEqual(unbound['disposition'], finite.INCOMPLETE)
+            self.assertIn('externally pinned retained assessment builds required',
+                          ' '.join(unbound['issues']))
+            missing = retained_root/'main-baseline-ordinary-worker'
+            data = missing.read_bytes()
+            missing.unlink()
+            failed = report.reconstruct(binding, digest, estimators,
+                retained_builds=mapping_path, retained_builds_sha256=mapping_sha)
+            self.assertEqual(failed['disposition'], finite.INCOMPLETE)
+            self.assertIn('retained executable missing', ' '.join(failed['issues']))
+            missing.write_bytes(data+b'changed')
+            failed = report.reconstruct(binding, digest, estimators,
+                retained_builds=mapping_path, retained_builds_sha256=mapping_sha)
+            self.assertEqual(failed['disposition'], finite.INCOMPLETE)
+            self.assertIn('retained executable or frozen build identity', ' '.join(failed['issues']))
 
 
 if __name__ == '__main__':
