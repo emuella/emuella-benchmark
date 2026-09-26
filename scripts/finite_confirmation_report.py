@@ -11,14 +11,21 @@ import finite_confirmation_live as live
 finite = live.finite
 
 
-def retained_binding(path, digest, v1, register, design):
+def retained_binding(path, digest, v1, register, design, predecessor=None):
     if live.sha(path) != digest:
         raise ValueError('externally pinned preparation digest differs')
     binding = json.loads(path.read_text())
     if binding.get('schema') != live.preparation_schema(binding['manifest']):
         raise ValueError('retained v2 preparation required')
     contract = binding['manifest']
-    if contract['schema'] == finite.DISPATCH_SCHEMA:
+    if contract['schema'] == live.assessment.SCHEMA:
+        if predecessor is None:
+            raise ValueError('assessment predecessor manifest required for reconstruction')
+        expected = live.assessment.derive(v1, binding['config']['contract']['v1_sha256'], register, design,
+            predecessor, contract['predecessor_sha256'], binding['config']['authority'], contract['source_treatment_text'],
+            contract['source_treatment_sha256'], contract['source_review_text'],
+            contract['assessment_register_text'], contract['assessment_register_sha256'])
+    elif contract['schema'] == finite.DISPATCH_SCHEMA:
         expected = live.derive_dispatch(v1, contract['predecessor_sha256'], register, design,
             binding['config']['authority'], contract['source_treatment_text'],
             contract['source_treatment_sha256'], contract['source_review_text'])
@@ -102,7 +109,8 @@ def row_checks(binding, rows, launch):
             if observed.get(key) != request[key]:
                 raise ValueError('retained result identity differs: '+key)
         mode = 'resource' if planned['stage'] == 'allocation' else 'ordinary'
-        build = binding['builds'][planned['arm']][mode]['build']
+        builds = binding['builds'][planned.get('build_instance', 'main')] if binding['manifest']['schema'] == live.assessment.SCHEMA else binding['builds']
+        build = builds[planned['arm']][mode]['build']
         if (observed.get('binary_sha256') != build['binary_sha256'] or observed.get('exact') is not True
                 or observed.get('boundary') != live.refresh.BOUNDARY):
             raise ValueError('retained binary/boundary/exactness differs')
@@ -134,8 +142,9 @@ def reconstruct(binding, digest, estimators):
     execution = read_optional(root/'execution-started.json', evidence)
     terminal = read_optional(root/'execution-complete.json', evidence)
     restoration = read_optional(root/'independent-restoration.json', evidence)
-    checks = dict.fromkeys(finite.CHECKS, False)
-    for key in live.PREREQUISITES:
+    assessment_mode = binding['manifest']['schema'] == live.assessment.SCHEMA
+    checks = dict.fromkeys(live.assessment.CHECKS if assessment_mode else finite.CHECKS, False)
+    for key in live.prerequisite_keys(binding['manifest']):
         record = binding['prerequisites'][key]
         try:
             live.validate_prerequisite_treatment(binding['manifest'], key, record)
@@ -146,6 +155,13 @@ def reconstruct(binding, digest, estimators):
                 checks[key] = True
         except (OSError, ValueError) as error:
             issues.append('retained prerequisite '+key+': '+str(error))
+    if assessment_mode and checks['build_reproducibility']:
+        try:
+            if live.assessment_build_receipt(binding) != binding['build_reproducibility']:
+                raise ValueError('retained build identity differs')
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            checks['build_reproducibility'] = False
+            issues.append('retained build reproducibility: '+str(error))
     try:
         if not execution or execution['preparation_sha256'] != digest:
             raise ValueError('bound execution record absent')
@@ -177,10 +193,13 @@ def reconstruct(binding, digest, estimators):
             or completion.get('missing_call_ids') != binding['manifest']['schedule']['call_order'][len(started):]):
         issues.append('complete bound acquisition accounting absent or inconsistent')
     consumption = dict(consumption, started_calls=len(started))
-    result = finite.analyse_attempt(binding['manifest'], rows, estimators, checks=checks, consumption=consumption)
+    result = (live.assessment.analyse_attempt(binding['manifest'], rows, estimators, checks=checks,
+              consumption=consumption) if assessment_mode else finite.analyse_attempt(binding['manifest'], rows,
+              estimators, checks=checks, consumption=consumption))
     if completion:
         for retained in completion.get('decisions', []):
-            recomputed = next((r for r in result['endpoints'] if r['endpoint_id'] == retained['endpoint_id']), None)
+            recomputed = next((r for r in result['endpoints'] + result.get('repeats', [])
+                               if r['endpoint_id'] == retained['endpoint_id']), None)
             if recomputed != retained:
                 issues.append('retained endpoint decision was not reproduced: '+retained['endpoint_id'])
         if completion.get('disposition') != result['disposition'] or completion.get('issues'):
@@ -190,7 +209,8 @@ def reconstruct(binding, digest, estimators):
     result['issues'].extend(issues)
     if result['issues']:
         result['disposition'] = finite.INCOMPLETE
-    label = 'parallel dispatch v1' if binding['manifest']['schema'] == finite.DISPATCH_SCHEMA else 'v2'
+    label = ('integration assessment v1' if assessment_mode else
+             'parallel dispatch v1' if binding['manifest']['schema'] == finite.DISPATCH_SCHEMA else 'v2')
     result.update(preparation_sha256=digest, started_receipts=started, missing_terminal_call_ids=missing,
                   orphaned_receipts=orphaned, evidence_sha256=evidence, independent_restoration=restoration,
                   interpretation='Retained '+label+' reconstruction; no corpus invocation, live lease or production authority')
@@ -198,7 +218,8 @@ def reconstruct(binding, digest, estimators):
 
 
 def report(args):
-    binding = retained_binding(args.preparation, args.sha256, args.v1, args.register, args.design)
+    binding = retained_binding(args.preparation, args.sha256, args.v1, args.register, args.design,
+                               args.predecessor)
     output = live.absolute(str(args.output))
     if output.parent != Path(binding['config']['stores']['rareplanes']['output']):
         raise ValueError('report must remain in its approved observation root')
@@ -220,6 +241,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for key in ('preparation', 'v1', 'register', 'design', 'estimator-40', 'estimator-160', 'output'):
         parser.add_argument('--'+key, type=Path, required=True)
+    parser.add_argument('--predecessor', type=Path)
     parser.add_argument('--sha256', required=True)
     args = parser.parse_args()
     result = report(args)

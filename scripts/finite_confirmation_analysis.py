@@ -181,9 +181,9 @@ def analyse_endpoint(index, rows, estimator):
                 **endpoint_decision(session, index == 0))
 
 
-def budget_issues(consumption, *, before_start=False):
+def budget_issues(consumption, *, before_start=False, caps=None):
     """Pure arithmetic on retained counters, never live budget enforcement."""
-    caps = limits()
+    caps = limits() if caps is None else caps
     issues = []
     for key, cap in (('started_calls', caps['total_calls']), ('wall_seconds', caps['wall_seconds']),
                      ('evidence_bytes', caps['evidence_bytes']), ('build_bytes', caps['build_bytes'])):

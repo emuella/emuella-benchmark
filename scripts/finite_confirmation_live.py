@@ -17,6 +17,7 @@ import tomllib
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import finite_confirmation_analysis as finite
+import integration_assessment as assessment
 import importlib.util
 SPEC = importlib.util.spec_from_file_location('finite_stability', Path(__file__).with_name('measurement-stability.py'))
 stability = importlib.util.module_from_spec(SPEC)
@@ -32,6 +33,7 @@ INSTALL = Path('/usr/local/libexec/emuella-measurement')
 LEASES = Path('/var/lib/emuella-measurement/leases')
 PACKAGE = '1d66974f1a02e70f8aaba15721e6b26e9e8c3420d897adbb187e90bfa0285392'
 PREREQUISITES = ('source_correctness', 'independent_decode', 'output_failure', 'parallel_route')
+ASSESSMENT_PREREQUISITES = (*PREREQUISITES, 'source_review', 'build_provenance', 'build_reproducibility')
 sha, write, absolute = refresh.sha, refresh.write, panels.absolute
 
 
@@ -66,7 +68,8 @@ def source_texts(path, digest):
 
 
 def preparation_schema(contract):
-    return {SCHEMA: PREPARATION, finite.DISPATCH_SCHEMA: DISPATCH_PREPARATION}[contract['schema']]
+    return {SCHEMA: PREPARATION, finite.DISPATCH_SCHEMA: DISPATCH_PREPARATION,
+            assessment.SCHEMA: assessment.PREPARATION}[contract['schema']]
 
 
 def record_schema(binding):
@@ -77,7 +80,15 @@ def manifest(config):
     paths = config['contract']
     value = derive(absolute(paths['v1']), paths['v1_sha256'], absolute(paths['register']),
                    absolute(paths['design']), config['authority'])
-    if 'source_treatment' in paths or 'source_treatment_sha256' in paths:
+    if 'assessment_register' in paths or 'assessment_register_sha256' in paths:
+        text, review = source_texts(absolute(paths['source_treatment']), paths['source_treatment_sha256'])
+        margin_path = absolute(paths['assessment_register'])
+        margin_text = margin_path.read_bytes().decode('utf-8')
+        value = assessment.derive(absolute(paths['v1']), paths['v1_sha256'], absolute(paths['register']),
+            absolute(paths['design']), absolute(paths['predecessor']), paths['predecessor_sha256'],
+            config['authority'], text, paths['source_treatment_sha256'],
+            review, margin_text, paths['assessment_register_sha256'])
+    elif 'source_treatment' in paths or 'source_treatment_sha256' in paths:
         text, review = source_texts(absolute(paths['source_treatment']), paths['source_treatment_sha256'])
         value = derive_dispatch(absolute(paths['v1']), paths['v1_sha256'], absolute(paths['register']),
                                 absolute(paths['design']), config['authority'], text,
@@ -87,6 +98,24 @@ def manifest(config):
     if json.loads(Path(paths['manifest']).read_text()) != value:
         raise ValueError('v2 differs from the frozen v1 contract derivation')
     return value
+
+
+def verify_assessment_treatment(config, contract):
+    """Match reviewed clean source identities and exact full Git diff."""
+    source = assessment.source(contract)
+    for arm in ('baseline', 'candidate'):
+        checkout = absolute(config['codec_sources'][arm])
+        clean = refresh.classic.clean_source(checkout)
+        if clean['source_revision'] != source[arm+'_codec'] or clean['source_tree'] != source[arm+'_tree']:
+            raise ValueError('assessment source revision/tree differs: '+arm)
+    checkout = absolute(config['codec_sources']['candidate'])
+    diff = subprocess.check_output(['git', '-C', str(checkout), 'diff', '--no-ext-diff', '--no-textconv',
+        '--binary', '--full-index', '--no-renames', '--no-color', '--diff-algorithm=myers',
+        '--no-indent-heuristic', '--unified=3', '--src-prefix=a/', '--dst-prefix=b/',
+        source['baseline_codec'], source['candidate_codec'], '--'])
+    if hashlib.sha256(diff).hexdigest() != source['baseline_to_candidate_diff_sha256']:
+        raise ValueError('assessment reviewed source diff differs')
+    return source
 
 
 def verify_source_treatment(config, contract):
@@ -115,23 +144,49 @@ def verify_source_treatment(config, contract):
 
 
 def build_bindings(config):
-    if set(config['arms']) != {'baseline', 'candidate'}:
-        raise ValueError('exactly two frozen source arms required')
-    builds = {}
+    if 'assessment_register' in config.get('contract', {}):
+        contract = manifest(config)
+        sources = verify_assessment_treatment(config, contract)
+        if set(config.get('build_instances', {})) != {'main', 'repeat'}:
+            raise ValueError('two independently prepared assessment build instances required')
+        builds = {name: _build_bindings(config, sources, config['build_instances'][name], strict=True)
+                  for name in ('main', 'repeat')}
+        paths = [Path(entry['path']).parent for instance in builds.values() for arm in instance.values()
+                 for entry in arm.values()]
+        if len(paths) != len(set(paths)) or any(
+                builds['main'][arm][mode]['build']['binary'] == builds['repeat'][arm][mode]['build']['binary']
+                for arm in ('baseline', 'candidate') for mode in ('ordinary', 'resource')):
+            raise ValueError('assessment builds must have independent target directories and artefacts')
+        first = builds['main']['baseline']['ordinary']['build']
+        for instance in builds.values():
+            for arm in instance.values():
+                for entry in arm.values():
+                    build = entry['build']
+                    for field in ('rustc', 'openjpeg', 'libraries', 'environment', 'cargo_configs', 'lock_sha256'):
+                        if build[field] != first[field]:
+                            raise ValueError('assessment build recipe/toolchain differs: '+field)
+        return builds
     sources = dict(baseline_codec=finite.BASELINE, candidate_codec=finite.CANDIDATE)
     if 'source_treatment' in config.get('contract', {}):
         sources = verify_source_treatment(config, manifest(config))
+    return _build_bindings(config, sources, config['arms'])
+
+
+def _build_bindings(config, sources, arms, *, strict=False):
+    if set(arms) != {'baseline', 'candidate'}:
+        raise ValueError('exactly two frozen source arms required')
+    builds = {}
     benchmark = refresh.classic.clean_source(absolute(config['benchmark_source']))
     for arm in ('baseline', 'candidate'):
         revision = sources[arm+'_codec']
         source = refresh.classic.clean_source(absolute(config['codec_sources'][arm]))
-        if source['source_revision'] != revision or set(config['arms'][arm]) != {'ordinary', 'resource'}:
+        if source['source_revision'] != revision or set(arms[arm]) != {'ordinary', 'resource'}:
             raise ValueError('frozen source or separate build modes differ')
         if arm+'_tree' in sources and source['source_tree'] != sources[arm+'_tree']:
             raise ValueError('clean source tree differs from independently reviewed treatment')
         builds[arm] = {}
         for mode in ('ordinary', 'resource'):
-            path = absolute(config['arms'][arm][mode])
+            path = absolute(arms[arm][mode])
             build = refresh.bind(path)
             if build['codec'] != source or build['benchmark'] != benchmark:
                 raise ValueError('fresh build source differs')
@@ -144,6 +199,9 @@ def build_bindings(config):
             features = 'classic-allocation-diagnostics' if mode == 'resource' else 'classic-compare'
             if command[command.index('--profile')+1] != 'perf' or command[command.index('--features')+1] != features:
                 raise ValueError('fixed perf feature selection required')
+            if strict and (Path(command[command.index('--target-dir')+1]) != path.parent/'target'
+                           or not absolute(build['binary']).is_relative_to(path.parent/'target')):
+                raise ValueError('assessment build target directory differs')
             for target in ('emuella_j2k_core', 'emuella_j2k_codestream'):
                 artefacts = [a for a in build['artefacts'] if a['target']['name'] == target]
                 if not artefacts or any('parallel' not in a['features'] or 'simd' in a['features']
@@ -156,6 +214,8 @@ def build_bindings(config):
             worker_commands = [line for line in commands.splitlines() if 'Running ' in line and '--crate-name classic_compare_worker ' in line]
             if len(worker_commands) != 1 or 'lto=thin' not in worker_commands[0] or 'codegen-units=1' not in worker_commands[0]:
                 raise ValueError('effective worker compiler flags differ')
+            if strict and any(flag not in worker_commands[0] for flag in ('opt-level=3', 'debuginfo=line-tables-only')):
+                raise ValueError('assessment optimisation/debug flags differ')
             for name, digest in build['logs'].items():
                 if sha(path.parent/name) != digest:
                     raise ValueError('fresh build log differs')
@@ -194,6 +254,8 @@ def prepare_requests(config, contract):
                 raise ValueError('input escaped its approved store')
             selected[asset['id']] = (name, asset)
     endpoints = {e['id']: e for e in contract['endpoints']}
+    if contract['schema'] == assessment.SCHEMA:
+        endpoints.update({assessment.REPEAT_IDS[i]: contract['endpoints'][i] for i in assessment.REPEATS})
     requests, stream_hashes = {}, {}
     allocations = {(r['case_id'], r['style']): r for r in config['allocation_identities']}
     expected_allocations = {(r['case_id'], r['style']) for r in contract['schedule']['allocation']}
@@ -263,7 +325,8 @@ def file_identity(path):
 def evidence_roots(config):
     scratch = absolute(config['build_root'])
     marker = scratch/'.emuella-campaign-scratch.json'
-    slug = ('classic-forward53-parallel-dispatch' if 'source_treatment' in config.get('contract', {})
+    slug = ('classic-forward53-integration-assessment' if 'assessment_register' in config.get('contract', {})
+            else 'classic-forward53-parallel-dispatch' if 'source_treatment' in config.get('contract', {})
             else 'classic-forward53-finite-confirmation-v2')
     if (scratch.name != slug or marker.is_symlink()
             or json.loads(marker.read_text()) != dict(kind='emuella-campaign-scratch', schema_version=1,
@@ -292,6 +355,58 @@ def validate_prerequisite_treatment(contract, key, evidence):
     if (contract['schema'] == finite.DISPATCH_SCHEMA and key != 'independent_decode'
             and evidence.get('source_treatment_sha256') != contract['source_treatment_sha256']):
         raise ValueError('new source prerequisite must bind the reviewed treatment: '+key)
+    if (contract['schema'] == assessment.SCHEMA and key != 'independent_decode'
+            and evidence.get('source_treatment_sha256') != contract['source_treatment_sha256']):
+        raise ValueError('assessment prerequisite must bind reviewed source treatment: '+key)
+    if contract['schema'] == assessment.SCHEMA and key == 'source_review':
+        expected = assessment.source(contract)['independent_review']
+        if evidence.get('path') != expected['path'] or evidence.get('sha256') != expected['sha256']:
+            raise ValueError('assessment source prerequisite differs from treatment review')
+
+
+def prerequisite_keys(contract):
+    return ASSESSMENT_PREREQUISITES if contract['schema'] == assessment.SCHEMA else PREREQUISITES
+
+
+def assessment_build_receipt(binding):
+    """Verify separate instance hashes and the independent compatibility finding."""
+    evidence = binding['prerequisites']['build_reproducibility']
+    record = json.loads(absolute(evidence['path']).read_text())
+    if (record.get('schema') != 'classic-forward53-integration-builds/v1'
+            or set(record) != {'schema', 'instances', 'review'}
+            or set(record.get('instances', {})) != {'main', 'repeat'}):
+        raise ValueError('complete assessment build reproducibility receipt required')
+    differences = []
+    for name, arms in binding['builds'].items():
+        if set(record['instances'][name]) != {'baseline', 'candidate'}:
+            raise ValueError('assessment build receipt arms differ')
+        for arm, modes in arms.items():
+            if set(record['instances'][name][arm]) != {'ordinary', 'resource'}:
+                raise ValueError('assessment build receipt modes differ')
+            for mode, entry in modes.items():
+                observed = record['instances'][name][arm][mode]
+                if set(observed) != {'binary_sha256', 'text_sha256', 'build_sha256'}:
+                    raise ValueError('assessment build receipt fields differ')
+                binary = entry['build']['binary']
+                text_bytes = subprocess.check_output(['objcopy', '--only-section=.text', '-O', 'binary', binary, '/dev/stdout'])
+                expected = dict(binary_sha256=entry['build']['binary_sha256'],
+                                text_sha256=hashlib.sha256(text_bytes).hexdigest(),
+                                build_sha256=entry['sha256'])
+                if observed != expected:
+                    raise ValueError('assessment executable/section/build receipt differs: '+name+'/'+arm+'/'+mode)
+    for arm in ('baseline', 'candidate'):
+        for mode in ('ordinary', 'resource'):
+            if (record['instances']['main'][arm][mode]['text_sha256'] !=
+                    record['instances']['repeat'][arm][mode]['text_sha256']):
+                differences.append(arm+'/'+mode)
+    review = record['review']
+    if (set(review) != {'verdict', 'reviewer', 'locator', 'section_differences', 'explanation'}
+            or review['verdict'] != 'PASS'
+            or any(not isinstance(review[k], str) or not review[k].strip()
+                   for k in ('reviewer', 'locator', 'explanation'))
+            or review['section_differences'] != differences):
+        raise ValueError('independent assessment build compatibility review missing or differs')
+    return record
 
 
 def prepare_checkpoint(config_path, output, previous=None, previous_sha=None):
@@ -300,7 +415,7 @@ def prepare_checkpoint(config_path, output, previous=None, previous_sha=None):
     evidence_roots(config)
     builds = build_bindings(config)
     stores, requests = prepare_requests(config, contract)
-    if set(config['estimators']) != {'40', '160'} or set(config['prerequisites']) != set(PREREQUISITES):
+    if set(config['estimators']) != {'40', '160'} or set(config['prerequisites']) != set(prerequisite_keys(contract)):
         raise ValueError('both fixed comparators and complete reviewed prerequisites required')
     prerequisites = {}
     for key, evidence in config['prerequisites'].items():
@@ -324,13 +439,19 @@ def prepare_checkpoint(config_path, output, previous=None, previous_sha=None):
                    requests=requests, estimators=estimators, prerequisites=prerequisites,
                    runner=refresh.classic.clean_source(refresh.ROOT), installation=installed_binding(),
                    warmups=0, samples_per_process=1, boundary=refresh.BOUNDARY, host_policy=host_policy())
+    if contract['schema'] == assessment.SCHEMA:
+        binding['build_reproducibility'] = assessment_build_receipt(binding)
     # Cheap per-call change detection complements start/end hashes and worker hashes.
     files = set()
-    for arm in builds.values():
-        for entry in arm.values():
-            files.update([entry['path'], entry['build']['binary'], *entry['build']['libraries']])
-            files.update(str(Path(entry['path']).parent/name) for name in entry['build']['logs'])
-            files.add(str(Path(entry['path']).parent/'source/workers/Cargo.toml'))
+    if contract['schema'] == assessment.SCHEMA:
+        build_entries = (entry for instance in builds.values() for arm in instance.values()
+                         for entry in arm.values())
+    else:
+        build_entries = (entry for arm in builds.values() for entry in arm.values())
+    for entry in build_entries:
+        files.update([entry['path'], entry['build']['binary'], *entry['build']['libraries']])
+        files.update(str(Path(entry['path']).parent/name) for name in entry['build']['logs'])
+        files.add(str(Path(entry['path']).parent/'source/workers/Cargo.toml'))
     for entry in requests.values():
         files.update(entry['request'][k+'_path'] for k in ('raw', 'stream'))
     for name, info in config['stores'].items():
@@ -343,6 +464,9 @@ def prepare_checkpoint(config_path, output, previous=None, previous_sha=None):
     files.update(config['contract'][k] for k in ('v1', 'register', 'design', 'manifest'))
     if contract['schema'] == finite.DISPATCH_SCHEMA:
         files.update((config['contract']['source_treatment'], finite.dispatch_source(contract)['independent_review']['path']))
+    if contract['schema'] == assessment.SCHEMA:
+        files.update((config['contract']['source_treatment'], config['contract']['assessment_register'],
+                      config['contract']['predecessor'], assessment.source(contract)['independent_review']['path']))
     files.update(str(path) for path in chain)
     if previous is not None:
         binding['prelaunch_predecessor'] = dict(path=str(previous), sha256=previous_sha, zero_starts_verified=True)
@@ -356,7 +480,8 @@ def prepare_checkpoint(config_path, output, previous=None, previous_sha=None):
             root = Path(info['output']); root.mkdir()
             notice = Path(info['prepared']).parent/panels.NOTICES[name][0]
             (root/'LICENSE.txt').write_bytes(notice.read_bytes())
-            label = 'parallel dispatch v1' if contract['schema'] == finite.DISPATCH_SCHEMA else 'finite v2'
+            label = ('integration assessment v1' if contract['schema'] == assessment.SCHEMA else
+                     'parallel dispatch v1' if contract['schema'] == finite.DISPATCH_SCHEMA else 'finite v2')
             (root/'NOTICE.txt').write_text(panels.ATTRIBUTIONS[name]+' CC BY-SA 4.0. Local '+label+' observations; protected payloads remain in the approved store.\n')
     write(output, binding)
     return binding
@@ -405,11 +530,14 @@ def read_preparation(path, digest):
     value = json.loads(path.read_text())
     if value['schema'] != preparation_schema(value['manifest']) or value['manifest'] != manifest(value['config']):
         raise ValueError('prepared schema/contract differs')
-    if value['manifest']['schema'] == finite.DISPATCH_SCHEMA:
-        if value['prerequisites'] != value['config']['prerequisites'] or set(value['prerequisites']) != set(PREREQUISITES):
+    if value['manifest']['schema'] in (finite.DISPATCH_SCHEMA, assessment.SCHEMA):
+        if value['prerequisites'] != value['config']['prerequisites'] or set(value['prerequisites']) != set(prerequisite_keys(value['manifest'])):
             raise ValueError('prepared source prerequisites differ')
         for key, evidence in value['prerequisites'].items():
             validate_prerequisite_treatment(value['manifest'], key, evidence)
+        if value['manifest']['schema'] == assessment.SCHEMA:
+            if assessment_build_receipt(value) != value['build_reproducibility']:
+                raise ValueError('assessment build reproducibility changed')
     return value
 
 
@@ -418,8 +546,10 @@ def verify_identities(binding, *, full=False):
         raise ValueError('runtime overrides must be unset')
     if host_policy() != binding['host_policy']:
         raise ValueError('frequency/boost/topology policy changed after preparation')
+    instance = 'main' if binding['manifest']['schema'] == assessment.SCHEMA else None
     for arm, source in binding['config']['codec_sources'].items():
-        if refresh.classic.clean_source(Path(source)) != binding['builds'][arm]['ordinary']['build']['codec']:
+        expected = binding['builds'][instance][arm] if instance else binding['builds'][arm]
+        if refresh.classic.clean_source(Path(source)) != expected['ordinary']['build']['codec']:
             raise ValueError('frozen codec source changed')
     for path, identity in binding['file_identities'].items():
         if file_identity(path) != identity:
@@ -429,6 +559,8 @@ def verify_identities(binding, *, full=False):
     if full:
         if build_bindings(binding['config']) != binding['builds'] or installed_binding() != binding['installation']:
             raise ValueError('fresh build/installed binding changed')
+        if instance and assessment_build_receipt(binding) != binding['build_reproducibility']:
+            raise ValueError('assessment build reproducibility changed')
         for n, estimator in binding['estimators'].items():
             if stability.estimator_identity(estimator['path'], int(n)) != estimator:
                 raise ValueError('comparator changed')
@@ -506,7 +638,7 @@ def consumption(binding, start, started):
 
 def budget(binding, start, started, *, before_start=False):
     value = consumption(binding, start, started)
-    issues = finite.budget_issues(value, before_start=before_start)
+    issues = finite.budget_issues(value, before_start=before_start, caps=binding['manifest']['limits'])
     if issues:
         raise ValueError('; '.join(issues))
     return value
@@ -555,7 +687,8 @@ def observe(binding, planned, receipt, reference_environment, start, rows, prepa
         if issues:
             raise ValueError('; '.join(issues))
         mode = 'resource' if planned['stage'] == 'allocation' else 'ordinary'
-        build = binding['builds'][planned['arm']][mode]['build']
+        builds = binding['builds'][planned.get('build_instance', 'main')] if binding['manifest']['schema'] == assessment.SCHEMA else binding['builds']
+        build = builds[planned['arm']][mode]['build']
         row['result'] = refresh.run_process(build['binary'], item['request'], root/planned['call_id'],
             list(range(item['request']['workers'])), allocation_diagnostics=mode == 'resource', placement=place(receipt))
         if planned['stage'] == 'preflight' and row['result'].get('process_wall_ns', 0) > 0 and 'process_cpu_seconds' in row['result']:
@@ -612,7 +745,7 @@ def acquire(binding, preparation_path, digest, authority_path):
     receipt = authority(binding, authority_path)
     authority_sha = sha(authority_path)
     verify_identities(binding, full=True)
-    if receipt['valid_until_epoch']-time.time() < finite.limits()['wall_seconds']:
+    if receipt['valid_until_epoch']-time.time() < binding['manifest']['limits']['wall_seconds']:
         raise ValueError('lease must cover the entire observation window')
     transport = json.loads((root/'execution-started.json').read_text())
     if transport['preparation_sha256'] != digest or transport['authority_sha256'] != authority_sha:
@@ -643,19 +776,26 @@ def acquire(binding, preparation_path, digest, authority_path):
                 if planned['stage'] != 'ordinary':
                     continue
                 endpoint_budget(binding, planned['endpoint_id'], endpoint_starts[planned['endpoint_id']], rows)
-                index = int(planned['endpoint_id'].split('-')[1]); count = binding['manifest']['pairs_per_endpoint'][index]
+                index = int(planned['endpoint_id'].split('-')[1]); count = (40 if planned['endpoint_id'].startswith('repeat-')
+                    else binding['manifest']['pairs_per_endpoint'][index])
                 if planned['round'] != count-1 or planned['position'] != 1:
                     continue
                 ordinary = [dict(round=r['planned']['round'], position=r['planned']['position'],
                                  arm='A' if r['planned']['arm'] == 'baseline' else 'B', result=r['result'])
                             for r in rows if r['planned']['endpoint_id'] == planned['endpoint_id'] and r['planned']['stage'] == 'ordinary']
-                decision = finite.analyse_endpoint(index, ordinary, binding['estimators'][str(count)]['path'])
+                decision = (assessment.analyse_endpoint(binding['manifest'], planned['endpoint_id'], ordinary,
+                            binding['estimators'][str(count)]['path']) if binding['manifest']['schema'] == assessment.SCHEMA
+                            else finite.analyse_endpoint(index, ordinary, binding['estimators'][str(count)]['path']))
                 write(root/(planned['endpoint_id']+'-decision.json'), decision)
                 decisions.append(decision)
-                if decision['disposition'] != finite.PASS:
+                if decision['disposition'] != finite.PASS and (binding['manifest']['schema'] != assessment.SCHEMA
+                        or planned['endpoint_id'] == 'endpoint-00'
+                        or decision['disposition'] == finite.INCOMPLETE):
                     disposition = decision['disposition']; break
             else:
-                disposition = finite.PASS
+                disposition = (finite.NOT_SELECTED if any(d['disposition'] == finite.NOT_SELECTED for d in decisions)
+                               else finite.NOT_QUALIFIED if any(d['disposition'] != finite.PASS for d in decisions)
+                               else finite.PASS)
             verify_identities(binding, full=True)
             budget(binding, start, len(rows))
         except BaseException as error:
@@ -787,15 +927,20 @@ def execute(preparation_path, digest, authority_path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
-    for name in ('derive', 'derive-dispatch'):
+    for name in ('derive', 'derive-dispatch', 'derive-assessment'):
         derive_command = commands.add_parser(name)
         for key in ('v1', 'register', 'design', 'output'):
             derive_command.add_argument('--'+key, type=Path, required=True)
         derive_command.add_argument('--sha256', required=True)
         derive_command.add_argument('--authority', required=True)
-        if name == 'derive-dispatch':
+        if name in ('derive-dispatch', 'derive-assessment'):
             derive_command.add_argument('--source-treatment', type=Path, required=True)
             derive_command.add_argument('--source-treatment-sha256', required=True)
+        if name == 'derive-assessment':
+            derive_command.add_argument('--assessment-register', type=Path, required=True)
+            derive_command.add_argument('--assessment-register-sha256', required=True)
+            derive_command.add_argument('--predecessor', type=Path, required=True)
+            derive_command.add_argument('--predecessor-sha256', required=True)
     command = commands.add_parser('prepare')
     for key in ('config', 'output'):
         command.add_argument('--'+key, type=Path, required=True)
@@ -813,6 +958,13 @@ def main():
         text, review = source_texts(args.source_treatment, args.source_treatment_sha256)
         write(args.output, derive_dispatch(args.v1, args.sha256, args.register, args.design, args.authority,
                                           text, args.source_treatment_sha256, review))
+    elif args.command == 'derive-assessment':
+        treatment, review = source_texts(args.source_treatment, args.source_treatment_sha256)
+        margins = args.assessment_register.read_bytes().decode('utf-8')
+        write(args.output, assessment.derive(args.v1, args.sha256, args.register, args.design,
+            args.predecessor, args.predecessor_sha256, args.authority, treatment,
+            args.source_treatment_sha256, review, margins,
+            args.assessment_register_sha256))
     elif args.command == 'prepare':
         prepare(args.config, args.output, args.previous_preparation, args.previous_sha256)
     elif args.command == 'execute':
