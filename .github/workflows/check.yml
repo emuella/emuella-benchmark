@@ -46,6 +46,7 @@ jobs:
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config --global --add safe.directory "$GITHUB_WORKSPACE/catalogue"
           git config --global --add safe.directory "$GITHUB_WORKSPACE/codec"
+          printf '/codec/\n' >> .git/info/exclude
       - name: Worker checks
         run: |
           cargo fmt --manifest-path workers/Cargo.toml -- --check

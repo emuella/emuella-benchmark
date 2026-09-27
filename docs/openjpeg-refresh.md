@@ -47,8 +47,10 @@ does not read raw or stream payloads or start a worker. A future controller can
 use this same function within its existing lease, deadline and restoration flow.
 Store preflight results under `kind: "preflight"` and use
 `ordinary_samples_from_existing_stream_call` when forming ordinary timing
-vectors; worker preflights return a sample but that helper excludes it. The
-metadata file is a single call with `kind`, `asset`, `prepared`, `streams`,
+vectors from results already validated by `run_process`; the helper does not
+repeat its binary, boundary or exactness checks. Worker preflights return a
+sample but that helper excludes it. The metadata file is a single call with
+`kind`, `asset`, `prepared`, `streams`,
 `origin`, `codec`, `style`, `workers`, `round` and `stream_identity` fields.
 
 The inner clock includes raw-to-library conversion, API setup/operation and
