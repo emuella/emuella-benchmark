@@ -36,15 +36,29 @@ jobs:
           repository: emuella/emuella-testdata
           ref: b4b8c8f51cd36ace3764487d53b5423dc6baab50
           path: catalogue
-      - name: Trust the two checked-out repositories in the job container
+      - uses: actions/checkout@v4
+        with:
+          repository: emuella/emuella-j2k
+          ref: 462a778109be97ad303c973d1a98a48b25ecedc3
+          path: codec
+      - name: Trust the checked-out repositories in the job container
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config --global --add safe.directory "$GITHUB_WORKSPACE/catalogue"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE/codec"
       - name: Worker checks
         run: |
           cargo fmt --manifest-path workers/Cargo.toml -- --check
           cargo clippy --manifest-path workers/Cargo.toml --all-targets -- -D warnings
           cargo test --manifest-path workers/Cargo.toml --all-targets
+      - name: Authored classic existing-stream regression
+        run: |
+          cp workers/Cargo.lock "$RUNNER_TEMP/classic-worker-Cargo.lock"
+          trap 'cp "$RUNNER_TEMP/classic-worker-Cargo.lock" workers/Cargo.lock' EXIT
+          cargo test --manifest-path workers/Cargo.toml --features classic-compare \
+            --test classic_compare authored_existing_reference_preflight_uses_encode_without_changing_stream \
+            --config "patch.\"https://github.com/emuella/emuella-j2k\".emuella-j2k.path=\"$PWD/codec/crates/emuella-j2k\"" \
+            --config "patch.\"https://github.com/emuella/emuella-j2k\".emuella-j2k-codestream.path=\"$PWD/codec/crates/emuella-j2k-codestream\""
       - name: Build identified workers and exercise real codecs
         run: |
           python3 scripts/build-workers.py --output "$RUNNER_TEMP/benchmark-workers"
