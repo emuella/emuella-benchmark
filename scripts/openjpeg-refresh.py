@@ -166,7 +166,8 @@ def run_process(binary, request, directory, cpus, execution_diagnostics=False, a
     return result
 
 
-def make_request(asset, prepared, folder, origin, codec, style, workers, operation, round_id):
+def make_request(asset, prepared, folder, origin, codec, style, workers, operation, round_id,
+                 *, expected_stream_sha256=None):
     image = asset['image']
     stream = folder/'streams'/f"{asset['id']}-{origin}-s{style}.j2k"
     request = dict(codec=codec,operation=operation,case_id=asset['id'],round=round_id,
@@ -174,9 +175,58 @@ def make_request(asset, prepared, folder, origin, codec, style, workers, operati
                    layout='interleaved',style=style,workers=workers,raw_path=str(prepared/asset['path']),
                    raw_sha256=asset['sha256'],stream_path=str(stream),
                    max_working_bytes=classic.WORKING,max_output_bytes=classic.OUTPUT)
+    if operation == 'prepare' and expected_stream_sha256 is not None:
+        raise ValueError('prepare cannot use an existing stream SHA-256')
     if operation != 'prepare':
-        request['stream_sha256'] = sha(stream)
+        request['stream_sha256'] = sha(stream) if expected_stream_sha256 is None else expected_stream_sha256
     return request
+
+
+def make_existing_stream_call(kind, asset, prepared, folder, origin, codec, style, workers,
+                              round_id, stream_identity):
+    """Bind an encode call to a previously recorded stream without reading payloads.
+
+    A preflight uses the same hash-checking worker operation as an ordinary encode,
+    while its kind keeps the resulting observation outside ordinary timing counts.
+    """
+    if kind not in ('preflight', 'ordinary'):
+        raise ValueError('existing-stream call kind must be preflight or ordinary')
+    if not isinstance(stream_identity, dict):
+        raise ValueError('existing stream identity is required')
+    required = {'case_id', 'origin', 'style', 'raw_sha256', 'stream_path', 'stream_sha256'}
+    if set(stream_identity) != required:
+        raise ValueError('existing stream identity fields differ')
+    for name in ('raw_sha256', 'stream_sha256'):
+        digest = stream_identity[name]
+        if not isinstance(digest, str) or len(digest) != 64 or any(
+                character not in '0123456789abcdef' for character in digest):
+            raise ValueError('existing ' + name + ' must be lowercase hex')
+    expected_hash = stream_identity['stream_sha256']
+    request = make_request(asset, prepared, folder, origin, codec, style, workers, 'encode',
+                           round_id, expected_stream_sha256=expected_hash)
+    expected_identity = dict(case_id=request['case_id'], origin=origin, style=style,
+                             raw_sha256=request['raw_sha256'], stream_path=request['stream_path'],
+                             stream_sha256=expected_hash)
+    if stream_identity != expected_identity:
+        raise ValueError('existing stream identity differs from request metadata')
+    return dict(kind=kind, request=request, timing_eligible=kind == 'ordinary')
+
+
+def ordinary_samples_from_existing_stream_call(call, result):
+    """Admit successful ordinary samples without pooling preflight observations."""
+    if call.get('kind') not in ('preflight', 'ordinary') or call.get('timing_eligible') != (call['kind'] == 'ordinary'):
+        raise ValueError('existing-stream call classification differs')
+    if result.get('status') != 0 or not isinstance(result.get('observation'), dict):
+        raise ValueError('successful existing-stream observation required')
+    observation = result['observation']
+    for field in ('codec', 'operation', 'case_id', 'round', 'style', 'workers',
+                  'raw_sha256', 'stream_sha256'):
+        if observation.get(field) != call['request'][field]:
+            raise ValueError('existing-stream observation identity differs: ' + field)
+    samples = observation.get('samples_ns')
+    if not isinstance(samples, list) or len(samples) != 1 or type(samples[0]) is not int or samples[0] <= 0:
+        raise ValueError('ordinary worker sample differs')
+    return samples if call['timing_eligible'] else []
 
 
 def operations(encode_only=False):

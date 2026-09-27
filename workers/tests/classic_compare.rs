@@ -88,6 +88,73 @@ fn authored_profiles_cross_decode_and_deterministic_encode() {
     }
 }
 #[test]
+fn authored_existing_reference_preflight_uses_encode_without_changing_stream() {
+    let root = tempfile::tempdir().unwrap();
+    let raw = vec![17_u8; 19 * 17];
+    let prepared = root.path().join("prepared");
+    let streams = root.path().join("stream-root");
+    std::fs::create_dir(&prepared).unwrap();
+    std::fs::create_dir(&streams).unwrap();
+    let raw_path = prepared.join("authored.raw");
+    std::fs::write(&raw_path, &raw).unwrap();
+    let stream_path = streams.join("streams/authored-emuella-s0.j2k");
+    std::fs::create_dir(stream_path.parent().unwrap()).unwrap();
+    let raw_sha256 = format!("{:x}", Sha256::digest(&raw));
+    let prepare = json!({"codec":"emuella","operation":"prepare","case_id":"authored","round":0,
+        "width":19,"height":17,"components":1,"bits":8,"style":0,"workers":1,
+        "layout":"interleaved","raw_path":raw_path,"raw_sha256":raw_sha256,
+        "stream_path":stream_path,"max_working_bytes":4294967296_u64,"max_output_bytes":1048576});
+    let prepared_response = success(root.path(), &prepare);
+    assert!(!invoke(root.path(), &prepare).status.success());
+    let original_stream = std::fs::read(&stream_path).unwrap();
+    let stream_sha256 = prepared_response["stream_sha256"].as_str().unwrap();
+    let identity = json!({"case_id":"authored","origin":"emuella","style":0,
+        "raw_sha256":raw_sha256,"stream_path":stream_path,"stream_sha256":stream_sha256});
+    let script = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .join("scripts/classic-diagnosis-request.py");
+    let mut ordinary_samples = Vec::new();
+    for kind in ["preflight", "ordinary"] {
+        let config = json!({"kind":kind,"asset":{"id":"authored","path":"authored.raw",
+            "sha256":raw_sha256,"image":{"width":19,"height":17,"components":1,"precision":8}},
+            "prepared":prepared,"streams":streams,"origin":"emuella","codec":"emuella",
+            "style":0,"workers":1,"round":0,"stream_identity":identity});
+        let config_path = root.path().join("metadata.json");
+        std::fs::write(&config_path, serde_json::to_vec(&config).unwrap()).unwrap();
+        let dry_run = Command::new("python3")
+            .arg(&script)
+            .arg("--config")
+            .arg(&config_path)
+            .output()
+            .unwrap();
+        assert!(
+            dry_run.status.success(),
+            "{}",
+            String::from_utf8_lossy(&dry_run.stderr)
+        );
+        let call: Value = serde_json::from_slice(&dry_run.stdout).unwrap();
+        assert_eq!(call["request"]["operation"], "encode");
+        assert_eq!(call["request"]["stream_sha256"], stream_sha256);
+        let response = success(root.path(), &call["request"]);
+        assert_eq!(response["samples_ns"].as_array().unwrap().len(), 1);
+        if call["timing_eligible"] == true {
+            ordinary_samples.extend(response["samples_ns"].as_array().unwrap().iter().cloned());
+        }
+        assert_eq!(std::fs::read(&stream_path).unwrap(), original_stream);
+    }
+    assert_eq!(ordinary_samples.len(), 1);
+    assert_eq!(
+        format!("{:x}", Sha256::digest(&original_stream)),
+        stream_sha256
+    );
+    let mut incorrect = prepare.clone();
+    incorrect["operation"] = json!("encode");
+    incorrect["stream_sha256"] = json!("0".repeat(64));
+    assert!(!invoke(root.path(), &incorrect).status.success());
+    assert_eq!(std::fs::read(&stream_path).unwrap(), original_stream);
+}
+#[test]
 fn rejects_unknown_fields_hashes_and_unsupported_settings() {
     let root = tempfile::tempdir().unwrap();
     let raw = vec![0; 16];

@@ -30,6 +30,29 @@ Emuella stream. Both decoders receive the same bytes within each contrast.
 Compressed outputs need not be byte-identical across codecs; each encoder's
 repeated output must match its own prepared stream.
 
+## Existing-stream diagnosis calls
+
+For a future diagnosis against an existing reference, construct each preflight
+with `openjpeg-refresh.py`'s `make_existing_stream_call`. It requires recorded
+`case_id`, `origin`, `style`, `raw_sha256`, `stream_path` and `stream_sha256`
+metadata matching the prepared asset and derived stream path. The resulting
+worker request uses `operation: "encode"` and the explicit expected stream hash.
+The worker reads and verifies the existing stream, checks the new encode against
+its hash, and leaves that stream unchanged. `prepare` retains its separate
+create-new operation. Missing or inconsistent identity is rejected before launch.
+
+`scripts/classic-diagnosis-request.py --config METADATA.json` is the metadata-only
+dry-run entry point. It emits a `kind`, `request` and `timing_eligible` record and
+does not read raw or stream payloads or start a worker. A future controller can
+use this same function within its existing lease, deadline and restoration flow.
+Store preflight results under `kind: "preflight"` and use
+`ordinary_samples_from_existing_stream_call` when forming ordinary timing
+vectors from results already validated by `run_process`; the helper does not
+repeat its binary, boundary or exactness checks. Worker preflights return a
+sample but that helper excludes it. The metadata file is a single call with
+`kind`, `asset`, `prepared`, `streams`,
+`origin`, `codec`, `style`, `workers`, `round` and `stream_identity` fields.
+
 The inner clock includes raw-to-library conversion, API setup/operation and
 owned output conversion. Emuella uses its public facade and direct process-global
 Rayon context; OpenJPEG uses its installed public API with explicit threads.
