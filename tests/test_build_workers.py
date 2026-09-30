@@ -24,6 +24,7 @@ class WorkerBuildTests(unittest.TestCase):
         (source / "workers/src").mkdir(parents=True)
         (source / "scripts").mkdir()
         shutil.copy2(ROOT / "scripts/build-workers.py", source / "scripts/build-workers.py")
+        shutil.copy2(ROOT / "rust-toolchain.toml", source / "rust-toolchain.toml")
         manifest = (ROOT / "workers/Cargo.toml").read_text()
         # Exercise the shipped feature forwarding and profile, with tiny authored
         # stand-ins for codec crates rather than compiling the complete codec.
@@ -58,7 +59,7 @@ class WorkerBuildTests(unittest.TestCase):
     def build(self, root, source, external, extra=(), overrides=None):
         destination = root / "build"
         environment = {key: value for key, value in os.environ.items()
-                       if not key.startswith(("CARGO_", "RUSTFLAGS", "RUSTC"))}
+                       if not key.startswith(("CARGO_", "RUSTFLAGS", "RUSTC", "RUSTUP_TOOLCHAIN"))}
         environment.update(CARGO_HOME=str(root / "cargo-home"))
         environment.update(overrides or {})
         actual_output = module.output
@@ -90,6 +91,12 @@ class WorkerBuildTests(unittest.TestCase):
                     if simd:
                         args += ["--simd"]
                     dest, provenance = self.build(root, source, external, args)
+                    self.assertEqual((dest / "build-source/rust-toolchain.toml").read_bytes(),
+                                     (ROOT / "rust-toolchain.toml").read_bytes())
+                    self.assertEqual(provenance["source_sha256"]["rust-toolchain.toml"],
+                                     module.sha(ROOT / "rust-toolchain.toml"))
+                    self.assertTrue(provenance["rustc"].startswith("rustc 1.98.1 "))
+                    self.assertTrue(provenance["cargo"].startswith("cargo 1.98.1 "))
                     expected = f"(true, {str(simd).lower()}) (true, {str(simd).lower()})"
                     self.assertEqual(subprocess.check_output([dest / "emuella-worker"], text=True).strip(), expected)
                     self.assertEqual(provenance["requested_build"],
