@@ -103,7 +103,8 @@ def main():
     snapshot.mkdir()
     inputs = sorted(p for base in [ROOT / "workers", ROOT / "src"] for p in base.rglob("*")
                     if p.is_file() and "target" not in p.parts and "__pycache__" not in p.parts)
-    inputs += [ROOT / "scripts/build-workers.py", ROOT / "Cargo.toml", ROOT / "Cargo.lock"]
+    inputs += [ROOT / "scripts/build-workers.py", ROOT / "Cargo.toml", ROOT / "Cargo.lock",
+               ROOT / "rust-toolchain.toml"]
     for path in inputs:
         copied = snapshot / path.relative_to(ROOT)
         copied.parent.mkdir(parents=True, exist_ok=True)
@@ -143,7 +144,7 @@ def main():
     provenance = {
         "schema_version": 1, "emuella_revision": args.emuella_revision,
         "emuella_tree": output("git", "rev-parse", "HEAD^{tree}", cwd=source) if source else None,
-        "rustc": output(build_env.get("RUSTC", "rustc"), "-vV", cwd=snapshot), "cargo": output("cargo", "-V"),
+        "rustc": output(build_env.get("RUSTC", "rustc"), "-vV", cwd=snapshot), "cargo": output("cargo", "-V", cwd=snapshot),
         "tool_identity_scope": "Tool identity queries use PATH and RUSTC/CC environment selections; "
             "Cargo configuration can select other tools, whose dispatched commands are in the verbose log.",
         "cc": output(os.environ.get("CC", "cc"), "--version"),

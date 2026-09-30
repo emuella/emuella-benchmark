@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.98.1
         with:
           components: rustfmt, clippy
       - name: Canonical verification
@@ -20,7 +20,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@1.88.0
       - name: Minimum supported Rust
-        run: cargo check --locked --all-targets
+        run: |
+          rustc +1.88.0 -Vv
+          cargo +1.88.0 check --locked --all-targets
   workers:
     runs-on: ubuntu-24.04
     container: debian:trixie
@@ -28,7 +30,7 @@ jobs:
       - name: Install independent codec tools and build prerequisites
         run: apt-get update && apt-get install -y libopenjp2-7-dev libopenjp2-tools openjph-tools pkg-config build-essential git ca-certificates python3 curl
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.98.1
         with:
           components: rustfmt, clippy
       - uses: actions/checkout@v4

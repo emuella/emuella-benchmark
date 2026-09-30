@@ -13,7 +13,8 @@ python3 scripts/build-workers.py --output /approved/scratch/build-baseline
 ```
 
 Choose a new absolute output directory outside the checkout for each build. The
-helper snapshots project-owned adapter/core source, builds release executables by default,
+helper snapshots project-owned adapter/core source and the root Rust 1.98.1
+toolchain pin, builds release executables by default,
 and writes `emuella-worker.json`, `openjpeg-worker.json`, `openjph-worker.json`
 and `build-provenance.json`. Pass a worker JSON directly to the harness. Native
 OpenJPEG binaries receive an RPATH from the installed pkg-config library path;
@@ -35,7 +36,10 @@ after building. Cargo overrides and dependency resolution occur in the build
 snapshot, leaving the benchmark checkout's lockfile unchanged. The provenance
 sidecar records compiler identities, requested profile, observed features,
 performance-relevant build flags, every adapter/core source digest and the exact
-resolved worker dependency lock. Definitions bind this sidecar and the actual
+resolved worker dependency lock. The snapshotted toolchain pin is a source-hash
+input; Rust and Cargo identity queries run from that snapshot. Explicit compiler
+overrides still take precedence and their actual identities remain attributable.
+Definitions bind this sidecar and the actual
 runtime shared libraries; OpenJPH also binds both installed CLI executables and
 their shared dependencies. Local source paths and executable paths exist only in
 runtime manifests, binaries and provenance. Do not commit build snapshots or
