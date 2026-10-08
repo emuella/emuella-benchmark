@@ -95,8 +95,8 @@ class WorkerBuildTests(unittest.TestCase):
                                      (ROOT / "rust-toolchain.toml").read_bytes())
                     self.assertEqual(provenance["source_sha256"]["rust-toolchain.toml"],
                                      module.sha(ROOT / "rust-toolchain.toml"))
-                    self.assertTrue(provenance["rustc"].startswith("rustc 1.98.1 "))
-                    self.assertTrue(provenance["cargo"].startswith("cargo 1.98.1 "))
+                    self.assertTrue(provenance["rustc"].startswith("rustc 1.99.0 "))
+                    self.assertTrue(provenance["cargo"].startswith("cargo 1.99.0 "))
                     expected = f"(true, {str(simd).lower()}) (true, {str(simd).lower()})"
                     self.assertEqual(subprocess.check_output([dest / "emuella-worker"], text=True).strip(), expected)
                     self.assertEqual(provenance["requested_build"],

@@ -8,7 +8,7 @@ service, asset acquisition or automatic publication is involved.
 
 ## Build and verify
 
-Development and normal CI use the exact Rust 1.98.1 pin in
+Development and normal CI use the exact Rust 1.99.0 pin in
 `rust-toolchain.toml`, including the separate workers. The root package's
 compatibility floor remains Rust 1.88, checked explicitly with 1.88.0 in CI.
 Python 3 is required for corpus tooling tests:
