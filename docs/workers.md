@@ -13,7 +13,7 @@ python3 scripts/build-workers.py --output /approved/scratch/build-baseline
 ```
 
 Choose a new absolute output directory outside the checkout for each build. The
-helper snapshots project-owned adapter/core source and the root Rust 1.98.1
+helper snapshots project-owned adapter/core source and the root Rust 1.99.0
 toolchain pin, builds release executables by default,
 and writes `emuella-worker.json`, `openjpeg-worker.json`, `openjph-worker.json`
 and `build-provenance.json`. Pass a worker JSON directly to the harness. Native
