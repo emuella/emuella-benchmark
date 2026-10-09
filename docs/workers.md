@@ -203,8 +203,24 @@ vector.
 ```sh
 cargo fmt --manifest-path workers/Cargo.toml -- --check
 cargo clippy --manifest-path workers/Cargo.toml --all-targets -- -D warnings
-cargo test --manifest-path workers/Cargo.toml --release
+python3 scripts/run-nextest.py workers-release --manifest-path workers/Cargo.toml --release
+cargo test --manifest-path workers/Cargo.toml --release --doc
 ```
+
+Install the pre-built Nextest 0.9.146 release as described in the root README.
+The runner explicitly loads the root-owned configuration for this independent
+Cargo workspace. `workers-release` preserves the documented release selection;
+CI uses `workers-ci --manifest-path workers/Cargo.toml --all-targets` and retains
+the separately filtered `workers-classic-ci` authored stream regression with
+its existing codec path overrides and lockfile restoration. For a local debug
+check, use `workers --manifest-path workers/Cargo.toml --all-targets`, followed
+by `cargo test --manifest-path workers/Cargo.toml --doc`.
+
+Each selection has its own fresh JUnit report and invocation record in the root
+`target/nextest/`, or in `EMUELLA_NEXTEST_REPORT_DIR`. Cargo target-directory
+overrides do not move those reports. The test runner does not participate in
+identified worker builds or change the build helper's source snapshot,
+feature, profile or provenance contracts.
 
 The authored native matrix checks grey/RGB U8/U16 and eight-band U16, two threads,
 full-range values and distinct band order, exact round trips,

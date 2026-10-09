@@ -12,17 +12,45 @@ jobs:
       - uses: dtolnay/rust-toolchain@1.99.0
         with:
           components: rustfmt, clippy
+      - name: Install pinned Nextest binary
+        uses: taiki-e/install-action@f7e5d7c961414b23f5b25b2da9294395d08513ad # v2.87.26
+        with:
+          tool: cargo-nextest@0.9.146
+          checksum: true
+          fallback: none
       - name: Canonical verification
         run: sh scripts/check.sh
+      - name: Retain Rust test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-core-nextest-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/nextest/**/junit.xml
+          if-no-files-found: warn
   msrv:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@1.88.0
+      - name: Install pinned Nextest binary independently of MSRV
+        uses: taiki-e/install-action@f7e5d7c961414b23f5b25b2da9294395d08513ad # v2.87.26
+        with:
+          tool: cargo-nextest@0.9.146
+          checksum: true
+          fallback: none
       - name: Minimum supported Rust
         run: |
           rustc +1.88.0 -Vv
           cargo +1.88.0 check --locked --all-targets
+          python3 scripts/run-nextest.py root-msrv +1.88.0 --locked --all-targets
+          cargo +1.88.0 test --locked --doc
+      - name: Retain minimum-Rust test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-msrv-nextest-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/nextest/**/junit.xml
+          if-no-files-found: warn
   workers:
     runs-on: ubuntu-24.04
     container: debian:trixie
@@ -33,6 +61,12 @@ jobs:
       - uses: dtolnay/rust-toolchain@1.99.0
         with:
           components: rustfmt, clippy
+      - name: Install pinned Nextest binary
+        uses: taiki-e/install-action@f7e5d7c961414b23f5b25b2da9294395d08513ad # v2.87.26
+        with:
+          tool: cargo-nextest@0.9.146
+          checksum: true
+          fallback: none
       - uses: actions/checkout@v4
         with:
           repository: emuella/emuella-testdata
@@ -53,15 +87,23 @@ jobs:
         run: |
           cargo fmt --manifest-path workers/Cargo.toml -- --check
           cargo clippy --manifest-path workers/Cargo.toml --all-targets -- -D warnings
-          cargo test --manifest-path workers/Cargo.toml --all-targets
+          python3 scripts/run-nextest.py workers-ci --manifest-path workers/Cargo.toml --all-targets
+          cargo test --manifest-path workers/Cargo.toml --doc
       - name: Authored classic existing-stream regression
         run: |
           cp workers/Cargo.lock "$RUNNER_TEMP/classic-worker-Cargo.lock"
           trap 'cp "$RUNNER_TEMP/classic-worker-Cargo.lock" workers/Cargo.lock' EXIT
-          cargo test --manifest-path workers/Cargo.toml --features classic-compare \
+          python3 scripts/run-nextest.py workers-classic-ci --manifest-path workers/Cargo.toml --features classic-compare \
             --test classic_compare authored_existing_reference_preflight_uses_encode_without_changing_stream \
             --config "patch.\"https://github.com/emuella/emuella-j2k\".emuella-j2k.path=\"$PWD/codec/crates/emuella-j2k\"" \
             --config "patch.\"https://github.com/emuella/emuella-j2k\".emuella-j2k-codestream.path=\"$PWD/codec/crates/emuella-j2k-codestream\""
+      - name: Retain worker test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-workers-nextest-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/nextest/**/junit.xml
+          if-no-files-found: warn
       - name: Build identified workers and exercise real codecs
         run: |
           python3 scripts/build-workers.py --output "$RUNNER_TEMP/benchmark-workers"

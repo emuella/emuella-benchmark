@@ -62,7 +62,7 @@ here. This is the only candidate method recommended for investigation.
 
 ## Reproducible authored probes
 
-Run `cargo test --test precision -- --nocapture`, or the existing canonical
+Run `python3 scripts/run-nextest.py root-precision --test precision -- --nocapture`, or the existing canonical
 `sh scripts/check.sh`. [The tests](../tests/precision.rs) construct in-memory
 valid run records and invoke the actual comparator. They run no workers or
 clocks and contain no protected data. All fixtures have twenty pairs with one

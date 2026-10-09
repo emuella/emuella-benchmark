@@ -18,6 +18,22 @@ cargo build --release
 sh scripts/check.sh
 ```
 
+Install the pre-built `cargo-nextest` 0.9.146 release before verification; local
+checks require at least that version. CI uses the pinned installer with checksum
+verification and no source-build fallback, independently of the tested Rust
+toolchain. Ordinary Rust tests use Nextest; Cargo runs doctests separately.
+The existing locked Rust 1.88.0 compilation lane also executes root tests and
+doctests with that compiler. No compiler or dependency pin changes are required.
+
+Each test selection retains a fresh JUnit report and `invocation.json` under
+`target/nextest/CONFIGURATION-*/`, including local canonical checks. Set
+`EMUELLA_NEXTEST_REPORT_DIR` to an external report directory when needed. Report
+location is independent of `CARGO_TARGET_DIR` and `--target-dir`; those select
+build artefacts only. Previous reports survive subsequent invocations, and a
+failed invocation never reuses an earlier report. CI uploads each job's reports
+on success or failure. The configuration gives five-second slow-test warnings,
+zero retries and no hard timeout; CI continues through test failures.
+
 The root package has no sibling codec dependency. Codec workers are separately
 built adapters; see [worker documentation](docs/workers.md). Tests use a
 project-authored synthetic protocol worker and require no external corpus.
