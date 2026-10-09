@@ -6,6 +6,7 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import tempfile
@@ -126,11 +127,20 @@ class NextestRunnerTests(unittest.TestCase):
             config = source / ".config/nextest.toml"
             configuration = config.read_text().replace('"0.9.146"', '"999.0.0"')
             config.write_text(configuration)
-            result = subprocess.run(["cargo", "nextest", "list", "--config-file", str(config)],
-                                    cwd=source, capture_output=True, text=True, check=False)
-            self.assertEqual(result.returncode, 92)
-            self.assertIn("requires nextest version 999.0.0", result.stderr)
-            self.assertNotIn("error parsing", result.stderr.lower())
+            for colour in ("never", "always"):
+                with self.subTest(colour=colour):
+                    environment = dict(os.environ, CARGO_TERM_COLOR=colour)
+                    result = subprocess.run(
+                        ["cargo", "nextest", "list", "--config-file", str(config)],
+                        cwd=source, env=environment, capture_output=True, text=True, check=False)
+                    self.assertEqual(result.returncode, 92, result.stderr)
+                    if colour == "always":
+                        self.assertIn("\x1b[", result.stderr)
+                    # Remove only ANSI styling; retain the raw diagnostic for
+                    # assertion failures and preserve its required-version text.
+                    diagnostic = re.sub(r"\x1b\[[0-9;:]*m", "", result.stderr)
+                    self.assertIn("requires nextest version 999.0.0", diagnostic, result.stderr)
+                    self.assertNotIn("error parsing", diagnostic.lower(), result.stderr)
 
 
 if __name__ == "__main__":
